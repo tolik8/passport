@@ -1,0 +1,5 @@
+/.idea/*
+/logs/*
+/vendor/*
+/config/db/*.php
+/sync.ffs_db

@@ -1,0 +1,38 @@
+<nav class="navbar navbar-expand-md navbar-light">
+  <a class="navbar-brand" href="/"><i class="fas fa-home"></i> Стартова 2</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/pasport">Паспорт</a>
+      </li>
+    </ul>
+    {# <form class="form-inline mr-auto" method="POST" action="/tel/">
+      <input class="form-control mr-sm-2" type="search" placeholder="" aria-label="Search">
+      <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Пошук</button>
+    </form> #}
+    <ul class="navbar-nav">
+      {% if my.admin == true %}
+        <li class="nav-item">
+          <a class="nav-link" href="/adminka"><i class="fas fa-unlock"></i> Адмінка</a>
+        </li>
+      {% endif %}
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          {{my.login}}
+        </a>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href="/profile"><i class="fas fa-user mr-2"></i>Профіль</a>
+          <a class="dropdown-item" href="/profile/mylinks"><i class="fas fa-link mr-2"></i>Мої лінки</a>
+          <a class="dropdown-item" href="/refresh"><i class="fas fa-sync-alt mr-2"></i>Оновити доступи</a>
+          <a class="dropdown-item" href="/profile/change_pass"><i class="fas fa-key mr-2"></i>Змінити пароль</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt mr-2"></i>Вихід</a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>

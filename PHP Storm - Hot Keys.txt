@@ -1,0 +1,10 @@
+    PHP Storm - Hot Keys
+Ctrl+Shift+N 	поиск файлов в проекте
+Ctrl+F12	показать методы класса (файловая структура)
+Shift+F6	переименовать переменную (рефакторинг)
+Shift+F11	показать закладки
+Alt+Shift+Insert	изменить тип выделения
+
+    My Hot Keys
+Ctrl+Alt+PageUp	    предыдущая закладка
+Ctrl+Alt+PageDown	следующая закладка

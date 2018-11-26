@@ -9,6 +9,7 @@
     </div>
     <div class="container text-center">
         <form method="POST" action="/pasport/excel">
+            <input type="hidden" name="guid" value="{{ x.guid }}">
             <input type="hidden" name="tin" value="{{ x.data.tin }}">
             <input type="hidden" name="dt1" value="{{ x.data.dt1 }}">
             <input type="hidden" name="dt2" value="{{ x.data.dt2 }}">

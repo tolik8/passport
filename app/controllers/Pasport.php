@@ -12,6 +12,7 @@ class Pasport
     protected $bc;
     protected $role = 22; // Роль 22 - Паспорт платника
     protected $x;
+    protected $new_guid;
 
     public function __construct (\App\Twig $twig, \App\QueryBuilder $db, \App\MyUser $myUser, \App\Breadcrumb $bc)
     {
@@ -53,6 +54,17 @@ class Pasport
         $sql = file_get_contents('../sql/pasport/check.sql');
         $this->x['data'] = $this->db->getOneRowFromSQL($sql, $params);
 
+        if (!$this->db->last_result) {
+            # TODO: зробити окремий шаблон "Виникла невідома помилка"
+            $this->twig->showTemplate('pasport/not_prepared.html', ['x' => $this->x, 'my' => $this->myUser]);
+            exit;
+        }
+
+        if ($this->x['data'] == false) {
+            $_SESSION['post'] = $params;
+            header('Location: /pasport/prepare');
+        }
+
         $this->twig->showTemplate('pasport/check.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
@@ -60,20 +72,23 @@ class Pasport
     {
         $start_time = microtime(true);
         $this->x['menu'] = $this->bc->getMenu('prepare');
+        $this->x['guid'] = $this->new_guid = $this->db->getNewGUID();
 
-        $this->x['data'] = $post = $this->getPost();
-
-        $params = ['tin' => $post['tin'], 'dt1' => $post['dt1'], 'dt2' => $post['dt2'], 'guid' => $this->myUser->guid];
-
-        $new_guid = $this->db->getNewGUID();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->x['data'] = $params = $this->getPost();
+        } else {
+            if (!isset($_SESSION['post'])) {header('Location: /pasport');}
+            $params = $_SESSION['post'];
+            unset($_SESSION['post']);
+        }
 
         $this->prepareTable01($params);
 
         $this->db->insert('PIKALKA.pasp_log', [
-            'guid' => $new_guid,
-            'dt1' => $post['dt1'],
-            'dt2' => $post['dt2'],
-            'tin' => $post['tin'],
+            'guid' => $this->new_guid,
+            'dt1' => $params['dt1'],
+            'dt2' => $params['dt2'],
+            'tin' => $params['tin'],
             'guid_user' => $this->myUser->guid
         ]);
 
@@ -89,18 +104,23 @@ class Pasport
     {
         $templateFile = '../xls/pasport/template.xlsx';
         $outputFile = './pasport.xlsx';
+        $outputMethod = true;
 
-        $post = $this->getPost();
-        $params = ['tin' => $post['tin'], 'dt1' => $post['dt1'], 'dt2' => $post['dt2'], 'guid' => $this->myUser->guid];
+        $pattern = '#^[0-9a-zA-Z]{32}$#';
+        $this->new_guid = regex($pattern, $_POST['guid'], 0);
 
-        $input_params = ['{tin}' => $post['tin'], '{dt1}' => $post['dt1'], '{dt2}' => $post['dt2']];
+        $params = $this->db->getOneRow('PIKALKA.pasp_log', ['guid' => $this->new_guid]);
+
+        $input_xlsParams = ['{tin}' => $params['TIN'], '{dt1}' => $params['DT1'], '{dt2}' => $params['DT2']];
 
         $params_01 = $this->excelTable01($params);
 
-        $xlsParams = array_merge($input_params, $params_01);
+        $xlsParams = array_merge($input_xlsParams, $params_01);
 
-        // PhpExcelTemplator::saveToFile($templateFile, $outputFile, $xlsParams);
-        PhpExcelTemplator::outputToFile($templateFile, $outputFile, $xlsParams);
+        if ($outputMethod)
+            PhpExcelTemplator::outputToFile($templateFile, $outputFile, $xlsParams);
+        else PhpExcelTemplator::saveToFile($templateFile, $outputFile, $xlsParams);
+
     }
 
     public function transform (array $array = [])
@@ -134,9 +154,11 @@ class Pasport
     {
         $prepared = false;
 
-        $sql = file_get_contents('../sql/pasport/check_knopka_s01.sql');
+        $params = array_merge($params, ['guid' => $this->new_guid]);
+
+        $sql = file_get_contents('../sql/pasport/check_pasp_kontr_deb1.sql');
         $count1 = $this->db->getOneValueFromSQL($sql, $params);
-        $sql = file_get_contents('../sql/pasport/check_knopka_s02.sql');
+        $sql = file_get_contents('../sql/pasport/check_pasp_kontr_deb2.sql');
         $count2 = $this->db->getOneValueFromSQL($sql, $params);
 
         if ($count1 > 0 and $count2 > 0) {
@@ -145,12 +167,12 @@ class Pasport
         }
     
         if ($count1 === '0') {
-            $sql = file_get_contents('../sql/pasport/insert_into_knopka_s01.sql');
+            $sql = file_get_contents('../sql/pasport/insert_pasp_kontr_deb1.sql');
             $this->db->insertFromSQL($sql, $params);
         }
     
         if ($count2 === '0') {
-            $sql = file_get_contents('../sql/pasport/insert_into_knopka_s02.sql');
+            $sql = file_get_contents('../sql/pasport/insert_pasp_kontr_deb2.sql');
             $this->db->insertFromSQL($sql, $params);
         }
 
@@ -165,7 +187,7 @@ class Pasport
 
     public function excelTable01 ($params)
     {
-        $sql = file_get_contents('../sql/pasport/kontragent_kredit.sql');
+        $sql = file_get_contents('../sql/pasport/kontr_deb.sql');
         $array = $this->db->getAllFromSQL($sql, $params);
 
         $kontr = $this->transform($array);

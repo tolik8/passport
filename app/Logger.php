@@ -22,9 +22,10 @@ class Logger
 
         $p = chr(13).chr(10);
         $content = '';
-        
-        if (!is_dir($this->Directory)) {mkdir($this->Directory);}
-        if (!is_dir($this->Directory)) {exit;}
+
+        $dir = $_SERVER['DOCUMENT_ROOT'] . '/' . $this->Directory;
+        if (!is_dir($dir)) {mkdir($dir);}
+        if (!is_dir($dir)) {exit;}
 
         $filename = $this->Directory . '/' . date('Y-m-d') . ' ' . date('His') . '.' . $this->Extension;
         

@@ -11,6 +11,7 @@ class QueryBuilder
     public $sql_count = 0;
     public $errors_count = 0;
     public $columns = [];
+    public $last_result;
 
     public function __construct (\PDO $pdo, \App\Logger $Logger)
     {
@@ -24,6 +25,7 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         $sql = "SELECT * FROM {$table}";
         if (count($data) > 0) {
@@ -37,6 +39,8 @@ class QueryBuilder
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -53,12 +57,14 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         try {
             $stmt = $this->pdo->prepare($sql);
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -78,6 +84,7 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         $string = $this->ParametersString($data);
         $sql = "SELECT {$column} FROM {$table} WHERE {$string}";
@@ -87,6 +94,7 @@ class QueryBuilder
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -105,12 +113,14 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         try {
             $stmt = $this->pdo->prepare($sql);
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -129,6 +139,7 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         $string = $this->ParametersString($data);
         $sql = "SELECT * FROM {$table} WHERE {$string}";
@@ -138,6 +149,7 @@ class QueryBuilder
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -154,12 +166,14 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         try {
             $stmt = $this->pdo->prepare($sql);
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -176,6 +190,7 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         $string = $this->ParametersString($data);
         $sql = "SELECT {$column} FROM {$table} WHERE {$string}";
@@ -185,6 +200,7 @@ class QueryBuilder
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -207,12 +223,14 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         try {
             $stmt = $this->pdo->prepare($sql);
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -236,6 +254,7 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         $string = $this->ParametersString($data);
         $sql = "SELECT {$columns} FROM {$table}";
@@ -246,6 +265,7 @@ class QueryBuilder
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -267,10 +287,11 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         $string = $this->ParametersString($data);
         $sql = "SELECT {$columns} FROM {$table}";
-        
+
         if (count($data) > 0) {$sql .= " WHERE {$string}";}
 
         try {
@@ -278,6 +299,7 @@ class QueryBuilder
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -310,6 +332,7 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         $keys = implode(', ', array_keys($data));
         $tags = ':' . implode(', :', array_keys($data));
@@ -320,6 +343,7 @@ class QueryBuilder
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -336,12 +360,14 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         try {
             $stmt = $this->pdo->prepare($sql);
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -358,6 +384,7 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         $keys = array_keys($update);
         $string = '';
@@ -375,6 +402,7 @@ class QueryBuilder
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -391,6 +419,7 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         $string = $this->ParametersString($data);
         $sql = "DELETE FROM {$table} WHERE {$string}";
@@ -400,6 +429,7 @@ class QueryBuilder
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -416,6 +446,7 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         $string = $this->ParametersString($data);
         $sql = "SELECT COUNT(*) count FROM {$table} WHERE {$string}";
@@ -425,6 +456,7 @@ class QueryBuilder
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -443,12 +475,14 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         try {
             $stmt = $this->pdo->prepare($sql);
             foreach ($data as $key => $value) {$stmt->bindValue(':'.$key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -464,6 +498,7 @@ class QueryBuilder
         $this->sql_time = 0;
         $start_time = microtime(true);
         $this->sql_count++;
+        $this->last_result = true;
 
         $sql = 'SELECT sys_guid() FROM dual';
 
@@ -471,6 +506,7 @@ class QueryBuilder
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
         } catch (\Exception $e) {
+            $this->last_result = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql]);
         }

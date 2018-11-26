@@ -29,9 +29,10 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->addRoute('GET', '/test', ['App\controllers\Test', 'index']);
     $r->addRoute('GET', '/pasport', ['App\controllers\Pasport', 'pasport']);
     $r->addRoute('POST', '/pasport/check', ['App\controllers\Pasport', 'check']);
+    $r->addRoute('GET', '/pasport/prepare', ['App\controllers\Pasport', 'prepare']);
     $r->addRoute('POST', '/pasport/prepare', ['App\controllers\Pasport', 'prepare']);
     $r->addRoute('POST', '/pasport/excel', ['App\controllers\Pasport', 'excel']);
-    $r->addRoute('GET', '/token/{token:[0-9a-z]{64}}', ['App\controllers\Token', 'index']);
+    $r->addRoute('GET', '/token/{token:[0-9a-zA-Z]{64}}', ['App\controllers\Token', 'index']);
     // {id} must be a number (\d+)
     $r->addRoute('GET', '/user/{id:\d+}', 'get_user_handler');
     // The /{title} suffix is optional

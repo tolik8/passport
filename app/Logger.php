@@ -23,10 +23,6 @@ class Logger
         $p = chr(13).chr(10);
         $content = '';
 
-        $dir = $_SERVER['DOCUMENT_ROOT'] . '/' . $this->Directory;
-        if (!is_dir($dir)) {mkdir($dir);}
-        if (!is_dir($dir)) {exit;}
-
         $filename = $this->Directory . '/' . date('Y-m-d') . ' ' . date('His') . '.' . $this->Extension;
         
         $content .= 'FILE: ' . $debugs[0]['file'] . $p;

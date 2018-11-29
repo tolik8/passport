@@ -1,9 +1,13 @@
 <?php
 
+function vd ($input)
+{
+    echo '<pre>'; var_dump($input); echo '</pre>';
+}
+
 function dd ($input)
 {
-    var_dump($input);
-    die;
+    echo '<pre>'; var_dump($input); echo '</pre>'; die;
 }
 
 function in_string ($find, string $line_separated)

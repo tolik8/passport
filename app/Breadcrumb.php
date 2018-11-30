@@ -16,8 +16,8 @@ class Breadcrumb
         $menu['index']['name'] = 'Головна';
         $menu['index']['par'] = 'root';
 
-        if (file_exists('../config/menu/'.$project.'.php')) {
-            require_once '../config/menu/'.$project.'.php';
+        if (file_exists('../config/menu/' . $project . '.php')) {
+            require_once '../config/menu/' . $project . '.php';
         }
         $this->menu1 = $menu;
     }

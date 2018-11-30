@@ -22,8 +22,7 @@ class Pasport
         $this->bc = $bc;
         $access = in_string($this->role, $this->myUser->roles);
         if (!$access) {
-            $this->twig->showTemplate('index.html', ['my' => $this->myUser]);
-            exit;
+            $this->twig->showTemplate('index.html', ['my' => $this->myUser]); exit;
         }
         $this->x['title'] = 'Паспорт';
     }
@@ -55,9 +54,7 @@ class Pasport
         $this->x['data'] = $this->db->getOneRowFromSQL($sql, $params);
 
         if (!$this->db->last_result) {
-            # TODO: зробити окремий шаблон "Виникла невідома помилка"
-            $this->twig->showTemplate('pasport/not_prepared.html', ['x' => $this->x, 'my' => $this->myUser]);
-            exit;
+            $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]); exit;
         }
 
         if ($this->x['data'] == false) {
@@ -113,9 +110,10 @@ class Pasport
 
         $input_xlsParams = ['{tin}' => $params['TIN'], '{dt1}' => $params['DT1'], '{dt2}' => $params['DT2']];
 
+        $reg_data = $this->excelRegData($params);
         $params_01 = $this->excelTable01($params);
 
-        $xlsParams = array_merge($input_xlsParams, $params_01);
+        $xlsParams = array_merge($input_xlsParams, $reg_data, $params_01);
 
         if ($outputMethod)
             PhpExcelTemplator::outputToFile($templateFile, $outputFile, $xlsParams);
@@ -185,6 +183,38 @@ class Pasport
         return $prepared;
     }
 
+    public function excelRegData ($input_params)
+    {
+        $params['TIN'] = $input_params['TIN'];
+        $sql = file_get_contents('../sql/pasport/get_r21taxpay.sql');
+        $r21taxpay = $this->db->getOneRowFromSQL($sql, $params);
+        $stan_name = $this->db->getOneValue('N_STAN','E_S_STAN', ['c_stan' => $r21taxpay['C_STAN']]);
+        $kved_name = $this->db->getOneValue('NU','E_KVED', ['kod' => $r21taxpay['KVED']]);
+        $sql = file_get_contents('../sql/pasport/get_r21paddr.sql');
+        $address = $this->db->getOneValueFromSQL($sql, $params);
+        $sql = file_get_contents('../sql/pasport/get_r21manager.sql');
+        $r21manager = $this->db->getKeyValuesFromSQL($sql, $params);
+        $sql = file_get_contents('../sql/pasport/get_pdv_act_r.sql');
+        $pdv_act_r = $this->db->getOneRowFromSQL($sql, $params);
+        $xls_params = [
+            '{r21taxpay.c_distr}' => $r21taxpay['C_DISTR'],
+            '{r21taxpay.name}' => utf8($r21taxpay['NAME']),
+            '{r21taxpay.stan}' => $r21taxpay['C_STAN'],
+            '{r21taxpay.stan_name}' => utf8($stan_name),
+            '{r21taxpay.kved}' => $r21taxpay['KVED'],
+            '{r21taxpay.kved_name}' => utf8($kved_name),
+            '{r21taxpay.d_reg_sti}' => $r21taxpay['D_REG_STI'],
+            '{r21paddr.address}' => utf8($address),
+            '{r21manager.dir}' => utf8($r21manager[1]['NAME']),
+            '{r21manager.buh}' => utf8($r21manager[2]['NAME']),
+            '{r21manager.dir_tel}' => utf8('тел. ' . $r21manager[1]['N_TEL']),
+            '{r21manager.buh_tel}' => utf8('тел. ' . $r21manager[2]['N_TEL']),
+            '{pdv_act_r.dat_reestr}' => $pdv_act_r['DAT_REESTR'],
+        ];
+
+        return $xls_params;
+    }
+
     public function excelTable01 ($params)
     {
         $sql = file_get_contents('../sql/pasport/kontr_deb.sql');
@@ -202,16 +232,16 @@ class Pasport
         $kontr['OBS_VIDS'] = $this->vidsFromArray($kontr['OBS']);
 
         $xls_params = [
-            '[kontr_n]' => $kontr['N'],
-            '[kontr_sti]' => $kontr['STI'],
-            '[kontr_tin]' => $kontr['TIN'],
-            '[kontr_name]' => $kontr['NAME'],
-            '[kontr_obs]' => $kontr['OBS'],
-            '[kontr_pdv]' => $kontr['PDV'],
-            '[kontr_nom]' => $kontr['NOM'],
-            '[kontr_vids]' => $kontr['OBS_VIDS'],
-            '{kontr_obs_sum}' => $kontr['OBS_SUM'],
-            '{kontr_pdv_sum}' => $kontr['PDV_SUM'],
+            '[kontr.n]' => $kontr['N'],
+            '[kontr.sti]' => $kontr['STI'],
+            '[kontr.tin]' => $kontr['TIN'],
+            '[kontr.name]' => $kontr['NAME'],
+            '[kontr.obs]' => $kontr['OBS'],
+            '[kontr.pdv]' => $kontr['PDV'],
+            '[kontr.nom]' => $kontr['NOM'],
+            '[kontr.vids]' => $kontr['OBS_VIDS'],
+            '{kontr.obs_sum}' => $kontr['OBS_SUM'],
+            '{kontr.pdv_sum}' => $kontr['PDV_SUM'],
         ];
         return $xls_params;
     }

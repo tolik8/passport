@@ -80,6 +80,7 @@ class Pasport
         }
 
         $this->prepareTable01($params);
+        $this->prepareTable02($params);
 
         $this->db->insert('PIKALKA.pasp_log', [
             'guid' => $this->new_guid,
@@ -93,7 +94,7 @@ class Pasport
             $this->x['prepare_time'] = round(microtime(true) - $start_time, 4);
             $this->twig->showTemplate('pasport/prepared.html', ['x' => $this->x, 'my' => $this->myUser]);
         } else {
-            $this->twig->showTemplate('pasport/not_pasport.html', ['x' => $this->x, 'my' => $this->myUser]);
+            $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]);
         }
     }
 
@@ -112,8 +113,9 @@ class Pasport
 
         $reg_data = $this->excelRegData($params);
         $params_01 = $this->excelTable01($params);
+        $params_02 = $this->excelTable02($params);
 
-        $xlsParams = array_merge($input_xlsParams, $reg_data, $params_01);
+        $xlsParams = array_merge($input_xlsParams, $reg_data, $params_01, $params_02);
 
         if ($outputMethod)
             PhpExcelTemplator::outputToFile($templateFile, $outputFile, $xlsParams);
@@ -154,23 +156,23 @@ class Pasport
 
         $params = array_merge($params, ['guid' => $this->new_guid]);
 
-        $sql = file_get_contents('../sql/pasport/check_pasp_kontr_deb1.sql');
+        $sql = file_get_contents('../sql/pasport/check_pasp_kontr_kre1.sql');
         $count1 = $this->db->getOneValueFromSQL($sql, $params);
-        $sql = file_get_contents('../sql/pasport/check_pasp_kontr_deb2.sql');
+        $sql = file_get_contents('../sql/pasport/check_pasp_kontr_kre2.sql');
         $count2 = $this->db->getOneValueFromSQL($sql, $params);
 
         if ($count1 > 0 and $count2 > 0) {
             $prepared = true;
             return $prepared;
         }
-    
+
         if ($count1 === '0') {
-            $sql = file_get_contents('../sql/pasport/insert_pasp_kontr_deb1.sql');
+            $sql = file_get_contents('../sql/pasport/insert_pasp_kontr_kre1.sql');
             $this->db->insertFromSQL($sql, $params);
         }
-    
+
         if ($count2 === '0') {
-            $sql = file_get_contents('../sql/pasport/insert_pasp_kontr_deb2.sql');
+            $sql = file_get_contents('../sql/pasport/insert_pasp_kontr_kre2.sql');
             $this->db->insertFromSQL($sql, $params);
         }
 
@@ -178,6 +180,41 @@ class Pasport
             $prepared = true;
         } else {
             $this->x['prepare_errors'][] = 'таблиц€ 1';
+        }
+
+        return $prepared;
+    }
+
+    public function prepareTable02 ($params)
+    {
+        $prepared = false;
+
+        $params = array_merge($params, ['guid' => $this->new_guid]);
+
+        $sql = file_get_contents('../sql/pasport/check_pasp_kontr_zob1.sql');
+        $count1 = $this->db->getOneValueFromSQL($sql, $params);
+        $sql = file_get_contents('../sql/pasport/check_pasp_kontr_zob2.sql');
+        $count2 = $this->db->getOneValueFromSQL($sql, $params);
+
+        if ($count1 > 0 and $count2 > 0) {
+            $prepared = true;
+            return $prepared;
+        }
+
+        if ($count1 === '0') {
+            $sql = file_get_contents('../sql/pasport/insert_pasp_kontr_zob1.sql');
+            $this->db->insertFromSQL($sql, $params);
+        }
+
+        if ($count2 === '0') {
+            $sql = file_get_contents('../sql/pasport/insert_pasp_kontr_zob2.sql');
+            $this->db->insertFromSQL($sql, $params);
+        }
+
+        if ($this->db->errors_count == 0) {
+            $prepared = true;
+        } else {
+            $this->x['prepare_errors'][] = 'таблиц€ 2';
         }
 
         return $prepared;
@@ -217,7 +254,7 @@ class Pasport
 
     public function excelTable01 ($params)
     {
-        $sql = file_get_contents('../sql/pasport/kontr_deb.sql');
+        $sql = file_get_contents('../sql/pasport/kontr_kre.sql');
         $array = $this->db->getAllFromSQL($sql, $params);
 
         $kontr = $this->transform($array);
@@ -232,18 +269,48 @@ class Pasport
         $kontr['OBS_VIDS'] = $this->vidsFromArray($kontr['OBS']);
 
         $xls_params = [
-            '[kontr.n]' => $kontr['N'],
-            '[kontr.sti]' => $kontr['STI'],
-            '[kontr.tin]' => $kontr['TIN'],
-            '[kontr.name]' => $kontr['NAME'],
-            '[kontr.obs]' => $kontr['OBS'],
-            '[kontr.pdv]' => $kontr['PDV'],
-            '[kontr.nom]' => $kontr['NOM'],
-            '[kontr.vids]' => $kontr['OBS_VIDS'],
-            '{kontr.obs_sum}' => $kontr['OBS_SUM'],
-            '{kontr.pdv_sum}' => $kontr['PDV_SUM'],
+            '[kontr1.n]' => $kontr['N'],
+            '[kontr1.sti]' => $kontr['STI'],
+            '[kontr1.tin]' => $kontr['TIN'],
+            '[kontr1.name]' => $kontr['NAME'],
+            '[kontr1.obs]' => $kontr['OBS'],
+            '[kontr1.pdv]' => $kontr['PDV'],
+            '[kontr1.nom]' => $kontr['NOM'],
+            '[kontr1.vids]' => $kontr['OBS_VIDS'],
+            '{kontr1.obs_sum}' => $kontr['OBS_SUM'],
+            '{kontr1.pdv_sum}' => $kontr['PDV_SUM'],
         ];
         return $xls_params;
     }
 
+    public function excelTable02 ($params)
+    {
+        $sql = file_get_contents('../sql/pasport/kontr_zob.sql');
+        $array = $this->db->getAllFromSQL($sql, $params);
+
+        $kontr = $this->transform($array);
+
+        if (empty($kontr)) {
+            $fields = ['N', 'STI', 'TIN', 'NAME', 'OBS', 'PDV', 'NOM'];
+            foreach ($fields as $value) $kontr[$value] = [];
+        }
+
+        $kontr['OBS_SUM'] = array_sum($kontr['OBS']);
+        $kontr['PDV_SUM'] = array_sum($kontr['PDV']);
+        $kontr['OBS_VIDS'] = $this->vidsFromArray($kontr['OBS']);
+
+        $xls_params = [
+            '[kontr2.n]' => $kontr['N'],
+            '[kontr2.sti]' => $kontr['STI'],
+            '[kontr2.tin]' => $kontr['CP_TIN'],
+            '[kontr2.name]' => $kontr['NAME'],
+            '[kontr2.obs]' => $kontr['OBS'],
+            '[kontr2.pdv]' => $kontr['PDV'],
+            '[kontr2.nom]' => $kontr['NOM'],
+            '[kontr2.vids]' => $kontr['OBS_VIDS'],
+            '{kontr2.obs_sum}' => $kontr['OBS_SUM'],
+            '{kontr2.pdv_sum}' => $kontr['PDV_SUM'],
+        ];
+        return $xls_params;
+    }
 }

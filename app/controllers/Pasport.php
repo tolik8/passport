@@ -3,6 +3,7 @@
 namespace App\controllers;
 
 use alhimik1986\PhpExcelTemplator\PhpExcelTemplator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Pasport
 {
@@ -13,6 +14,7 @@ class Pasport
     protected $role = 22; // Роль 22 - Паспорт платника
     protected $x;
     protected $new_guid;
+    protected $c_distr;
 
     public function __construct (\App\Twig $twig, \App\QueryBuilder $db, \App\MyUser $myUser, \App\Breadcrumb $bc)
     {
@@ -65,6 +67,33 @@ class Pasport
         $this->twig->showTemplate('pasport/check.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
+    public function transform (array $array = [])
+    {
+        $result = [];
+        if (empty($array)) return $result;
+        $columns = array_keys($array[0]);
+
+        foreach ($array as $row) {
+            foreach ($columns as $col) {
+                $value_utf8 = mb_convert_encoding($row[$col], "utf-8", "windows-1251");
+                $result[$col][] = $value_utf8;
+            }
+        }
+        return $result;
+    }
+
+    public function vidsFromArray (array $array = [], $precision = 0)
+    {
+        $result = [];
+        if (empty($array)) return $result;
+        $sum = array_sum($array);
+
+        foreach ($array as $row) {
+            $result[] = round($row / $sum * 100, $precision);
+        }
+        return $result;
+    }
+
     public function prepare ()
     {
         $start_time = microtime(true);
@@ -96,58 +125,6 @@ class Pasport
         } else {
             $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]);
         }
-    }
-
-    public function excel ()
-    {
-        $templateFile = '../xls/pasport/template.xlsx';
-        $outputFile = './pasport.xlsx';
-        $outputMethod = true;
-
-        $pattern = '#^[0-9a-zA-Z]{32}$#';
-        $this->new_guid = regex($pattern, $_POST['guid'], 0);
-
-        $params = $this->db->getOneRow('PIKALKA.pasp_log', ['guid' => $this->new_guid]);
-
-        $input_xlsParams = ['{tin}' => $params['TIN'], '{dt1}' => $params['DT1'], '{dt2}' => $params['DT2']];
-
-        $reg_data = $this->excelRegData($params);
-        $params_01 = $this->excelTable01($params);
-        $params_02 = $this->excelTable02($params);
-
-        $xlsParams = array_merge($input_xlsParams, $reg_data, $params_01, $params_02);
-
-        if ($outputMethod)
-            PhpExcelTemplator::outputToFile($templateFile, $outputFile, $xlsParams);
-        else PhpExcelTemplator::saveToFile($templateFile, $outputFile, $xlsParams);
-
-    }
-
-    public function transform (array $array = [])
-    {
-        $result = [];
-        if (empty($array)) return $result;
-        $columns = array_keys($array[0]);
-
-        foreach ($array as $row) {
-            foreach ($columns as $col) {
-                $value_utf8 = mb_convert_encoding($row[$col], "utf-8", "windows-1251");
-                $result[$col][] = $value_utf8;
-            }
-        }
-        return $result;
-    }
-
-    public function vidsFromArray (array $array = [], $precision = 0)
-    {
-        $result = [];
-        if (empty($array)) return $result;
-        $sum = array_sum($array);
-
-        foreach ($array as $row) {
-            $result[] = round($row / $sum * 100, $precision);
-        }
-        return $result;
     }
 
     public function prepareTable01 ($params)
@@ -220,21 +197,74 @@ class Pasport
         return $prepared;
     }
 
+    public function excel ()
+    {
+        $templateFile = '../xls/pasport/template.xlsx';
+        $outputFile = './pasport.xlsx';
+        $outputMethod = true;
+
+        try {$spreadsheet = IOFactory::load($templateFile);}
+        catch (\Exception $e) {echo $e->getMessage(); Exit;}
+
+        try {
+            $templateVars1 = $spreadsheet->getSheet(0)->toArray();
+            $templateVars2 = $spreadsheet->getSheet(1)->toArray();
+            $templateVars3 = $spreadsheet->getSheet(2)->toArray();
+        } catch (\Exception $e) {echo $e->getMessage(); Exit;}
+
+        $pattern = '#^[0-9a-zA-Z]{32}$#';
+        $this->new_guid = regex($pattern, $_POST['guid'], 0);
+
+        $params = $this->db->getOneRow('PIKALKA.pasp_log', ['guid' => $this->new_guid]);
+
+        $input_xlsParams = ['{tin}' => $params['TIN'], '{dt1}' => $params['DT1'], '{dt2}' => $params['DT2']];
+
+        $reg_data = $this->excelRegData($params);
+        $templateParams = array_merge($input_xlsParams, $reg_data);
+        try {$sheet1 = $spreadsheet->getSheet(0);}
+        catch (\Exception $e) {echo $e->getMessage(); Exit;}
+        PhpExcelTemplator::renderWorksheet($sheet1, $templateVars1, $templateParams);
+
+        $templateParams = $this->excel_r21stan_h($params);
+        try {$sheet2 = $spreadsheet->getSheet(1);}
+        catch (\Exception $e) {echo $e->getMessage(); Exit;}
+        PhpExcelTemplator::renderWorksheet($sheet2, $templateVars2, $templateParams);
+
+        $params_01 = $this->excelTable01($params);
+        $params_02 = $this->excelTable02($params);
+        $templateParams = array_merge($params_01, $params_02);
+        try {$sheet3 = $spreadsheet->getSheet(2);}
+        catch (\Exception $e) {echo $e->getMessage(); Exit;}
+        PhpExcelTemplator::renderWorksheet($sheet3, $templateVars3, $templateParams);
+
+        if ($outputMethod) PhpExcelTemplator::outputSpreadsheetToFile($spreadsheet, $outputFile);
+        else PhpExcelTemplator::saveSpreadsheetToFile($spreadsheet, $outputFile);
+
+    }
+
     public function excelRegData ($input_params)
     {
         $params['TIN'] = $input_params['TIN'];
+
         $sql = file_get_contents('../sql/pasport/get_r21taxpay.sql');
         $r21taxpay = $this->db->getOneRowFromSQL($sql, $params);
-        $stan_name = $this->db->getOneValue('N_STAN','E_S_STAN', ['c_stan' => $r21taxpay['C_STAN']]);
-        $kved_name = $this->db->getOneValue('NU','E_KVED', ['kod' => $r21taxpay['KVED']]);
+
+        $sql = 'SELECT U_2900Z.get_dpi_by_tin(:tin) AS c_distr FROM dual';
+        $this->c_distr = $this->db->getOneValueFromSQL($sql, $params);
+        $stan_name = $this->db->getOneValue('N_STAN','ETALON.E_S_STAN', ['c_stan' => $r21taxpay['C_STAN']]);
+        $kved_name = $this->db->getOneValue('NU','ETALON.E_KVED', ['kod' => $r21taxpay['KVED']]);
+
         $sql = file_get_contents('../sql/pasport/get_r21paddr.sql');
         $address = $this->db->getOneValueFromSQL($sql, $params);
+
         $sql = file_get_contents('../sql/pasport/get_r21manager.sql');
         $r21manager = $this->db->getKeyValuesFromSQL($sql, $params);
+
         $sql = file_get_contents('../sql/pasport/get_pdv_act_r.sql');
         $pdv_act_r = $this->db->getOneRowFromSQL($sql, $params);
+
         $xls_params = [
-            '{r21taxpay.c_distr}' => $r21taxpay['C_DISTR'],
+            '{r21taxpay.c_distr}' => $this->c_distr,
             '{r21taxpay.name}' => utf8($r21taxpay['NAME']),
             '{r21taxpay.stan}' => $r21taxpay['C_STAN'],
             '{r21taxpay.stan_name}' => utf8($stan_name),
@@ -249,6 +279,24 @@ class Pasport
             '{pdv_act_r.dat_reestr}' => $pdv_act_r['DAT_REESTR'],
         ];
 
+        return $xls_params;
+    }
+
+    public function excel_r21stan_h ($input_params)
+    {
+        $params['TIN'] = $input_params['TIN'];
+
+        $sql = file_get_contents('../sql/pasport/get_r21stan_h.sql');
+        $array = $this->db->getAllFromSQL($sql, $params);
+        $stan_h = $this->transform($array);
+
+        $xls_params = [
+            '[r21stan_h.n]' => $stan_h['N'],
+            '[r21stan_h.old]' => $stan_h['OLD_STAN'],
+            '[r21stan_h.new]' => $stan_h['NEW_STAN'],
+            '[r21stan_h.dt]' => $stan_h['D_CHANGE'],
+            '[r21stan_h.act]' => $stan_h['IS_ACTUAL'],
+        ];
         return $xls_params;
     }
 
@@ -313,4 +361,5 @@ class Pasport
         ];
         return $xls_params;
     }
-}
+
+ }

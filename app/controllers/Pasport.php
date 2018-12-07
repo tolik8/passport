@@ -15,6 +15,7 @@ class Pasport
     protected $x;
     protected $new_guid;
     protected $c_distr;
+    protected $default_params;
 
     public function __construct (\App\Twig $twig, \App\QueryBuilder $db, \App\MyUser $myUser, \App\Breadcrumb $bc)
     {
@@ -27,15 +28,10 @@ class Pasport
             $this->twig->showTemplate('index.html', ['my' => $this->myUser]); exit;
         }
         $this->x['title'] = 'Паспорт';
+        $this->default_params = include '../config/default_xls_params.php';
     }
 
-    public function pasport ()
-    {
-        $this->x['menu'] = $this->bc->getMenu('pasport');
-        $this->twig->showTemplate('pasport/pasport.html', ['x' => $this->x, 'my' => $this->myUser]);
-    }
-
-    public function getPost ()
+    protected function getPost ()
     {
         $post = [];
         $pattern = '#^[0-9]{6,10}$#';
@@ -45,6 +41,12 @@ class Pasport
         $post['dt1'] = regex($pattern, $_POST['dt1'], '01.01.2017');
         $post['dt2'] = regex($pattern, $_POST['dt2'], '31.12.2018');
         return $post;
+    }
+
+    public function pasport ()
+    {
+        $this->x['menu'] = $this->bc->getMenu('pasport');
+        $this->twig->showTemplate('pasport/pasport.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
     public function check ()
@@ -67,7 +69,7 @@ class Pasport
         $this->twig->showTemplate('pasport/check.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
-    public function transform1 (array $array = [])
+    protected function transform1 (array $array = [])
     {
         $result = [];
         if (empty($array)) return $result;
@@ -82,7 +84,7 @@ class Pasport
         return $result;
     }
 
-    public function transform2 (array $array = [], $prefix = '')
+    protected function transform2 (array $array = [], $prefix = '')
     {
         $result = [];
         if (empty($array)) return $result;
@@ -92,7 +94,7 @@ class Pasport
         return $result;
     }
 
-    public function vidsFromArray (array $array = [], $precision = 0)
+    protected function vidsFromArray (array $array = [], $precision = 0)
     {
         $result = [];
         if (empty($array)) return $result;
@@ -144,16 +146,15 @@ class Pasport
         else $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
-    public function prepareKontr ($params, $type)
+    protected function prepareKontr ($params, $type)
     {
         $prepared = false;
 
-        $params = array_merge($params, ['guid' => $this->new_guid]);
+        $guid_param = ['guid' => $this->new_guid];
+        $params = array_merge($params, $guid_param);
 
-        $sql = file_get_contents('../sql/pasport/check_pasp_kontr_'.$type.'1.sql');
-        $count1 = $this->db->getOneValueFromSQL($sql, $params);
-        $sql = file_get_contents('../sql/pasport/check_pasp_kontr_'.$type.'2.sql');
-        $count2 = $this->db->getOneValueFromSQL($sql, $params);
+        $count1 = $this->db->getCount('PIKALKA.pasp_kontr_'.$type.'1', $guid_param);
+        $count2 = $this->db->getCount('PIKALKA.pasp_kontr_'.$type.'2', $guid_param);
 
         if ($count1 > 0 and $count2 > 0) {$prepared = true; return $prepared;}
 
@@ -173,14 +174,14 @@ class Pasport
         return $prepared;
     }
 
-    public function prepareBalance ($params)
+    protected function prepareBalance ($params)
     {
         $prepared = false;
 
-        $params = array_merge($params, ['guid' => $this->new_guid]);
+        $guid_param = ['guid' => $this->new_guid];
+        $params = array_merge($params, $guid_param);
 
-        $sql = file_get_contents('../sql/pasport/check_pasp_balance.sql');
-        $count1 = $this->db->getOneValueFromSQL($sql, $params);
+        $count1 = $this->db->getCount('PIKALKA.pasp_balance', $guid_param);
 
         if ($count1 > 0) {$prepared = true; return $prepared;}
 
@@ -214,6 +215,7 @@ class Pasport
         $this->new_guid = regex($pattern, $_POST['guid'], 0);
 
         $params = $this->db->getOneRow('PIKALKA.pasp_jrn', ['guid' => $this->new_guid]);
+        $guid_param = ['guid' => $this->new_guid];
 
         $input_xlsParams = ['{tin}' => $params['TIN'], '{dt1}' => $params['DT1'], '{dt2}' => $params['DT2']];
 
@@ -222,6 +224,10 @@ class Pasport
         $templateParams = array_merge($input_xlsParams, $reg_data);
         try {$sheet1 = $spreadsheet->getSheet(0);}
         catch (\Exception $e) {echo $e->getMessage(); Exit;}
+        // TODO: Розібрати масив $templateVars[1] і на основі цих даних зробити новий $templateParams
+        //vd($templateVars[1]);
+        //echo "<hr>";
+        //dd($templateParams);
         PhpExcelTemplator::renderWorksheet($sheet1, $templateVars[1], $templateParams);
 
         // Контрагенти
@@ -235,8 +241,7 @@ class Pasport
         PhpExcelTemplator::renderWorksheet($sheet2, $templateVars[2], $templateParams);
 
         // Баланс
-        $sql = file_get_contents('../sql/pasport/get_balance.sql');
-        $array = $this->db->getAllFromSQL($sql, $params);
+        $array = $this->db->getAll('PIKALKA.pasp_balance', $guid_param, 'period_year, period_month');
         $array = $this->transform1($array);
         $templateParams = $this->transform2($array);
         try {$sheet3 = $spreadsheet->getSheet(2);}
@@ -254,29 +259,35 @@ class Pasport
         else PhpExcelTemplator::saveSpreadsheetToFile($spreadsheet, $outputFile);
     }
 
-    public function excelRegData ($input_params)
+    protected function excelRegData ($input_params)
     {
-        $params['TIN'] = $input_params['TIN'];
+        $tin = $params['TIN'] = $input_params['TIN'];
 
-        $sql = file_get_contents('../sql/pasport/get_r21taxpay.sql');
-        $r21taxpay = $this->db->getOneRowFromSQL($sql, $params);
+        $sql = 'SELECT U_2900Z.get_dpi_by_tin(:tin) FROM dual';
+        $dpi = $this->c_distr = $this->db->getOneValueFromSQL($sql, $params);
+        $type_pl = $this->db->getOneValue('FACE_MODE','RG02.r21taxpay', ['tin' => $tin, 'c_distr' => $dpi]);
 
-        $sql = 'SELECT U_2900Z.get_dpi_by_tin(:tin) AS c_distr FROM dual';
-        $this->c_distr = $this->db->getOneValueFromSQL($sql, $params);
+        $r21taxpay = $this->db->getOneRow('RG02.r21taxpay', ['tin' => $tin, 'c_distr' => $dpi]);
+
         $stan_name = $this->db->getOneValue('N_STAN','ETALON.E_S_STAN', ['c_stan' => $r21taxpay['C_STAN']]);
         $kved_name = $this->db->getOneValue('NU','ETALON.E_KVED', ['kod' => $r21taxpay['KVED']]);
 
-        $sql = file_get_contents('../sql/pasport/get_r21paddr.sql');
-        $address = $this->db->getOneValueFromSQL($sql, $params);
+        $this->db->fields = 'AISR.rpp_util.getfulladdress(c_city,t_street,c_street,house,house_add,unit,apartment) adr';
+        $this->db->where = 'tin = :tin AND c_distr = :c_distr AND c_adr = 1';
+        $address = $this->db->getOneValueFromBuild('RG02.r21paddr', ['tin' => $tin, 'c_distr' => $dpi]);
 
-        $sql = file_get_contents('../sql/pasport/get_r21manager.sql');
-        $r21manager = $this->db->getKeyValuesFromSQL($sql, $params);
+        if ($type_pl == 1) {
+            $this->db->fields = 'c_post, pin, name, n_tel';
+            $this->db->where = 'tin = :tin';
+            $r21manager = $this->db->getKeyValuesFromBuild('RG02.r21manager', $params);
+        }
 
-        $sql = file_get_contents('../sql/pasport/get_pdv_act_r.sql');
-        $pdv_act_r = $this->db->getOneRowFromSQL($sql, $params);
+        $this->db->fields = '*';
+        $this->db->where = 'tin = :tin AND dat_anul IS NULL AND ROWNUM = 1';
+        $pdv_act_r = $this->db->getOneRowFromBuild('AISR.pdv_act_r', $params);
 
         $sql = file_get_contents('../sql/pasport/get_r21stan_h.sql');
-        $array = $this->db->getAllFromSQL($sql, $params);
+        $array = $this->db->getAllFromSQL($sql, ['tin' => $tin, 'c_distr' => $dpi]);
         $array = $this->transform1($array);
         $stan_h = $this->transform2($array, 'SH.');
 
@@ -289,26 +300,29 @@ class Pasport
             '{r21taxpay.kved_name}' => utf8($kved_name),
             '{r21taxpay.d_reg_sti}' => $r21taxpay['D_REG_STI'],
             '{r21paddr.address}' => utf8($address),
-            '{r21manager.dir}' => utf8($r21manager[1]['NAME']),
-            '{r21manager.buh}' => utf8($r21manager[2]['NAME']),
-            '{r21manager.dir_tel}' => utf8($r21manager[1]['N_TEL']),
-            '{r21manager.buh_tel}' => utf8($r21manager[2]['N_TEL']),
             '{pdv_act_r.dat_reestr}' => $pdv_act_r['DAT_REESTR'],
         ];
-        $xls_params = array_merge($reg_params, $stan_h);
+        if ($type_pl == 2) $reg_params_ur = [];
+            else $reg_params_ur = [
+                '{r21manager.dir}' => utf8($r21manager[1]['NAME']),
+                '{r21manager.buh}' => utf8($r21manager[2]['NAME']),
+                '{r21manager.dir_tel}' => utf8($r21manager[1]['N_TEL']),
+                '{r21manager.buh_tel}' => utf8($r21manager[2]['N_TEL']),
+            ];
+        $xls_params = array_merge($this->default_params, $reg_params, $reg_params_ur, $stan_h);
 
         return $xls_params;
     }
 
-    public function excelKontr ($sql, $params, $prefix)
+    protected function excelKontr ($sql, $params, $prefix)
     {
         $array = $this->db->getAllFromSQL($sql, $params);
         $array = $this->transform1($array);
 
-        /*if (empty($kontr)) {
+        if (empty($array)) {
             $fields = ['N', 'STI', 'TIN', 'NAME', 'OBS', 'PDV', 'NOM'];
-            foreach ($fields as $value) $kontr[$value] = [];
-        }*/
+            foreach ($fields as $value) $array[$value] = [];
+        }
 
         $obs_sum = array_sum($array['OBS']);
         $pdv_sum = array_sum($array['PDV']);

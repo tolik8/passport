@@ -11,7 +11,7 @@ class Test
         $this->db = $db;
     }
 
-    public function index ()
+    public function index (): void
     {
         $sql = 'TRUNCATE TABLE a123';
         $this->db->runSQL($sql);

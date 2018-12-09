@@ -14,7 +14,7 @@ function in_string ($find, $line_separated)
 {
     $result = false;
     $array = explode(',', $line_separated);
-    if (in_array($find, $array)) {$result = true;}
+    if (in_array($find, $array, true)) {$result = true;}
     return $result;
 }
 
@@ -26,10 +26,10 @@ function regex ($pattern, $subject, $default = null)
 
 function utf8 ($input)
 {
-    return mb_convert_encoding($input, "utf-8", "windows-1251");
+    return mb_convert_encoding($input, 'utf-8', 'windows-1251');
 }
 
 function add ($input)
 {
-    return mb_convert_encoding($input, "utf-8", "windows-1251");
+    return mb_convert_encoding($input, 'utf-8', 'windows-1251');
 }

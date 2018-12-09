@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
 
 namespace App;
 
@@ -52,14 +53,13 @@ class MyUser
         }
     }
 
-    public function refresh ()
+    public function refresh (): void
     {
         session_destroy();
-        
         header('Location: /');
     }
 
-    public function logout ()
+    public function logout (): void
     {
         session_destroy();
         setcookie('alisa2', '', time() );

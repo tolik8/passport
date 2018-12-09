@@ -11,7 +11,7 @@ class Twig
         $this->twig = $twig;
     }
 
-    public function showTemplate ($template, $params = [])
+    public function showTemplate ($template, $params = []): void
     {
         try {
             echo $this->twig->render($template, $params);

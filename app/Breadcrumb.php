@@ -16,18 +16,21 @@ class Breadcrumb
         $menu['index']['name'] = 'Головна';
         $menu['index']['par'] = 'root';
 
-        if (file_exists('../config/menu/' . $project . '.php')) {
-            require_once '../config/menu/' . $project . '.php';
+        $filemenu = $_SERVER['DOCUMENT_ROOT'] . '/config/menu/' . $project . '.php';
+        if (file_exists($filemenu)) {
+            /** @noinspection PhpIncludeInspection */
+            require_once $filemenu;
         }
+
         $this->menu1 = $menu;
     }
 
-    public function getMenu ($page_id)
+    public function getMenu ($page_id): array
     {
         $menu2 = [];
         $n = 0;
-        while ($page_id != 'root') {
-            $n++; if ($n == 100) {break;}
+        while ($page_id !== 'root') {
+            $n++; if ($n === 100) {break;}
             array_unshift($menu2, $this->menu1[$page_id]);
             $page_id = $this->menu1[$page_id]['par'];
         }

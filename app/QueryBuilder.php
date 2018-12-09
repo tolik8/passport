@@ -1,24 +1,34 @@
 <?php
+/** @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
 
 namespace App;
 
 class QueryBuilder
 {
+    protected $p;
     protected $pdo;
     protected $log;
     protected $errors_before_transaction;
-    public $fields = '';
-    public $where = '';
     public $sql_time = 0;
     public $sql_count = 0;
     public $errors_count = 0;
     public $columns = [];
-    public $last_result;
+    public $resultIsOk;
 
     public function __construct (\PDO $pdo, \App\Logger $Logger)
     {
+        $this->p = chr(13).chr(10);
         $this->pdo = $pdo;
         $this->log = $Logger;
+    }
+
+    protected function beforeExecute ()
+    {
+        $this->sql_time = 0;
+        $this->sql_count++;
+        $this->resultIsOk = true;
+
+        return microtime(true);
     }
 
     protected function execute ($sql, array $data = [])
@@ -30,7 +40,7 @@ class QueryBuilder
             foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
             $stmt->execute();
         } catch (\Exception $e) {
-            $this->last_result = false;
+            $this->resultIsOk = false;
             $this->errors_count++;
             $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
@@ -38,397 +48,171 @@ class QueryBuilder
         return $stmt;
     }
 
-    protected function ParametersString (array $data)
+    protected function ParametersString (array $data): string
     {
         $string = '';
         $keys = array_keys($data);
 
-        foreach ($keys as $key) $string .= $key . ' = :' . $key . ' AND ';
+        foreach ($keys as $key) {$string .= $key . ' = :' . $key . ' AND ';}
         $string = rtrim($string, ' AND ');
 
         return $string;
     }
 
-    public function getAll ($table, array $data = [], $sort = '')
+    public function getAll ($tables, array $data = [], $sort = ''): array
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        $sql = "SELECT * FROM {$table}";
+        $sql = 'SELECT * FROM ' . $tables . $this->p;
         $string = $this->ParametersString($data);
-        if (!empty($data)) $sql .= ' WHERE ' . $string;
-        if ($sort != '') {$sql .= ' ORDER BY ' . $sort;}
+        if (!empty($data)) {$sql .= 'WHERE ' . $string . $this->p;}
+        if ($sort !== '') {$sql .= 'ORDER BY ' . $sort;}
 
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }
-        if (isset($stmt)) $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);*/
-        $stmt = $this->execute($sql, $data);
-        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
-
-        return $result;
+        return $this->getAllFromSQL($sql, $data);
     }
 
-    public function getFromBuild ($table, array $data = [], $sort = '')
+    public function getAllFromSQL ($sql, array $data = []): array
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
+        $start_time = $this->beforeExecute();
 
-        if ($this->fields == '') $fields = '*'; else $fields = $this->fields;
-        $sql = 'SELECT '.$fields.chr(10).'FROM '.$table;
-        if ($this->where != '') $sql .= chr(10).'WHERE ' . $this->where;
-        if ($sort != '') {$sql .= chr(10).'ORDER BY ' . $sort;}
-
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }
-        if (isset($stmt)) $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);]*/
         $stmt = $this->execute($sql, $data);
-        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        if ($stmt->errorCode() !== '00000') {return [];}
 
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        if (!empty($rows)) {$this->columns = array_keys($rows[0]);}
+        else {$this->columns = []; return [];}
 
-        return $result;
+        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
+
+        return $rows;
     }
 
-    public function getAllFromSQL ($sql, array $data = [])
+    public function getOneValue ($fields, $tables, array $data = [])
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
-        $stmt = $this->execute($sql, $data);
-        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        //$result = $this->execute($sql, $data);
-
-        if (!empty($result)) $this->columns = array_keys($result[0]); else $this->columns = [];
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
-
-        return $result;
-    }
-
-    public function getOneValue ($column, $table, array $data = [])
-    {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        $sql = "SELECT {$column} FROM {$table}";
+        $sql = 'SELECT ' . $fields . $this->p . 'FROM ' . $tables . $this->p;
         $string = $this->ParametersString($data);
-        if (!empty($data)) $sql .= ' WHERE ' . $string;
+        if (!empty($data)) {$sql .= 'WHERE ' . $string;}
 
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
-        $stmt = $this->execute($sql, $data);
-        $row = $stmt->fetch(\PDO::FETCH_NUM);
-        $result = $row[0];
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
-
-        return $result;
+        return $this->getOneValueFromSQL($sql, $data);
     }
 
     public function getOneValueFromSQL ($sql, array $data = [])
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
+        $start_time = $this->beforeExecute();
 
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
         $stmt = $this->execute($sql, $data);
+        if ($stmt->errorCode() !== '00000') {return null;}
+
         $row = $stmt->fetch(\PDO::FETCH_NUM);
+        if (empty($row)) {return null;}
+
         $result = $row[0];
 
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
+        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
 
         return $result;
     }
 
-    public function getOneValueFromBuild ($table, array $data = [])
+    public function getOneRow ($table, array $data = []): array
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        if ($this->fields == '') $fields = '*'; else $fields = $this->fields;
-        $sql = 'SELECT '.$fields.chr(10).'FROM '.$table;
-        if ($this->where != '') $sql .= chr(10).'WHERE ' . $this->where;
-
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
-        $stmt = $this->execute($sql, $data);
-        $row = $stmt->fetch(\PDO::FETCH_NUM);
-        $result = $row[0];
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
-
-        return $result;
-    }
-
-    public function getOneRow ($table, array $data = [])
-    {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        $sql = "SELECT * FROM {$table}";
+        $sql = 'SELECT * FROM ' . $table . $this->p;
         $string = $this->ParametersString($data);
-        if (!empty($data)) $sql .= ' WHERE ' . $string;
+        if (!empty($data)) {$sql .= 'WHERE ' . $string;}
 
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
-        $stmt = $this->execute($sql, $data);
-        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
-
-        return $result;
+        return $this->getOneRowFromSQL($sql, $data);
     }
 
-    public function getOneRowFromSQL ($sql, array $data = [])
+    public function getOneRowFromSQL ($sql, array $data = []): array
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
+        $start_time = $this->beforeExecute();
 
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
         $stmt = $this->execute($sql, $data);
-        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if ($stmt->errorCode() !== '00000') {return [];}
 
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if (empty($row)) {return [];}
 
-        return $result;
+        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
+
+        return $row;
     }
 
-    public function getOneRowFromBuild ($table, array $data = [])
+    public function getOneCol ($fields, $tables, array $data = []): array
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        if ($this->fields == '') $fields = '*'; else $fields = $this->fields;
-        $sql = 'SELECT '.$fields.chr(10).'FROM '.$table;
-        if ($this->where != '') $sql .= chr(10).'WHERE ' . $this->where;
-
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
-        $stmt = $this->execute($sql, $data);
-        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
-
-        return $result;
-    }
-
-    public function getOneCol ($column, $table, array $data = [])
-    {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        $sql = "SELECT {$column} FROM {$table}";
+        $sql = 'SELECT ' . $fields . $this->p . 'FROM ' . $tables . $this->p;
         $string = $this->ParametersString($data);
-        if (!empty($data)) $sql .= ' WHERE ' . $string;
+        if (!empty($data)) {$sql .= 'WHERE ' . $string;}
 
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
+        return $this->getOneColFromSQL($sql, $data);
+    }
+
+    public function getOneColFromSQL ($sql, array $data = []): array
+    {
+        $start_time = $this->beforeExecute();
+
         $stmt = $this->execute($sql, $data);
+        if ($stmt->errorCode() !== '00000') {return [];}
 
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        foreach ($rows as $row) {
-            foreach ($row as $value) $result[] = $value;
-        }
+        if (empty($rows)) {return [];}
 
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
+        $result = [];
+        foreach ($rows as $row) {foreach ($row as $value) {$result[] = $value;}}
 
-        return $result;
-    }
-
-    public function getOneColFromSQL ($sql, array $data = [])
-    {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
-        $stmt = $this->execute($sql, $data);
-
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        foreach ($rows as $row) {
-            foreach ($row as $value) $result[] = $value;
-        }
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
+        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
 
         return $result;
     }
 
     // Результат массив в котором первый столбец это ключ, а второй значение
-    public function getKeyValue ($columns, $table, array $data = [])
+    public function getKeyValue ($fields, $tables, array $data = []): array
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        $sql = "SELECT {$columns} FROM {$table}";
+        $sql = "SELECT {$fields} FROM {$tables}";
         $string = $this->ParametersString($data);
-        if (!empty($data)) $sql .= ' WHERE ' . $string;
+        if (!empty($data)) {$sql .= ' WHERE ' . $string;}
 
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
+        return $this->getKeyValueFromSQL($sql, $data);
+    }
+
+    public function getKeyValueFromSQL ($sql, array $data = []): array
+    {
+        $start_time = $this->beforeExecute();
+
         $stmt = $this->execute($sql, $data);
-        $rows = $stmt->fetchAll(\PDO::FETCH_NUM);
-        foreach ($rows as $row) $result[$row[0]] = $row[1];
+        if ($stmt->errorCode() !== '00000') {return [];}
 
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
+        $rows = $stmt->fetchAll(\PDO::FETCH_NUM);
+        if (empty($rows)) {return [];}
+
+        $result = [];
+        foreach ($rows as $row) {$result[$row[0]] = $row[1];}
+
+        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
 
         return $result;
     }
 
     // Результат массив в котором первый столбец это ключ, а стальные ассоциативный массив
-    public function getKeyValues ($columns, $table, array $data = [])
+    public function getKeyValues ($fields, $tables, array $data = []): array
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        $sql = "SELECT {$columns} FROM {$table}";
+        $sql = "SELECT {$fields} FROM {$tables}";
         $string = $this->ParametersString($data);
-        if (!empty($data)) $sql .= ' WHERE ' . $string;
+        if (!empty($data)) {$sql .= ' WHERE ' . $string;}
 
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
+        return $this->getKeyValuesFromSQL($sql, $data);
+    }
+
+    public function getKeyValuesFromSQL ($sql, array $data = []): array
+    {
+        $start_time = $this->beforeExecute();
+
         $stmt = $this->execute($sql, $data);
+        if ($stmt->errorCode() !== '00000') {return [];}
 
-        $rows2 = $fields = [];
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        foreach ($rows[0] as $key => $value) $fields[] = $key;
-        foreach ($rows as $row) $rows2[] = array_values($row);
+        if (empty($rows)) {return [];}
+
+        $result = $rows2 = $fields = [];
+        foreach ($rows[0] as $key => $value) {$fields[] = $key;}
+        foreach ($rows as $row) {$rows2[] = array_values($row);}
         $col_count = $stmt->columnCount();
         foreach ($rows2 as $row) {
             for ($i = 2; $i <= $col_count; $i++) {
@@ -437,307 +221,101 @@ class QueryBuilder
             }
         }
 
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
-
-        return $result;
-    }
-
-    public function getKeyValuesFromSQL ($sql, array $data = [])
-    {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
-        $stmt = $this->execute($sql, $data);
-        $rows2 = $fields = [];
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        foreach ($rows[0] as $key => $value) $fields[] = $key;
-        foreach ($rows as $row) $rows2[] = array_values($row);
-        $col_count = $stmt->columnCount();
-        foreach ($rows2 as $row) {
-            for ($i = 2; $i <= $col_count; $i++) {
-                $column_name = $fields[$i-1];
-                $result[$row[0]][$column_name] = $row[$i-1];
-            }
-        }
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
+        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
 
         return $result;
     }
 
-    public function getKeyValuesFromBuild ($table, array $data = [])
+    public function insert ($table, array $data): int
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        if ($this->fields == '') $fields = '*'; else $fields = $this->fields;
-        $sql = 'SELECT '.$fields.chr(10).'FROM '.$table;
-        if ($this->where != '') $sql .= chr(10).'WHERE ' . $this->where;
-
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
-        $stmt = $this->execute($sql, $data);
-        $rows2 = $fields = [];
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        foreach ($rows[0] as $key => $value) $fields[] = $key;
-        foreach ($rows as $row) $rows2[] = array_values($row);
-        $col_count = $stmt->columnCount();
-        foreach ($rows2 as $row) {
-            for ($i = 2; $i <= $col_count; $i++) {
-                $column_name = $fields[$i-1];
-                $result[$row[0]][$column_name] = $row[$i-1];
-            }
-        }
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
-
-        return $result;
-    }
-
-    public function insert ($table, array $data)
-    {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
         $keys = implode(', ', array_keys($data));
         $tags = ':' . implode(', :', array_keys($data));
         $sql = "INSERT INTO {$table} ({$keys}) VALUES ({$tags})";
 
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }
-        if (isset($stmt)) $result = $stmt->rowCount();*/
-        $stmt = $this->execute($sql, $data);
-        $result = $stmt->rowCount();
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
-
-        return $result;
+        return $this->runSQL($sql, $data);
     }
 
-    public function insertFromSQL ($sql, array $data)
+    public function update ($table, array $update, array $where = []): int
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }
-        if (isset($stmt)) $result = $stmt->rowCount();*/
-        $stmt = $this->execute($sql, $data);
-        $result = $stmt->rowCount();
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
-
-        return $result;
-    }
-
-    public function update ($table, array $update, array $where = [])
-    {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
         $keys = array_keys($update);
         $string = '';
-        foreach ($keys as $key) $string .= $key . ' = :' . $key . ', ';
+        foreach ($keys as $key) {$string .= $key . ' = :' . $key . ', ';}
         $keys = rtrim($string, ', ');
         $data = array_merge($update, $where);
-
         $where_string = $this->ParametersString($where);
         $sql = "UPDATE {$table} SET {$keys} WHERE {$where_string}";
 
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }
-        if (isset($stmt)) $result = $stmt->rowCount();*/
-        $stmt = $this->execute($sql, $data);
-        $result = $stmt->rowCount();
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
-
-        return $result;
+        return $this->runSQL($sql, $data);
     }
 
-    public function delete ($table, array $data)
+    public function delete ($table, array $data): int
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
         $string = $this->ParametersString($data);
+        /** @noinspection SqlWithoutWhere */
         $sql = "DELETE FROM {$table} WHERE {$string}";
 
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }
-        if (isset($stmt)) $result = $stmt->rowCount();*/
-        $stmt = $this->execute($sql, $data);
-        $result = $stmt->rowCount();
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
-
-        return $result;
+        return $this->runSQL($sql, $data);
     }
 
-    public function getCount ($table, array $data = [])
+    public function getCount ($table, array $data = []): int
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        $sql = "SELECT COUNT(*) cnt FROM {$table}";
+        $sql = 'SELECT COUNT(*) cnt FROM ' . $table . $this->p;
         $string = $this->ParametersString($data);
-        if (!empty($data)) $sql .= ' WHERE ' . $string;
+        if (!empty($data)) {$sql .= 'WHERE ' . $string;}
 
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
+        return $this->getOneValueFromSQL($sql, $data);
+    }
+
+    public function runSQL ($sql, array $data = []): int
+    {
+        $start_time = $this->beforeExecute();
+
         $stmt = $this->execute($sql, $data);
-        $rows = $stmt->fetch(\PDO::FETCH_ASSOC);
-        $result = $rows['CNT'];
+        if ($stmt->errorCode() !== '00000') {return null;}
 
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
+        $result = (int) $stmt->rowCount();
 
-        return $result;
-    }
-
-    public function runSQL ($sql, array $data = [])
-    {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
-
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }*/
-        $this->execute($sql, $data);
-
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
+        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
 
         return $result;
     }
 
-    public function getNewGUID ()
+    public function getNewGUID (): string
     {
-        $start_time = microtime(true);
-        $result = null;
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->last_result = true;
+        $start_time = $this->beforeExecute();
 
         $sql = 'SELECT sys_guid() FROM dual';
-
-        /*try {
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->last_result = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql]);
-        }*/
         $stmt = $this->execute($sql);
+        if ($stmt->errorCode() !== '00000') {return null;}
+
         $row = $stmt->fetch(\PDO::FETCH_NUM);
         $result = $row[0];
 
-        if (!isset($e)) $this->sql_time = round(microtime(true) - $start_time, 4);
+        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
 
         return $result;
     }
 
-    public function beginTransaction ()
+    public function beginTransaction (): void
     {
         $this->errors_before_transaction = $this->errors_count;
         $this->pdo->beginTransaction();
     }
 
-    public function endTransaction ()
+    public function endTransaction (): void
     {
-        if ($this->errors_before_transaction == $this->errors_count)
-            $this->pdo->commit(); else $this->pdo->rollback();
+        if ($this->errors_before_transaction === $this->errors_count)
+            {$this->pdo->commit();} else {$this->pdo->rollBack();}
     }
 
-    public function commit ()
+    public function commit (): void
     {
         $this->pdo->commit();
     }
 
-    public function rollback ()
+    public function rollback (): void
     {
-        $this->pdo->rollback();
+        $this->pdo->rollBack();
     }
 
 }

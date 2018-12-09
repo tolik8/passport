@@ -1,10 +1,12 @@
 <?php
+/** @noinspection ClassConstantCanBeUsedInspection */
 
-if (!session_id()) @session_start();
+if (!session_id()) {@session_start();}
 header('Content-Type: text/html; charset=windows-1251');
 
-require_once __DIR__ . '/../app/functions.php';
-require_once __DIR__ . '/../vendor/autoload.php';
+$root = $_SERVER['DOCUMENT_ROOT'];
+require_once $root . '/app/functions.php';
+require_once $root . '/vendor/autoload.php';
 
 use DI\ContainerBuilder;
 $containerBuilder = new ContainerBuilder;
@@ -15,11 +17,16 @@ $containerBuilder->addDefinitions([
     },
 
     PDO::class => function() {
-        $dbconfig = require_once __DIR__ . '/../config/select_db.php';
+        $dbconfig = require $_SERVER['DOCUMENT_ROOT'] . '/config/select_db.php';
         return new \PDO('oci:dbname='.$dbconfig['oracle_tns'], $dbconfig['username'], $dbconfig['password'], $dbconfig['pdo_options']);
     }
 ]);
-$container = $containerBuilder->build();
+
+try {
+    $container = $containerBuilder->build();
+} catch (\Exception $e) {
+    echo $e->getMessage();
+}
 
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->addRoute('GET', '/', ['App\controllers\Home', 'index']);
@@ -31,7 +38,7 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->addRoute('POST', '/pasport/check', ['App\controllers\Pasport', 'check']);
     $r->addRoute('GET', '/pasport/prepare', ['App\controllers\Pasport', 'prepare']);
     $r->addRoute('POST', '/pasport/prepare', ['App\controllers\Pasport', 'prepare']);
-    $r->addRoute('POST', '/pasport/excel', ['App\controllers\Pasport', 'excel']);
+    $r->addRoute('POST', '/pasport/excel', ['App\controllers\Pasport', 'toExcel']);
     $r->addRoute('GET', '/token/{token:[0-9a-zA-Z]{64}}', ['App\controllers\Token', 'index']);
     // {id} must be a number (\d+)
     $r->addRoute('GET', '/user/{id:\d+}', 'get_user_handler');

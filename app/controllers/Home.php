@@ -15,12 +15,12 @@ class Home
         $this->myUser = $myUser;
     }
 
-    public function index ()
+    public function index (): void
     {
         $this->twig->showTemplate('index.html', ['my' => $this->myUser]);
     }
 
-    public function about ()
+    public function about (): void
     {
         $this->twig->showTemplate('about.html');
     }

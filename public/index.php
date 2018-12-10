@@ -4,9 +4,8 @@
 if (!session_id()) {@session_start();}
 header('Content-Type: text/html; charset=windows-1251');
 
-$root = $_SERVER['DOCUMENT_ROOT'];
-require_once $root . '/app/functions.php';
-require_once $root . '/vendor/autoload.php';
+require_once '../app/functions.php';
+require_once '../vendor/autoload.php';
 
 use DI\ContainerBuilder;
 $containerBuilder = new ContainerBuilder;
@@ -17,7 +16,7 @@ $containerBuilder->addDefinitions([
     },
 
     PDO::class => function() {
-        $dbconfig = require $_SERVER['DOCUMENT_ROOT'] . '/config/select_db.php';
+        $dbconfig = require '../config/select_db.php';
         return new \PDO('oci:dbname='.$dbconfig['oracle_tns'], $dbconfig['username'], $dbconfig['password'], $dbconfig['pdo_options']);
     }
 ]);

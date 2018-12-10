@@ -48,9 +48,9 @@ class QueryBuilder
         return $rows;
     }
 
-    public function getOneValue ($fields, $tables, array $data = [])
+    public function getOneValue ($field, $table, array $data = [])
     {
-        $sql = 'SELECT ' . $fields . $this->p . 'FROM ' . $tables . $this->p;
+        $sql = 'SELECT ' . $field . $this->p . 'FROM ' . $table . $this->p;
         $string = $this->ParametersString($data);
         if (!empty($data)) {$sql .= 'WHERE ' . $string;}
 

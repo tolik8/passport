@@ -16,7 +16,7 @@ $containerBuilder->addDefinitions([
     },
 
     PDO::class => function() {
-        $dbconfig = require '../config/select_db.php';
+        $dbconfig = require '../config/config_ora.php';
         return new \PDO('oci:dbname='.$dbconfig['oracle_tns'], $dbconfig['username'], $dbconfig['password'], $dbconfig['pdo_options']);
     }
 ]);

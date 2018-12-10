@@ -22,43 +22,6 @@ class QueryBuilder
         $this->log = $Logger;
     }
 
-    protected function beforeExecute ()
-    {
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->resultIsOk = true;
-
-        return microtime(true);
-    }
-
-    protected function execute ($sql, array $data = [])
-    {
-        $stmt = null;
-
-        try {
-            $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
-            $stmt->execute();
-        } catch (\Exception $e) {
-            $this->resultIsOk = false;
-            $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
-        }
-
-        return $stmt;
-    }
-
-    protected function ParametersString (array $data): string
-    {
-        $string = '';
-        $keys = array_keys($data);
-
-        foreach ($keys as $key) {$string .= $key . ' = :' . $key . ' AND ';}
-        $string = rtrim($string, ' AND ');
-
-        return $string;
-    }
-
     public function getAll ($tables, array $data = [], $sort = ''): array
     {
         $sql = 'SELECT * FROM ' . $tables . $this->p;
@@ -316,6 +279,43 @@ class QueryBuilder
     public function rollback (): void
     {
         $this->pdo->rollBack();
+    }
+
+    protected function beforeExecute ()
+    {
+        $this->sql_time = 0;
+        $this->sql_count++;
+        $this->resultIsOk = true;
+
+        return microtime(true);
+    }
+
+    protected function execute ($sql, array $data = [])
+    {
+        $stmt = null;
+
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
+            $stmt->execute();
+        } catch (\Exception $e) {
+            $this->resultIsOk = false;
+            $this->errors_count++;
+            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
+        }
+
+        return $stmt;
+    }
+
+    protected function ParametersString (array $data): string
+    {
+        $string = '';
+        $keys = array_keys($data);
+
+        foreach ($keys as $key) {$string .= $key . ' = :' . $key . ' AND ';}
+        $string = rtrim($string, ' AND ');
+
+        return $string;
     }
 
 }

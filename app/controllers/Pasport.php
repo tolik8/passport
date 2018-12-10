@@ -29,18 +29,6 @@ class Pasport
         $this->x['title'] = 'Паспорт';
     }
 
-    protected function getPost (): array
-    {
-        $post = [];
-        $pattern = '#^[0-9]{6,10}$#';
-        $post['tin'] = regex($pattern, $_POST['tin'], 0);
-
-        $pattern = '#^\s*(3[01]|[12][0-9]|0?[1-9])\.(1[012]|0?[1-9])\.((?:19|20)\d{2})\s*$#';
-        $post['dt1'] = regex($pattern, $_POST['dt1'], '01.01.2017');
-        $post['dt2'] = regex($pattern, $_POST['dt2'], '31.12.2018');
-        return $post;
-    }
-
     public function pasport (): void
     {
         $this->x['menu'] = $this->bc->getMenu('pasport');
@@ -54,53 +42,17 @@ class Pasport
 
         $sql = file_get_contents($this->root . '/sql/pasport/check.sql');
         $this->x['data'] = $this->db->getOneRowFromSQL($sql, $params);
+
         if (!$this->db->resultIsOk) {
             $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]); Exit;
         }
 
-        if ($this->x['data'] === false) {
+        if (empty($this->x['data'])) {
             $_SESSION['post'] = $params;
             header('Location: /pasport/prepare');
         }
 
         $this->twig->showTemplate('pasport/check.html', ['x' => $this->x, 'my' => $this->myUser]);
-    }
-
-    protected function transform1 (array $array = []): array
-    {
-        $result = [];
-        if (empty($array)) {return $result;}
-        $columns = array_keys($array[0]);
-
-        foreach ($array as $row) {
-            foreach ($columns as $col) {
-                $value_utf8 = mb_convert_encoding($row[$col], 'utf-8', 'windows-1251');
-                $result[$col][] = $value_utf8;
-            }
-        }
-        return $result;
-    }
-
-    protected function transform2 (array $array = [], $prefix = ''): array
-    {
-        $result = [];
-        if (empty($array)) {return $result;}
-
-        foreach ($array as $key => $value) {$result['['.$prefix.$key.']'] = $value;}
-
-        return $result;
-    }
-
-    protected function vidsFromArray (array $array = [], $precision = 0): array
-    {
-        $result = [];
-        if (empty($array)) {return $result;}
-        $sum = array_sum($array);
-
-        foreach ($array as $row) {
-            $result[] = round($row / $sum * 100, $precision);
-        }
-        return $result;
     }
 
     public function prepare (): void
@@ -145,56 +97,6 @@ class Pasport
         }
     }
 
-    protected function prepareKontr ($params, $type): bool
-    {
-        $prepared = false;
-
-        $guid_param = ['guid' => $this->new_guid];
-        $params = array_merge($params, $guid_param);
-
-        $count1 = $this->db->getCount('PIKALKA.pasp_kontr_'.$type.'1', $guid_param);
-        $count2 = $this->db->getCount('PIKALKA.pasp_kontr_'.$type.'2', $guid_param);
-
-        if ($count1 > 0 && $count2 > 0) {$prepared = true; return $prepared;}
-
-        if ($count1 === '0') {
-            $sql = file_get_contents($this->root . '/sql/pasport/insert_pasp_kontr_'.$type.'1.sql');
-            $this->db->runSQL($sql, $params);
-        }
-
-        if ($count2 === '0') {
-            $sql = file_get_contents($this->root . '/sql/pasport/insert_pasp_kontr_'.$type.'2.sql');
-            $this->db->runSQL($sql, $params);
-        }
-
-        if ($this->db->errors_count === 0) {$prepared = true;}
-        else {$this->x['prepare_errors'][] = 'Контрагенти - Таблиця ' . $type;}
-
-        return $prepared;
-    }
-
-    protected function prepareBalance ($params): bool
-    {
-        $prepared = false;
-
-        $guid_param = ['guid' => $this->new_guid];
-        $params = array_merge($params, $guid_param);
-
-        $count1 = $this->db->getCount('PIKALKA.pasp_balance', $guid_param);
-
-        if ($count1 > 0) {$prepared = true; return $prepared;}
-
-        if ($count1 === '0') {
-            $sql = file_get_contents($this->root . '/sql/pasport/insert_pasp_balance.sql');
-            $this->db->runSQL($sql, $params);
-        }
-
-        if ($this->db->errors_count === 0) {$prepared = true;}
-        else {$this->x['prepare_errors'][] = 'Баланс';}
-
-        return $prepared;
-    }
-
     public function toExcel (): void
     {
         $templateFile = '../xls/pasport/template.xlsx';
@@ -207,7 +109,7 @@ class Pasport
 
         try {
             for ($i = 0; $i <= $spreadsheet->getSheetCount()-1; $i++)
-                {$templateVars[$i+1] = $spreadsheet->getSheet($i)->toArray();}
+            {$templateVars[$i+1] = $spreadsheet->getSheet($i)->toArray();}
         } catch (\Exception $e) {echo $e->getMessage(); Exit;}
 
         $pattern = '#^[0-9a-zA-Z]{32}$#';
@@ -260,6 +162,55 @@ class Pasport
         else {PhpExcelTemplator::saveSpreadsheetToFile($spreadsheet, $outputFile);}
     }
 
+    protected function prepareKontr ($params, $type): bool
+    {
+        $prepared = false;
+
+        $guid_param = ['guid' => $this->new_guid];
+        $params = array_merge($params, $guid_param);
+
+        $count1 = $this->db->getCount('PIKALKA.pasp_kontr_'.$type.'1', $guid_param);
+        $count2 = $this->db->getCount('PIKALKA.pasp_kontr_'.$type.'2', $guid_param);
+
+        if ($count1 > 0 && $count2 > 0) {$prepared = true; return $prepared;}
+
+        if ($count1 === 0) {
+            $sql = file_get_contents($this->root . '/sql/pasport/insert_pasp_kontr_'.$type.'1.sql');
+            $this->db->runSQL($sql, $params);
+        }
+
+        if ($count2 === 0) {
+            $sql = file_get_contents($this->root . '/sql/pasport/insert_pasp_kontr_'.$type.'2.sql');
+            $this->db->runSQL($sql, $params);
+        }
+
+        if ($this->db->errors_count === 0) {$prepared = true;}
+        else {$this->x['prepare_errors'][] = 'Контрагенти - Таблиця ' . $type;}
+
+        return $prepared;
+    }
+
+    protected function prepareBalance ($params): bool
+    {
+        $prepared = false;
+
+        $guid_param = ['guid' => $this->new_guid];
+        $params = array_merge($params, $guid_param);
+
+        $count1 = $this->db->getCount('PIKALKA.pasp_balance', $guid_param);
+        if ($count1 > 0) {$prepared = true; return $prepared;}
+
+        if ($count1 === 0) {
+            $sql = file_get_contents($this->root . '/sql/pasport/insert_pasp_balance.sql');
+            $this->db->runSQL($sql, $params);
+        }
+
+        if ($this->db->errors_count === 0) {$prepared = true;}
+        else {$this->x['prepare_errors'][] = 'Баланс';}
+
+        return $prepared;
+    }
+
     protected function excelRegData ($input_params): array
     {
         $tin = $params['TIN'] = $input_params['TIN'];
@@ -290,9 +241,6 @@ class Pasport
             $reg_params_ur = [];
         }
 
-        $sql = 'SELECT * FROM AISR.pdv_act_r WHERE tin = :tin AND dat_anul IS NULL AND ROWNUM = 1';
-        $pdv_act_r = $this->db->getOneRowFromSQL($sql, $params);
-
         $sql = file_get_contents($this->root . '/sql/pasport/get_r21stan_h.sql');
         $array = $this->db->getAllFromSQL($sql, ['tin' => $tin, 'c_distr' => $dpi]);
         $array = $this->transform1($array);
@@ -307,8 +255,11 @@ class Pasport
             '{r21taxpay.kved_name}' => utf8($kved_name),
             '{r21taxpay.d_reg_sti}' => $r21taxpay['D_REG_STI'],
             '{r21paddr.address}' => utf8($address),
-            '{pdv_act_r.dat_reestr}' => $pdv_act_r['DAT_REESTR'],
         ];
+
+        $sql = 'SELECT * FROM AISR.pdv_act_r WHERE tin = :tin AND dat_anul IS NULL AND ROWNUM = 1';
+        $pdv_act_r = $this->db->getOneRowFromSQL($sql, $params);
+        if (!empty($pdv_act_r)) {$reg_params['{pdv_act_r.dat_reestr}'] = $pdv_act_r['DAT_REESTR'];}
 
         return array_merge($reg_params, $reg_params_ur, $stan_h);
     }
@@ -331,6 +282,55 @@ class Pasport
         $calculate_params = ['{'.$prefix.'OBS_SUM}' => $obs_sum, '{'.$prefix.'PDV_SUM}' => $pdv_sum];
 
         return array_merge($kontr, $calculate_params);
+    }
+
+    protected function transform1 (array $array = []): array
+    {
+        $result = [];
+        if (empty($array)) {return $result;}
+        $columns = array_keys($array[0]);
+
+        foreach ($array as $row) {
+            foreach ($columns as $col) {
+                $value_utf8 = mb_convert_encoding($row[$col], 'utf-8', 'windows-1251');
+                $result[$col][] = $value_utf8;
+            }
+        }
+        return $result;
+    }
+
+    protected function transform2 (array $array = [], $prefix = ''): array
+    {
+        $result = [];
+        if (empty($array)) {return $result;}
+
+        foreach ($array as $key => $value) {$result['['.$prefix.$key.']'] = $value;}
+
+        return $result;
+    }
+
+    protected function vidsFromArray (array $array = [], $precision = 0): array
+    {
+        $result = [];
+        if (empty($array)) {return $result;}
+        $sum = array_sum($array);
+
+        foreach ($array as $row) {
+            $result[] = round($row / $sum * 100, $precision);
+        }
+        return $result;
+    }
+
+    protected function getPost (): array
+    {
+        $post = [];
+        $pattern = '#^[0-9]{6,10}$#';
+        $post['tin'] = regex($pattern, $_POST['tin'], 0);
+
+        $pattern = '#^\s*(3[01]|[12][0-9]|0?[1-9])\.(1[012]|0?[1-9])\.((?:19|20)\d{2})\s*$#';
+        $post['dt1'] = regex($pattern, $_POST['dt1'], '01.01.2017');
+        $post['dt2'] = regex($pattern, $_POST['dt2'], '31.12.2018');
+        return $post;
     }
 
     protected function prepareParams ($params): array

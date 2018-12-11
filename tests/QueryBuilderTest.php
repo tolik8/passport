@@ -4,9 +4,12 @@ namespace App;
 
 use PHPUnit\Framework\TestCase;
 
-$root = require 'root.php';
-require $root . '../app/Logger.php';
-require $root . '../app/QueryBuilder.php';
+if ($_SERVER['DOCUMENT_ROOT'] == '') {$_SERVER['DOCUMENT_ROOT'] = 'D:/www/alisa2.loc';}
+
+require_once $_SERVER['DOCUMENT_ROOT'] . '/app/functions.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
+
+/* assertTrue, assertFalse, assertEmpty, assertEquals, assertCount, assertContains */
 
 class QueryBuilderTest extends TestCase
 {
@@ -14,9 +17,8 @@ class QueryBuilderTest extends TestCase
 
     protected function setUp()
     {
-        $root = require 'root.php';
-        $logger = new Logger($root);
-        $dbconfig = require $root . '../config/config_ora.php';
+        $logger = new Logger();
+        $dbconfig = require $_SERVER['DOCUMENT_ROOT'] . '/config/config_ora.php';
         $pdo = new \PDO('oci:dbname='.$dbconfig['oracle_tns'], $dbconfig['username'], $dbconfig['password'], $dbconfig['pdo_options']);
         $this->QB = new QueryBuilder($pdo, $logger);
     }
@@ -24,6 +26,14 @@ class QueryBuilderTest extends TestCase
     protected function tearDown()
     {
         $this->QB = NULL;
+    }
+
+    public function testGetAll()
+    {
+        $result = $this->QB->getAll('PIKALKA.people');
+        $count = count($result);
+        if ($count > 700) {$countRes = true;} else {{$countRes = false;}}
+        $this->assertTrue($countRes);
     }
 
     public function testGetCount()
@@ -36,10 +46,14 @@ class QueryBuilderTest extends TestCase
     {
         $result = $this->QB->getOneValue('login', 'PIKALKA.people', ['guid' => '06F2EF58972B2E32E050130A64136A5F']);
         $this->assertEquals('admin19t', $result);
-        /*
-        assertTrue, assertFalse
-        assertEmpty, assertEquals
-        assertCount, assertContains
-        */
     }
+
+    /*public function testExecute()
+    {
+        $sql = 'SELECT sys_guid() FROM dual';
+        $qb = selft::execute($sql);
+        $result = $this->QB->execute($sql);
+        var_dump($result);
+        //$this->assertEquals('admin19t', $result);
+    }*/
 }

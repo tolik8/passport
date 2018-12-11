@@ -75,6 +75,10 @@ class Pasport
         $this->prepareKontr($params, 'zob');
         // Підготовка даних - Баланс
         $this->prepareBalance($params);
+        // Підготовка даних - Прибуток
+        $this->preparePributok($params);
+        // Підготовка даних - ЄСВ
+        $this->prepareESV($params);
 
         $sql_params = [
             'guid' => $this->new_guid, 'dt1' => $params['dt1'], 'dt2' => $params['dt2'],
@@ -99,17 +103,19 @@ class Pasport
 
     public function toExcel (): void
     {
-        $templateFile = '../xls/pasport/template.xlsx';
+        $templateFile = $this->root . '/xls/pasport/template.xlsx';
         $outputFile = './pasport.xlsx';
         $outputMethod = true;
-        $templateVars = [];
+        $default_params = $templateVars = [];
 
         try {$spreadsheet = IOFactory::load($templateFile);}
         catch (\Exception $e) {echo $e->getMessage(); Exit;}
 
         try {
-            for ($i = 0; $i <= $spreadsheet->getSheetCount()-1; $i++)
-            {$templateVars[$i+1] = $spreadsheet->getSheet($i)->toArray();}
+            for ($i = 0; $i <= $spreadsheet->getSheetCount()-1; $i++) {
+                $templateVars[$i+1] = $spreadsheet->getSheet($i)->toArray();
+                $default_params[$i+1] = $this->prepareParams($templateVars[$i+1]);
+            }
         } catch (\Exception $e) {echo $e->getMessage(); Exit;}
 
         $pattern = '#^[0-9a-zA-Z]{32}$#';
@@ -125,20 +131,20 @@ class Pasport
         $params_from_ora = array_merge($input_xlsParams, $reg_data);
         try {$sheet1 = $spreadsheet->getSheet(0);}
         catch (\Exception $e) {echo $e->getMessage(); Exit;}
-        $default_params = $this->prepareParams($templateVars[1]);
-        $templateParams = array_merge($default_params, $params_from_ora);
+        $templateParams = array_merge($default_params[1], $params_from_ora);
         PhpExcelTemplator::renderWorksheet($sheet1, $templateVars[1], $templateParams);
 
         // Контрагенти
-        $sql = file_get_contents($this->root . '/sql/pasport/kontr_kre.sql');
+        //$sql = file_get_contents($this->root . '/sql/pasport/kontr_kre.sql');
+        $sql = 'SELECT ROWNUM n, t.* FROM (SELECT * FROM PIKALKA.pasp_kontr_kre3 WHERE guid = :guid ORDER BY obs DESC, tin) t';
         $params_01 = $this->excelKontr($sql, $params, 'T1.');
-        $sql = file_get_contents($this->root . '/sql/pasport/kontr_zob.sql');
+        //$sql = file_get_contents($this->root . '/sql/pasport/kontr_zob.sql');
+        $sql = 'SELECT ROWNUM n, t.* FROM (SELECT * FROM PIKALKA.pasp_kontr_zob3 WHERE guid = :guid ORDER BY obs DESC, cp_tin) t';
         $params_02 = $this->excelKontr($sql, $params, 'T2.');
         $params_from_ora = array_merge($params_01, $params_02);
         try {$sheet2 = $spreadsheet->getSheet(1);}
         catch (\Exception $e) {echo $e->getMessage(); Exit;}
-        $default_params = $this->prepareParams($templateVars[2]);
-        $templateParams = array_merge($default_params, $params_from_ora);
+        $templateParams = array_merge($default_params[2], $params_from_ora);
         PhpExcelTemplator::renderWorksheet($sheet2, $templateVars[2], $templateParams);
 
         // Баланс
@@ -147,9 +153,26 @@ class Pasport
         $params_from_ora = $this->transform2($array);
         try {$sheet3 = $spreadsheet->getSheet(2);}
         catch (\Exception $e) {echo $e->getMessage(); Exit;}
-        $default_params = $this->prepareParams($templateVars[3]);
-        $templateParams = array_merge($default_params, $params_from_ora);
+        $templateParams = array_merge($default_params[3], $params_from_ora);
         PhpExcelTemplator::renderWorksheet($sheet3, $templateVars[3], $templateParams);
+
+        // Прибуток
+        $array = $this->db->getAll('PIKALKA.pasp_pributok', $guid_param, 'period_year, period_month');
+        $array = $this->transform1($array);
+        $params_from_ora = $this->transform2($array);
+        try {$sheet4 = $spreadsheet->getSheet(3);}
+        catch (\Exception $e) {echo $e->getMessage(); Exit;}
+        $templateParams = array_merge($default_params[4], $params_from_ora);
+        PhpExcelTemplator::renderWorksheet($sheet4, $templateVars[4], $templateParams);
+
+        // ЄСВ
+        $array = $this->db->getAll('PIKALKA.pasp_esv', $guid_param, 'period');
+        $array = $this->transform1($array);
+        $params_from_ora = $this->transform2($array);
+        try {$sheet5 = $spreadsheet->getSheet(4);}
+        catch (\Exception $e) {echo $e->getMessage(); Exit;}
+        $templateParams = array_merge($default_params[5], $params_from_ora);
+        PhpExcelTemplator::renderWorksheet($sheet5, $templateVars[5], $templateParams);
 
         // запис в post_log
         $sql_params = [
@@ -169,20 +192,16 @@ class Pasport
         $guid_param = ['guid' => $this->new_guid];
         $params = array_merge($params, $guid_param);
 
-        $count1 = $this->db->getCount('PIKALKA.pasp_kontr_'.$type.'1', $guid_param);
-        $count2 = $this->db->getCount('PIKALKA.pasp_kontr_'.$type.'2', $guid_param);
-
-        if ($count1 > 0 && $count2 > 0) {$prepared = true; return $prepared;}
-
-        if ($count1 === 0) {
-            $sql = file_get_contents($this->root . '/sql/pasport/insert_pasp_kontr_'.$type.'1.sql');
-            $this->db->runSQL($sql, $params);
+        $count = [];
+        for ($i=1; $i<=3; $i++) {
+            $count[$i] = $this->db->getCount('PIKALKA.pasp_kontr_'.$type.$i, $guid_param);
+            if ($count[$i] === 0) {
+                $sql = file_get_contents($this->root . '/sql/pasport/insert/kontr_'.$type.$i.'.sql');
+                $this->db->runSQL($sql, $params);
+            }
         }
 
-        if ($count2 === 0) {
-            $sql = file_get_contents($this->root . '/sql/pasport/insert_pasp_kontr_'.$type.'2.sql');
-            $this->db->runSQL($sql, $params);
-        }
+        if ($count[3] > 0) {$prepared = true; return $prepared;}
 
         if ($this->db->errors_count === 0) {$prepared = true;}
         else {$this->x['prepare_errors'][] = 'Контрагенти - Таблиця ' . $type;}
@@ -201,12 +220,54 @@ class Pasport
         if ($count1 > 0) {$prepared = true; return $prepared;}
 
         if ($count1 === 0) {
-            $sql = file_get_contents($this->root . '/sql/pasport/insert_pasp_balance.sql');
+            $sql = file_get_contents($this->root . '/sql/pasport/insert/balance.sql');
             $this->db->runSQL($sql, $params);
         }
 
         if ($this->db->errors_count === 0) {$prepared = true;}
         else {$this->x['prepare_errors'][] = 'Баланс';}
+
+        return $prepared;
+    }
+
+    protected function preparePributok ($params): bool
+    {
+        $prepared = false;
+
+        $guid_param = ['guid' => $this->new_guid];
+        $params = array_merge($params, $guid_param);
+
+        $count1 = $this->db->getCount('PIKALKA.pasp_pributok', $guid_param);
+        if ($count1 > 0) {$prepared = true; return $prepared;}
+
+        if ($count1 === 0) {
+            $sql = file_get_contents($this->root . '/sql/pasport/insert/pributok.sql');
+            $this->db->runSQL($sql, $params);
+        }
+
+        if ($this->db->errors_count === 0) {$prepared = true;}
+        else {$this->x['prepare_errors'][] = 'Прибуток';}
+
+        return $prepared;
+    }
+
+    protected function prepareESV ($params): bool
+    {
+        $prepared = false;
+
+        $guid_param = ['guid' => $this->new_guid];
+        $params = array_merge($params, $guid_param);
+
+        $count1 = $this->db->getCount('PIKALKA.pasp_esv', $guid_param);
+        if ($count1 > 0) {$prepared = true; return $prepared;}
+
+        if ($count1 === 0) {
+            $sql = file_get_contents($this->root . '/sql/pasport/insert/esv.sql');
+            $this->db->runSQL($sql, $params);
+        }
+
+        if ($this->db->errors_count === 0) {$prepared = true;}
+        else {$this->x['prepare_errors'][] = 'ЄСВ';}
 
         return $prepared;
     }

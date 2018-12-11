@@ -1,4 +1,4 @@
--- pasport/insert_pasp_balance.sql
+-- pasport/insert/balance.sql
 INSERT INTO PIKALKA.pasp_balance
 SELECT :guid, C_STI,period_year,period_month,d_get,n_reg,
 SUM(A1300) A1300,SUM(B1300) B1300,SUM(A1495) A1495, SUM(B1495) B1495, SUM(A1595) A1595, SUM(B1595) B1595,SUM(A1695) A1695,SUM(B1695) B1695,

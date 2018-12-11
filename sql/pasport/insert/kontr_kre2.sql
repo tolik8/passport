@@ -1,4 +1,4 @@
--- pasport/insert_pasp_kontr_kre2.sql
+-- pasport/insert/kontr_kre2.sql
 INSERT INTO PIKALKA.pasp_kontr_kre2
 SELECT guid, cp_tin, tin,
     MIN(crtdate) mind,

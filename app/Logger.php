@@ -8,11 +8,9 @@ class Logger
     protected $Extension;
     protected $SaveToFile;
 
-    public function __construct ($root = '')
+    public function __construct ()
     {
-        //$logger_config = require $_SERVER['DOCUMENT_ROOT'] . '/config/logger.php';
-        //$logger_config = require '../config/logger.php';
-        $logger_config = require $root . '../config/logger.php';
+        $logger_config = require $_SERVER['DOCUMENT_ROOT'] . '/config/logger.php';
         $this->Directory  = $logger_config['Directory'];
         $this->Extension  = $logger_config['Extension'];
         $this->SaveToFile = $logger_config['SaveToFile'];

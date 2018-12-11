@@ -1,4 +1,4 @@
--- pasport/insert_pasp_kontr_zob1.sql
+-- pasport/insert/kontr_zob1.sql
 INSERT INTO PIKALKA.pasp_kontr_zob1
 SELECT :guid, a.code, a.tin, a.cp_tin, a.crtdate, b.RG3S_D2RG3S, SUBSTR(b.RG3S_D2RG3S,1,5) nom_sk, b.rg010
 FROM 

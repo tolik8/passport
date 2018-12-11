@@ -1,6 +1,6 @@
--- pasport/kontr_kre.sql
-SELECT ROWNUM n, t.* FROM (
-SELECT d.c_sti_main sti, a.tin, d.name, obsiag_z_pdv obs, pdv, nom
+-- pasport/insert/kontr_kre3.sql
+INSERT INTO PIKALKA.pasp_kontr_kre3
+SELECT :guid, d.c_sti_main sti, a.tin, d.name, obsiag_z_pdv obs, pdv, nom
 FROM
 (SELECT cp_tin, tin, ROUND(SUM(obsag), 0) obsiag_z_pdv,
     ROUND((SUM(obsag)*0.2),0) pdv,
@@ -10,5 +10,3 @@ WHERE guid = :guid
 GROUP BY cp_tin, tin) a,
     AISR.pdv_act_r_name d
 WHERE a.tin = d.tin(+)
-ORDER BY obsiag_z_pdv DESC
-) t

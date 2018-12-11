@@ -2,6 +2,3 @@
 /logs/*
 /vendor/*
 /config/config_ora.php
-/config/root.php
-/config/db/*.php
-/sync.ffs_db

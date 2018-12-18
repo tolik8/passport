@@ -69,6 +69,9 @@ class Pasport
             unset($_SESSION['post']);
         }
 
+        $sql = 'SELECT PIKALKA.get_dpi_by_tin(:tin) FROM dual';
+        $this->c_distr = $this->db->getOneValueFromSQL($sql, $params);
+
         // Підготовка даних - Контрагенти (кредит)
         $this->prepareKontr($params, 'kre');
         // Підготовка даних - Контрагенти (зобов’язання)
@@ -79,6 +82,8 @@ class Pasport
         $this->preparePributok($params);
         // Підготовка даних - ЄСВ
         $this->prepareESV($params);
+        // Підготовка даних - Повя’зані
+        $this->preparePov($params);
 
         $sql_params = [
             'guid' => $this->new_guid, 'dt1' => $params['dt1'], 'dt2' => $params['dt2'],
@@ -174,6 +179,15 @@ class Pasport
         $templateParams = array_merge($default_params[5], $params_from_ora);
         PhpExcelTemplator::renderWorksheet($sheet5, $templateVars[5], $templateParams);
 
+        // Пов’язані
+        $array = $this->db->getAll('PIKALKA.pasp_pov_t2', $guid_param, 't DESC, tin, c_post');
+        $array = $this->transform1($array);
+        $params_from_ora = $this->transform2($array, 'T2.');
+        try {$sheet6 = $spreadsheet->getSheet(5);}
+        catch (\Exception $e) {echo $e->getMessage(); Exit;}
+        $templateParams = array_merge($default_params[6], $params_from_ora);
+        PhpExcelTemplator::renderWorksheet($sheet6, $templateVars[6], $templateParams);
+
         // запис в post_log
         $sql_params = [
             'guid' => $this->new_guid, 'dt1' => $params['DT1'], 'dt2' => $params['DT2'],
@@ -183,6 +197,59 @@ class Pasport
 
         if ($outputMethod) {PhpExcelTemplator::outputSpreadsheetToFile($spreadsheet, $outputFile);}
         else {PhpExcelTemplator::saveSpreadsheetToFile($spreadsheet, $outputFile);}
+    }
+
+    protected function excelRegData ($input_params): array
+    {
+        $tin = $params['TIN'] = $input_params['TIN'];
+
+        $sql = 'SELECT PIKALKA.get_dpi_by_tin(:tin) FROM dual';
+        $dpi = $this->c_distr = $this->db->getOneValueFromSQL($sql, $params);
+        $type_pl = (int) $this->db->getOneValue('FACE_MODE','RG02.r21taxpay', ['tin' => $tin, 'c_distr' => $dpi]);
+
+        $r21taxpay = $this->db->getOneRow('RG02.r21taxpay', ['tin' => $tin, 'c_distr' => $dpi]);
+
+        $stan_name = $this->db->getOneValue('N_STAN','ETALON.E_S_STAN', ['c_stan' => $r21taxpay['C_STAN']]);
+        $kved_name = $this->db->getOneValue('NU','ETALON.E_KVED', ['kod' => $r21taxpay['KVED']]);
+
+        $sql = 'SELECT AISR.rpp_util.getfulladdress(c_city,t_street,c_street,house,house_add,unit,apartment) adr '.chr(10).
+            'FROM RG02.r21paddr WHERE tin = :tin AND c_distr = :c_distr AND c_adr = 1';
+        $address = $this->db->getOneValueFromSQL($sql, ['tin' => $tin, 'c_distr' => $dpi]);
+
+        if ($type_pl === 1) {
+            $sql = 'SELECT c_post, pin, name, n_tel FROM RG02.r21manager WHERE tin = :tin';
+            $r21manager = $this->db->getKeyValuesFromSQL($sql, $params);
+            $reg_params_ur = [
+                '{r21manager.dir}' => utf8($r21manager[1]['NAME']),
+                '{r21manager.buh}' => utf8($r21manager[2]['NAME']),
+                '{r21manager.dir_tel}' => utf8($r21manager[1]['N_TEL']),
+                '{r21manager.buh_tel}' => utf8($r21manager[2]['N_TEL']),
+            ];
+        } else {
+            $reg_params_ur = [];
+        }
+
+        $sql = file_get_contents($this->root . '/sql/pasport/get_r21stan_h.sql');
+        $array = $this->db->getAllFromSQL($sql, ['tin' => $tin, 'c_distr' => $dpi]);
+        $array = $this->transform1($array);
+        $stan_h = $this->transform2($array, 'SH.');
+
+        $reg_params = [
+            '{r21taxpay.c_distr}' => $this->c_distr,
+            '{r21taxpay.name}' => utf8($r21taxpay['NAME']),
+            '{r21taxpay.stan}' => $r21taxpay['C_STAN'],
+            '{r21taxpay.stan_name}' => utf8($stan_name),
+            '{r21taxpay.kved}' => $r21taxpay['KVED'],
+            '{r21taxpay.kved_name}' => utf8($kved_name),
+            '{r21taxpay.d_reg_sti}' => $r21taxpay['D_REG_STI'],
+            '{r21paddr.address}' => utf8($address),
+        ];
+
+        $sql = 'SELECT * FROM AISR.pdv_act_r WHERE tin = :tin AND dat_anul IS NULL AND ROWNUM = 1';
+        $pdv_act_r = $this->db->getOneRowFromSQL($sql, $params);
+        if (!empty($pdv_act_r)) {$reg_params['{pdv_act_r.dat_reestr}'] = $pdv_act_r['DAT_REESTR'];}
+
+        return array_merge($reg_params, $reg_params_ur, $stan_h);
     }
 
     protected function prepareKontr ($params, $type): bool
@@ -272,57 +339,25 @@ class Pasport
         return $prepared;
     }
 
-    protected function excelRegData ($input_params): array
+    protected function preparePov ($params): bool
     {
-        $tin = $params['TIN'] = $input_params['TIN'];
+        $prepared = false;
 
-        $sql = 'SELECT PIKALKA.get_dpi_by_tin(:tin) FROM dual';
-        $dpi = $this->c_distr = $this->db->getOneValueFromSQL($sql, $params);
-        $type_pl = (int) $this->db->getOneValue('FACE_MODE','RG02.r21taxpay', ['tin' => $tin, 'c_distr' => $dpi]);
+        $guid_param = ['guid' => $this->new_guid];
+        $params = array_merge($params, $guid_param, ['c_distr' => $this->c_distr]);
 
-        $r21taxpay = $this->db->getOneRow('RG02.r21taxpay', ['tin' => $tin, 'c_distr' => $dpi]);
+        $sql = file_get_contents($this->root . '/sql/pasport/insert/pov.sql');
+        $count1 = $this->db->runSQL($sql, $params);
 
-        $stan_name = $this->db->getOneValue('N_STAN','ETALON.E_S_STAN', ['c_stan' => $r21taxpay['C_STAN']]);
-        $kved_name = $this->db->getOneValue('NU','ETALON.E_KVED', ['kod' => $r21taxpay['KVED']]);
-
-        $sql = 'SELECT AISR.rpp_util.getfulladdress(c_city,t_street,c_street,house,house_add,unit,apartment) adr '.chr(10).
-            'FROM RG02.r21paddr WHERE tin = :tin AND c_distr = :c_distr AND c_adr = 1';
-        $address = $this->db->getOneValueFromSQL($sql, ['tin' => $tin, 'c_distr' => $dpi]);
-
-        if ($type_pl === 1) {
-            $sql = 'SELECT c_post, pin, name, n_tel FROM RG02.r21manager WHERE tin = :tin';
-            $r21manager = $this->db->getKeyValuesFromSQL($sql, $params);
-            $reg_params_ur = [
-                '{r21manager.dir}' => utf8($r21manager[1]['NAME']),
-                '{r21manager.buh}' => utf8($r21manager[2]['NAME']),
-                '{r21manager.dir_tel}' => utf8($r21manager[1]['N_TEL']),
-                '{r21manager.buh_tel}' => utf8($r21manager[2]['N_TEL']),
-            ];
-        } else {
-            $reg_params_ur = [];
+        if ($count1 > 0) {
+            $sql = file_get_contents($this->root . '/sql/pasport/insert/pov_t2.sql');
+            $this->db->runSQL($sql, $params);
         }
 
-        $sql = file_get_contents($this->root . '/sql/pasport/get_r21stan_h.sql');
-        $array = $this->db->getAllFromSQL($sql, ['tin' => $tin, 'c_distr' => $dpi]);
-        $array = $this->transform1($array);
-        $stan_h = $this->transform2($array, 'SH.');
+        if ($this->db->errors_count === 0) {$prepared = true;}
+        else {$this->x['prepare_errors'][] = 'Пов’язані';}
 
-        $reg_params = [
-            '{r21taxpay.c_distr}' => $this->c_distr,
-            '{r21taxpay.name}' => utf8($r21taxpay['NAME']),
-            '{r21taxpay.stan}' => $r21taxpay['C_STAN'],
-            '{r21taxpay.stan_name}' => utf8($stan_name),
-            '{r21taxpay.kved}' => $r21taxpay['KVED'],
-            '{r21taxpay.kved_name}' => utf8($kved_name),
-            '{r21taxpay.d_reg_sti}' => $r21taxpay['D_REG_STI'],
-            '{r21paddr.address}' => utf8($address),
-        ];
-
-        $sql = 'SELECT * FROM AISR.pdv_act_r WHERE tin = :tin AND dat_anul IS NULL AND ROWNUM = 1';
-        $pdv_act_r = $this->db->getOneRowFromSQL($sql, $params);
-        if (!empty($pdv_act_r)) {$reg_params['{pdv_act_r.dat_reestr}'] = $pdv_act_r['DAT_REESTR'];}
-
-        return array_merge($reg_params, $reg_params_ur, $stan_h);
+        return $prepared;
     }
 
     protected function excelKontr ($sql, $params, $prefix): array

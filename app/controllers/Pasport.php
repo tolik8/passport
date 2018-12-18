@@ -16,6 +16,7 @@ class Pasport
     protected $x;
     protected $new_guid;
     protected $c_distr;
+    protected $ss;
 
     public function __construct (\App\Twig $twig, \App\QueryBuilder $db, \App\MyUser $myUser, \App\Breadcrumb $bc)
     {
@@ -113,12 +114,12 @@ class Pasport
         $outputMethod = true;
         $default_params = $templateVars = [];
 
-        try {$spreadsheet = IOFactory::load($templateFile);}
+        try {$this->ss = IOFactory::load($templateFile);}
         catch (\Exception $e) {echo $e->getMessage(); Exit;}
 
         try {
-            for ($i = 0; $i <= $spreadsheet->getSheetCount()-1; $i++) {
-                $templateVars[$i+1] = $spreadsheet->getSheet($i)->toArray();
+            for ($i = 0; $i <= $this->ss->getSheetCount()-1; $i++) {
+                $templateVars[$i+1] = $this->ss->getSheet($i)->toArray();
                 $default_params[$i+1] = $this->prepareParams($templateVars[$i+1]);
             }
         } catch (\Exception $e) {echo $e->getMessage(); Exit;}
@@ -134,7 +135,7 @@ class Pasport
         // Реєстраційні дані
         $reg_data = $this->excelRegData($params);
         $params_from_ora = array_merge($input_xlsParams, $reg_data);
-        try {$sheet1 = $spreadsheet->getSheet(0);}
+        try {$sheet1 = $this->ss->getSheet(0);}
         catch (\Exception $e) {echo $e->getMessage(); Exit;}
         $templateParams = array_merge($default_params[1], $params_from_ora);
         PhpExcelTemplator::renderWorksheet($sheet1, $templateVars[1], $templateParams);
@@ -147,43 +148,28 @@ class Pasport
         $sql = 'SELECT ROWNUM n, t.* FROM (SELECT * FROM PIKALKA.pasp_kontr_zob3 WHERE guid = :guid ORDER BY obs DESC, cp_tin) t';
         $params_02 = $this->excelKontr($sql, $params, 'T2.');
         $params_from_ora = array_merge($params_01, $params_02);
-        try {$sheet2 = $spreadsheet->getSheet(1);}
+        try {$sheet2 = $this->ss->getSheet(1);}
         catch (\Exception $e) {echo $e->getMessage(); Exit;}
         $templateParams = array_merge($default_params[2], $params_from_ora);
         PhpExcelTemplator::renderWorksheet($sheet2, $templateVars[2], $templateParams);
 
         // Баланс
         $array = $this->db->getAll('PIKALKA.pasp_balance', $guid_param, 'period_year, period_month');
-        $array = $this->transform1($array);
-        $params_from_ora = $this->transform2($array);
-        try {$sheet3 = $spreadsheet->getSheet(2);}
-        catch (\Exception $e) {echo $e->getMessage(); Exit;}
-        $templateParams = array_merge($default_params[3], $params_from_ora);
-        PhpExcelTemplator::renderWorksheet($sheet3, $templateVars[3], $templateParams);
+        $this->setSheet(3, $array);
 
         // Прибуток
         $array = $this->db->getAll('PIKALKA.pasp_pributok', $guid_param, 'period_year, period_month');
-        $array = $this->transform1($array);
-        $params_from_ora = $this->transform2($array);
-        try {$sheet4 = $spreadsheet->getSheet(3);}
-        catch (\Exception $e) {echo $e->getMessage(); Exit;}
-        $templateParams = array_merge($default_params[4], $params_from_ora);
-        PhpExcelTemplator::renderWorksheet($sheet4, $templateVars[4], $templateParams);
+        $this->setSheet(4, $array);
 
         // ЄСВ
         $array = $this->db->getAll('PIKALKA.pasp_esv', $guid_param, 'period');
-        $array = $this->transform1($array);
-        $params_from_ora = $this->transform2($array);
-        try {$sheet5 = $spreadsheet->getSheet(4);}
-        catch (\Exception $e) {echo $e->getMessage(); Exit;}
-        $templateParams = array_merge($default_params[5], $params_from_ora);
-        PhpExcelTemplator::renderWorksheet($sheet5, $templateVars[5], $templateParams);
+        $this->setSheet(5, $array);
 
         // Пов’язані
         $array = $this->db->getAll('PIKALKA.pasp_pov_t2', $guid_param, 't DESC, tin, c_post');
         $array = $this->transform1($array);
         $params_from_ora = $this->transform2($array, 'T2.');
-        try {$sheet6 = $spreadsheet->getSheet(5);}
+        try {$sheet6 = $this->ss->getSheet(5);}
         catch (\Exception $e) {echo $e->getMessage(); Exit;}
         $templateParams = array_merge($default_params[6], $params_from_ora);
         PhpExcelTemplator::renderWorksheet($sheet6, $templateVars[6], $templateParams);
@@ -195,8 +181,25 @@ class Pasport
         ];
         $this->db->insert('PIKALKA.pasp_log', $sql_params);
 
-        if ($outputMethod) {PhpExcelTemplator::outputSpreadsheetToFile($spreadsheet, $outputFile);}
-        else {PhpExcelTemplator::saveSpreadsheetToFile($spreadsheet, $outputFile);}
+        if ($outputMethod) {PhpExcelTemplator::outputSpreadsheetToFile($this->ss, $outputFile);}
+        else {PhpExcelTemplator::saveSpreadsheetToFile($this->ss, $outputFile);}
+    }
+
+    protected function setSheet ($index, $array): void
+    {
+        $array = $this->transform1($array);
+        $params_from_ora = $this->transform2($array);
+        try {
+            /** @noinspection PhpUndefinedMethodInspection */
+            $sheet = $this->ss->getSheet($index - 1);
+            /** @noinspection PhpUndefinedMethodInspection */
+            $templateVars = $sheet->toArray();
+            $default_params = $this->prepareParams($templateVars);
+        } catch (\Exception $e) {
+            echo $e->getMessage(); Exit;
+        }
+        $templateParams = array_merge($default_params, $params_from_ora);
+        PhpExcelTemplator::renderWorksheet($sheet, $templateVars, $templateParams);
     }
 
     protected function excelRegData ($input_params): array

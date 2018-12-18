@@ -234,7 +234,7 @@ class QueryBuilder
         $start_time = $this->beforeExecute();
 
         $stmt = $this->execute($sql, $data);
-        if ($stmt->errorCode() !== '00000') {return null;}
+        if ($stmt->errorCode() !== '00000') {return 0;}
 
         $result = (int) $stmt->rowCount();
 
@@ -249,7 +249,7 @@ class QueryBuilder
 
         $sql = 'SELECT sys_guid() FROM dual';
         $stmt = $this->execute($sql);
-        if ($stmt->errorCode() !== '00000') {return null;}
+        if ($stmt->errorCode() !== '00000') {return '';}
 
         $row = $stmt->fetch(\PDO::FETCH_NUM);
         $result = $row[0];

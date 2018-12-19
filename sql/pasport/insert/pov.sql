@@ -3,12 +3,12 @@ INSERT INTO PIKALKA.pasp_pov
 SELECT :guid, pin, name, SUM(t) t, 
     CASE SUM(t) 
         WHEN 1 THEN 'Директор'
-        WHEN 2 THEN 'Гол.Бухгалтер'
-        WHEN 3 THEN 'Директор, Гол.Бухгалтер'
+        WHEN 2 THEN 'Бухгалтер'
+        WHEN 3 THEN 'Дир,Бух'
         WHEN 4 THEN 'Засновник'
-        WHEN 5 THEN 'Директор, Засновник'
-        WHEN 6 THEN 'Гол.Бухгалтер, Засновник'
-        WHEN 7 THEN 'Директор, Гол.Бухгалтер, Засновник'
+        WHEN 5 THEN 'Дир,Зас'
+        WHEN 6 THEN 'Бух,Зас'
+        WHEN 7 THEN 'Дир,Бух,Зас'
         WHEN 8 THEN 'Засновник'
         ELSE 'Помилка'
     END typ

@@ -166,9 +166,25 @@ class Pasport
         $this->setSheet(5, $array);
 
         // Пов’язані
-        $array = $this->db->getAll('PIKALKA.pasp_pov_t2', $guid_param, 't DESC, tin, c_post');
-        $array = $this->transform1($array);
-        $params_from_ora = $this->transform2($array, 'T2.');
+        $sql = file_get_contents($this->root . '/sql/pasport/pov_t1.sql');
+        $array1 = $this->db->getAllFromSQL($sql, $params);
+        $array1 = $this->transform1($array1);
+        $array1 = $this->transform2($array1, 'T1.');
+
+        $array2 = $this->db->getAll('PIKALKA.pasp_pov_t2', $guid_param, 't DESC, tin, c_distr, c_stan, c_post');
+        $array2 = $this->transform1($array2);
+        $array2 = $this->transform2($array2, 'T2.');
+
+        $array3 = $this->db->getAll('PIKALKA.pasp_pov_t3', $guid_param, 't DESC, tin, c_distr, c_stan, c_post');
+        $array3 = $this->transform1($array3);
+        $array3 = $this->transform2($array3, 'T3.');
+
+        $sql = file_get_contents($this->root . '/sql/pasport/pov_t4.sql');
+        $array4 = $this->db->getAllFromSQL($sql, $params);
+        $array4 = $this->transform1($array4);
+        $array4 = $this->transform2($array4, 'T4.');
+
+        $params_from_ora = array_merge($array1, $array2, $array3, $array4);
         try {$sheet6 = $this->ss->getSheet(5);}
         catch (\Exception $e) {echo $e->getMessage(); Exit;}
         $templateParams = array_merge($default_params[6], $params_from_ora);
@@ -354,6 +370,8 @@ class Pasport
 
         if ($count1 > 0) {
             $sql = file_get_contents($this->root . '/sql/pasport/insert/pov_t2.sql');
+            $this->db->runSQL($sql, $params);
+            $sql = file_get_contents($this->root . '/sql/pasport/insert/pov_t3.sql');
             $this->db->runSQL($sql, $params);
         }
 

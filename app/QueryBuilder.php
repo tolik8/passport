@@ -10,6 +10,7 @@ class QueryBuilder
     protected $log;
     protected $errors_before_transaction;
     public $sql_time = 0;
+    public $sql_times = [];
     public $sql_count = 0;
     public $errors_count = 0;
     public $columns = [];
@@ -293,11 +294,13 @@ class QueryBuilder
     protected function execute ($sql, array $data = [])
     {
         $stmt = null;
+        $start_time = microtime(true);
 
         try {
             $stmt = $this->pdo->prepare($sql);
             foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
             $stmt->execute();
+            $this->sql_times[] = round(microtime(true) - $start_time, 4);
         } catch (\Exception $e) {
             $this->resultIsOk = false;
             $this->errors_count++;

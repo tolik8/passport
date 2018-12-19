@@ -26,7 +26,11 @@ class Pasport
         $this->myUser = $myUser;
         $this->bc = $bc;
         $access = in_string($this->role, $this->myUser->roles);
-        if (!$access) {$this->twig->showTemplate('index.html', ['my' => $this->myUser]); Exit;}
+        if (!$access) {
+            $this->twig->showTemplate('index.html', ['my' => $this->myUser]);
+            if (DEBUG) {d($this);}
+            Exit;
+        }
         $this->x['title'] = 'Паспорт';
     }
 
@@ -34,6 +38,7 @@ class Pasport
     {
         $this->x['menu'] = $this->bc->getMenu('pasport');
         $this->twig->showTemplate('pasport/pasport.html', ['x' => $this->x, 'my' => $this->myUser]);
+        if (DEBUG) {d($this);}
     }
 
     public function check (): void
@@ -46,14 +51,15 @@ class Pasport
 
         if (!$this->db->resultIsOk) {
             $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]); Exit;
+            if (DEBUG) {d($this);}
         }
 
         if (empty($this->x['data'])) {
             $_SESSION['post'] = $params;
             header('Location: /pasport/prepare');
         }
-
         $this->twig->showTemplate('pasport/check.html', ['x' => $this->x, 'my' => $this->myUser]);
+        if (DEBUG) {d($this);}
     }
 
     public function prepare (): void
@@ -105,6 +111,7 @@ class Pasport
         } else {
             $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]);
         }
+        if (DEBUG) {d($this);}
     }
 
     public function toExcel (): void

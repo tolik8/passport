@@ -14,6 +14,7 @@ class MyUser
     public $viddil;
     public $roles;
     public $admin = false;
+    public $debug;
 
     public function __construct (\App\QueryBuilder $db)
     {
@@ -32,6 +33,11 @@ class MyUser
             $this->viddil = $_SESSION['my']['viddil'];
             $this->roles = $_SESSION['my']['roles'];
             $this->admin = $_SESSION['my']['admin'];
+            $this->debug = DEBUG;
+
+            if ($_SERVER['REMOTE_ADDR'] === '10.19.190.164' || $_SERVER['REMOTE_ADDR'] === '127.0.0.1' || $this->login === 'admin19t') {
+                $this->debug = true;
+            }
             
             if ($this->admin) {
                 ini_set('error_reporting', E_ALL);

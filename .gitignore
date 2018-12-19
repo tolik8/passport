@@ -2,3 +2,4 @@
 /logs/*
 /vendor/*
 /config/config_ora.php
+/config/main.php

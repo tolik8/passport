@@ -5,6 +5,7 @@
 
 <div class="container">
     <h5 class="pb-4">По даному платнику за вказаний період вже існує сформована інформація</h5>
+    {% if my.debug %}<p>GUID: <b>{{ x.data.GUID }}</b></p>{% endif %}
     <p>Код платника: <b>{{ x.post.tin }}</b></p>
     <p>Вказаний період: <b>{{ x.post.dt1 }} - {{ x.post.dt2 }}</b></p>
     <p>Дата сформованої інформації: <b>{{ x.data.DT0 }}</b></p>

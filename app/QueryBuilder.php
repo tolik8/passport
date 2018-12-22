@@ -299,6 +299,8 @@ class QueryBuilder
         try {
             $stmt = $this->pdo->prepare($sql);
             foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
+            vd($sql);
+            vd($data);
             $stmt->execute();
             $this->sql_times[] = round(microtime(true) - $start_time, 4);
         } catch (\Exception $e) {

@@ -51,6 +51,7 @@ class Pasport
 
         if (!$this->db->resultIsOk) {
             $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]); Exit;
+            /** @noinspection PhpUnreachableStatementInspection */
             if (DEBUG) {d($this);}
         }
 
@@ -60,6 +61,29 @@ class Pasport
         }
         $this->twig->showTemplate('pasport/check.html', ['x' => $this->x, 'my' => $this->myUser]);
         if (DEBUG) {d($this);}
+    }
+
+    public function job (): void
+    {
+        /*$sql = "DECLARE job_n# NUMBER;
+BEGIN 
+    job_n# := pasport.create_job(300400, '01.01.2017', '31.12.2018', '06F2EF58972B2E32E050130A64136A5F');
+END;";*/
+        $sql = 'DECLARE job_n# NUMBER;
+BEGIN 
+    job_n# := pasport.create_job(:tin, :dt1, :dt2, :guid);
+END;';
+        $data = [
+            'tin' => '300400',
+            'dt1' => '01.01.2017',
+            'dt2' => '31.12.2018',
+            'guid' => '06F2EF58972B2E32E050130A64136A5F',
+        ];
+
+        //$result = $this->db->getAllFromSQL($sql);
+        $result = $this->db->runSQL($sql, $data);
+        vd($result);
+
     }
 
     public function prepare (): void
@@ -186,12 +210,16 @@ class Pasport
         $array3 = $this->transform1($array3);
         $array3 = $this->transform2($array3, 'T3.');
 
-        $sql = file_get_contents($this->root . '/sql/pasport/pov_t4.sql');
-        $array4 = $this->db->getAllFromSQL($sql, $params);
+        $array4 = $this->db->getAll('PIKALKA.pasp_pov_t4', $guid_param, 't DESC, tin, c_distr, c_stan, c_post');
         $array4 = $this->transform1($array4);
         $array4 = $this->transform2($array4, 'T4.');
 
-        $params_from_ora = array_merge($array1, $array2, $array3, $array4);
+        $sql = file_get_contents($this->root . '/sql/pasport/pov_t5.sql');
+        $array5 = $this->db->getAllFromSQL($sql, $params);
+        $array5 = $this->transform1($array5);
+        $array5 = $this->transform2($array5, 'T5.');
+
+        $params_from_ora = array_merge($array1, $array2, $array3, $array4, $array5);
         try {$sheet6 = $this->ss->getSheet(5);}
         catch (\Exception $e) {echo $e->getMessage(); Exit;}
         $templateParams = array_merge($default_params[6], $params_from_ora);
@@ -379,6 +407,8 @@ class Pasport
             $sql = file_get_contents($this->root . '/sql/pasport/insert/pov_t2.sql');
             $this->db->runSQL($sql, $params);
             $sql = file_get_contents($this->root . '/sql/pasport/insert/pov_t3.sql');
+            $this->db->runSQL($sql, $params);
+            $sql = file_get_contents($this->root . '/sql/pasport/insert/pov_t4.sql');
             $this->db->runSQL($sql, $params);
         }
 

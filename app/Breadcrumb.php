@@ -12,17 +12,21 @@ class Breadcrumb
         preg_match($pattern, $_SERVER['REQUEST_URI'], $matches);
         if (count($matches) > 0) {$project = $matches[0];} else {$project = '';}
         
-        $menu['index']['link'] = '/';
-        $menu['index']['name'] = 'Головна';
-        $menu['index']['par'] = 'root';
+        $first_menu['index'] = [
+            'link' => '/',
+            'name' => 'Головна',
+            'par' => 'root',
+        ];
 
         $filemenu = $_SERVER['DOCUMENT_ROOT'] . '/config/menu/' . $project . '.php';
         if (file_exists($filemenu)) {
             /** @noinspection PhpIncludeInspection */
-            require_once $filemenu;
+            $menu = require $filemenu;
+        } else {
+            $menu = [];
         }
 
-        $this->menu1 = $menu;
+        $this->menu1 = array_merge($first_menu, $menu);
     }
 
     public function getMenu ($page_id): array

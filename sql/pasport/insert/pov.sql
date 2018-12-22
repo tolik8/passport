@@ -19,6 +19,6 @@ FROM
     UNION SELECT LPAD(pin_found,10,'0'), name, 4 
     FROM RG02.r21pfound WHERE c_distr = :c_distr AND tin = :tin AND pin_found IS NOT NULL
     
-    UNION SELECT LPAD(tin_found,10,'0'), name, 8 
+    UNION SELECT TO_CHAR(tin_found), name, 8 
     FROM RG02.r21pfound WHERE c_distr = :c_distr AND tin = :tin AND tin_found IS NOT NULL)
 GROUP BY pin, name

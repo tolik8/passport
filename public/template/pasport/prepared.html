@@ -5,7 +5,10 @@
 
 <div class="container col-lg-6">
     <div class="container text-center pt-3 pb-3">
-        <div class="alert alert-success font-weight-bold">Дані підготовлено за {{ x.prepare_time }} сек</div>
+        <div class="alert alert-success font-weight-bold">
+            {% if my.debug %}{{ x.guid }}<br>{% endif %}
+            Дані підготовлено за {{ x.prepare_time }} сек
+        </div>
     </div>
     <div class="container text-center">
         <form method="POST" action="/pasport/excel">

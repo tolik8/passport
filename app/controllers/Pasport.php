@@ -80,7 +80,7 @@ END;';
             'guid' => '06F2EF58972B2E32E050130A64136A5F',
         ];
 
-        //$result = $this->db->getAllFromSQL($sql);
+        //$result = $this->db->getAllFromSQL($sql, $data);
         $result = $this->db->runSQL($sql, $data);
         vd($result);
 
@@ -122,13 +122,13 @@ END;';
         ];
 
         // запис в post_jrn
-        $this->db->insert('PIKALKA.pasp_jrn', $sql_params);
+        $this->db->insert('PIKALKA.pasp_jrn_old', $sql_params);
 
         $this->x['prepare_time'] = round(microtime(true) - $start_time, 4);
         $sql_params['tm'] = str_replace('.', ',', $this->x['prepare_time']);
 
         // запис в post_log
-        $this->db->insert('PIKALKA.pasp_log', $sql_params);
+        $this->db->insert('PIKALKA.pasp_log_old', $sql_params);
 
         if (empty($this->x['prepare_errors'])) {
             $this->twig->showTemplate('pasport/prepared.html', ['x' => $this->x, 'my' => $this->myUser]);
@@ -158,7 +158,7 @@ END;';
         $pattern = '#^[0-9a-zA-Z]{32}$#';
         $this->new_guid = regex($pattern, $_POST['guid'], 0);
 
-        $params = $this->db->getOneRow('PIKALKA.pasp_jrn', ['guid' => $this->new_guid]);
+        $params = $this->db->getOneRow('PIKALKA.pasp_jrn_old', ['guid' => $this->new_guid]);
         $guid_param = ['guid' => $this->new_guid];
 
         $input_xlsParams = ['{tin}' => $params['TIN'], '{dt1}' => $params['DT1'], '{dt2}' => $params['DT2']];
@@ -185,15 +185,15 @@ END;';
         PhpExcelTemplator::renderWorksheet($sheet2, $templateVars[2], $templateParams);
 
         // Баланс
-        $array = $this->db->getAll('PIKALKA.pasp_balance', $guid_param, 'period_year, period_month');
+        $array = $this->db->getAll('PIKALKA.pasp_balance_old', $guid_param, 'period_year, period_month');
         $this->setSheet(3, $array);
 
         // Прибуток
-        $array = $this->db->getAll('PIKALKA.pasp_pributok', $guid_param, 'period_year, period_month');
+        $array = $this->db->getAll('PIKALKA.pasp_pributok_old', $guid_param, 'period_year, period_month');
         $this->setSheet(4, $array);
 
         // ЄСВ
-        $array = $this->db->getAll('PIKALKA.pasp_esv', $guid_param, 'period');
+        $array = $this->db->getAll('PIKALKA.pasp_esv_old', $guid_param, 'period');
         $this->setSheet(5, $array);
 
         // Пов’язані
@@ -202,15 +202,15 @@ END;';
         $array1 = $this->transform1($array1);
         $array1 = $this->transform2($array1, 'T1.');
 
-        $array2 = $this->db->getAll('PIKALKA.pasp_pov_t2', $guid_param, 't DESC, tin, c_distr, c_stan, c_post');
+        $array2 = $this->db->getAll('PIKALKA.pasp_pov_t2_old', $guid_param, 't DESC, tin, c_distr, c_stan, c_post');
         $array2 = $this->transform1($array2);
         $array2 = $this->transform2($array2, 'T2.');
 
-        $array3 = $this->db->getAll('PIKALKA.pasp_pov_t3', $guid_param, 't DESC, tin, c_distr, c_stan, c_post');
+        $array3 = $this->db->getAll('PIKALKA.pasp_pov_t3_old', $guid_param, 't DESC, tin, c_distr, c_stan, c_post');
         $array3 = $this->transform1($array3);
         $array3 = $this->transform2($array3, 'T3.');
 
-        $array4 = $this->db->getAll('PIKALKA.pasp_pov_t4', $guid_param, 't DESC, tin, c_distr, c_stan, c_post');
+        $array4 = $this->db->getAll('PIKALKA.pasp_pov_t4_old', $guid_param, 't DESC, tin, c_distr, c_stan, c_post');
         $array4 = $this->transform1($array4);
         $array4 = $this->transform2($array4, 'T4.');
 
@@ -230,7 +230,7 @@ END;';
             'guid' => $this->new_guid, 'dt1' => $params['DT1'], 'dt2' => $params['DT2'],
             'tin' => $params['TIN'], 'guid_user' => $this->myUser->guid, 'tm' => 0,
         ];
-        $this->db->insert('PIKALKA.pasp_log', $sql_params);
+        $this->db->insert('PIKALKA.pasp_log_old', $sql_params);
 
         if ($outputMethod) {PhpExcelTemplator::outputSpreadsheetToFile($this->ss, $outputFile);}
         else {PhpExcelTemplator::saveSpreadsheetToFile($this->ss, $outputFile);}
@@ -337,7 +337,7 @@ END;';
         $guid_param = ['guid' => $this->new_guid];
         $params = array_merge($params, $guid_param);
 
-        $count1 = $this->db->getCount('PIKALKA.pasp_balance', $guid_param);
+        $count1 = $this->db->getCount('PIKALKA.pasp_balance_old', $guid_param);
         if ($count1 > 0) {$prepared = true; return $prepared;}
 
         if ($count1 === 0) {
@@ -358,7 +358,7 @@ END;';
         $guid_param = ['guid' => $this->new_guid];
         $params = array_merge($params, $guid_param);
 
-        $count1 = $this->db->getCount('PIKALKA.pasp_pributok', $guid_param);
+        $count1 = $this->db->getCount('PIKALKA.pasp_pributok_old', $guid_param);
         if ($count1 > 0) {$prepared = true; return $prepared;}
 
         if ($count1 === 0) {
@@ -379,7 +379,7 @@ END;';
         $guid_param = ['guid' => $this->new_guid];
         $params = array_merge($params, $guid_param);
 
-        $count1 = $this->db->getCount('PIKALKA.pasp_esv', $guid_param);
+        $count1 = $this->db->getCount('PIKALKA.pasp_esv_old', $guid_param);
         if ($count1 > 0) {$prepared = true; return $prepared;}
 
         if ($count1 === 0) {

@@ -1,5 +1,5 @@
 -- pasport/insert/pributok.sql
-INSERT INTO PIKALKA.pasp_pributok
+INSERT INTO PIKALKA.pasp_pributok_old
 SELECT :guid, d.period_year, d.period_month, d.c_sti, d.tin, d.d_get, d.n_reg,
     CASE WHEN z = 1 THEN c_doc_sub||' '||'звітна' 
         ELSE (CASE WHEN zn = 1 THEN c_doc_sub||' '||'нова звітна' ELSE c_doc_sub||' '||'уточнююча' END) END typ, 

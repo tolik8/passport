@@ -1,5 +1,5 @@
 -- pasport/insert/pov.sql
-INSERT INTO PIKALKA.pasp_pov
+INSERT INTO PIKALKA.pasp_pov_old
 SELECT :guid, pin, name, SUM(t) t, 
     CASE SUM(t) 
         WHEN 1 THEN 'Директор'

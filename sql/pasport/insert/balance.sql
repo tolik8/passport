@@ -1,5 +1,5 @@
 -- pasport/insert/balance.sql
-INSERT INTO PIKALKA.pasp_balance
+INSERT INTO PIKALKA.pasp_balance_old
 SELECT :guid, C_STI,period_year,period_month,d_get,n_reg,
 SUM(A1300) A1300,SUM(B1300) B1300,SUM(A1495) A1495, SUM(B1495) B1495, SUM(A1595) A1595, SUM(B1595) B1595,SUM(A1695) A1695,SUM(B1695) B1695,
 SUM(A1700) A1700,SUM(B1700) B1700,SUM(A1800) A1800,SUM(B1800) B1800,SUM(A1900) A1900,SUM(B1900) B1900
@@ -19,7 +19,7 @@ sum(decode(RTRIM(c.C_DOC_ROWC),'^A1800',to_number(replace(zn, '.', ',')),0)) as 
 sum(decode(RTRIM(c.C_DOC_ROWC),'^B1800',to_number(replace(zn, '.', ',')),0)) as B1800,
 sum(decode(RTRIM(c.C_DOC_ROWC),'^A1900',to_number(replace(zn, '.', ',')),0)) as A1900,
 sum(decode(RTRIM(c.C_DOC_ROWC),'^B1900',to_number(replace(zn, '.', ',')),0)) as B1900
-FROM t_zregdoc a, t_zdata_n c
+FROM DP00.t_zregdoc a, DP00.t_zdata_n c
   where
      a.c_doc ='S01'
     and a.c_doc_sub = '001'
@@ -46,7 +46,7 @@ sum(decode(RTRIM(c.C_DOC_ROWC),'^A1800',to_number(replace(zn, '.', ',')),0)) as 
 sum(decode(RTRIM(c.C_DOC_ROWC),'^B1800',to_number(replace(zn, '.', ',')),0)) as B1800,
 sum(decode(RTRIM(c.C_DOC_ROWC),'^A1900',to_number(replace(zn, '.', ',')),0)) as A1900,
 sum(decode(RTRIM(c.C_DOC_ROWC),'^B1900',to_number(replace(zn, '.', ',')),0)) as B1900
-FROM t_zregdoc a, t_zdata_c c
+FROM DP00.t_zregdoc a, DP00.t_zdata_c c
   where
      a.c_doc ='S01'
     and a.c_doc_sub = '001'
@@ -74,7 +74,7 @@ sum(decode(RTRIM(c.C_DOC_ROWC),'^R1800G4',c.zn,0))as B1800,
 sum(decode(RTRIM(c.C_DOC_ROWC),'^R1900G3',c.zn,0))as A1900,
 sum(decode(RTRIM(c.C_DOC_ROWC),'^R1900G4',c.zn,0))as B1900
 
-FROM t_zregdoc a, t_zdata_n c
+FROM DP00.t_zregdoc a, DP00.t_zdata_n c
   where
      a.c_doc ='J09'
     and a.c_doc_sub = '001'

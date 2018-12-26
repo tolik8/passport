@@ -1,5 +1,7 @@
 <?php
 
+//$isUnderConstruct = true;
+
 return [
     'pasport' => [
         'link' => '/pasport',

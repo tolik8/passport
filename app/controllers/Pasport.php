@@ -26,12 +26,22 @@ class Pasport
         $this->myUser = $myUser;
         $this->bc = $bc;
         $access = in_string($this->role, $this->myUser->roles);
+        $this->x['title'] = 'Паспорт';
+
         if (!$access) {
             $this->twig->showTemplate('index.html', ['my' => $this->myUser]);
             if (DEBUG) {d($this);}
             Exit;
         }
-        $this->x['title'] = 'Паспорт';
+
+        if ($this->bc->isUnderConstruct) {
+            try {
+                $this->x['img_number'] = random_int(0, 9);
+            } catch (\Exception $e) {
+                $this->x['img_number'] = 0;
+            }
+            $this->twig->showTemplate('isUnderConstruct.html', ['x' => $this->x, 'my' => $this->myUser]); Exit;
+        }
     }
 
     public function pasport (): void

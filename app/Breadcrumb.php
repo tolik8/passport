@@ -5,6 +5,7 @@ namespace App;
 class Breadcrumb
 {
     protected $menu1;
+    public $isUnderConstruct = false;
 
     public function __construct ()
     {
@@ -22,6 +23,9 @@ class Breadcrumb
         if (file_exists($filemenu)) {
             /** @noinspection PhpIncludeInspection */
             $menu = require $filemenu;
+            /** @noinspection PhpUndefinedVariableInspection */
+            /** @noinspection IssetArgumentExistenceInspection */
+            if (isset($isUnderConstruct)) {$this->isUnderConstruct = $isUnderConstruct;}
         } else {
             $menu = [];
         }

@@ -98,9 +98,10 @@ END;';
 
     public function loading ($guid): void
     {
-        echo $guid;
-//        $this->x['loading_index'] = random_int(0,2);
-        $this->x['loading_index'] = 2;
+        $this->x['menu'] = $this->bc->getMenu('loading');
+//        echo $guid . '<br>';
+        $this->x['loading_index'] = random_int(0,9);
+//        $this->x['loading_index'] = 9;
         $this->twig->showTemplate('pasport/loading.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 

@@ -4,7 +4,20 @@
 {% include('inc/menu.html') %}
 {% include('inc/bc_menu.html') %}
 
-{% include('inc/loading/loading.html') %}
+<div id="loading" class="container">
+    {% include('inc/loading/' ~ x.loading_index ~ '.html') %}
+</div>
+
+<div id="prepare-data" class="container">
+    <div class="row">
+        <span class="bg-primary text-white font-weight-bold p-3">
+            Старт<br>
+            Баланс - 0,543<br>
+            ЄСВ - 0,118<br>
+            Прибуток - 0,321<br>
+        </span>
+    </div>
+</div>
 
 {% include('inc/footer1.html') %}
 {% include('inc/footer2.html') %}

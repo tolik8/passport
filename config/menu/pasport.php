@@ -19,6 +19,11 @@ return [
         'name' => 'Підготовка',
         'par' => 'pasport',
     ],
+    'loading' => [
+        'link' => '/pasport/loading',
+        'name' => 'Підготовка',
+        'par' => 'pasport',
+    ],
     'job' => [
         'link' => '/pasport/job',
         'name' => 'Job',

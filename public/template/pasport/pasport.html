@@ -1,7 +1,7 @@
-{{ include('inc/header1.html') }}
-{{ include('inc/header2.html') }}
-{{ include('inc/menu.html') }}
-{{ include('inc/bc_menu.html') }}
+{% include('inc/header1.html') %}
+{% include('inc/header2.html') %}
+{% include('inc/menu.html') %}
+{% include('inc/bc_menu.html') %}
 
 <div class="container col-lg-4">
   <form action="/pasport/check" method="POST">
@@ -29,5 +29,5 @@
   </form>
 </div>
 
-{{ include('inc/footer1.html') }}
-{{ include('inc/footer2.html') }}
+{% include('inc/footer1.html') %}
+{% include('inc/footer2.html') %}

@@ -1,10 +1,10 @@
 {% include('inc/header1.html') %}
+<link rel="stylesheet" href="/css/loading/{{x.loading_index}}.css">
 {% include('inc/header2.html') %}
 {% include('inc/menu.html') %}
+{% include('inc/bc_menu.html') %}
 
-<div class="container text-center pt-5">
-    <span class="p-3 mb-2 bg-warning text-dark font-weight-bold">У Вас немає доступу до даного ресурсу!</span>
-</div>
+{% include('inc/loading/loading.html') %}
 
 {% include('inc/footer1.html') %}
 {% include('inc/footer2.html') %}

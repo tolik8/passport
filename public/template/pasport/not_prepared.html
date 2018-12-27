@@ -1,7 +1,7 @@
-{{ include('inc/header1.html') }}
-{{ include('inc/header2.html') }}
-{{ include('inc/menu.html') }}
-{{ include('inc/bc_menu.html') }}
+{% include('inc/header1.html') %}
+{% include('inc/header2.html') %}
+{% include('inc/menu.html') %}
+{% include('inc/bc_menu.html') %}
 
 <div class="container text-center p-5">
     <span class="p-3 bg-danger text-light font-weight-bold">При підготовці даних виникли помилки в:</span>
@@ -12,5 +12,5 @@
     {% endfor %}
 </div>
 
-{{ include('inc/footer1.html') }}
-{{ include('inc/footer2.html') }}
+{% include('inc/footer1.html') %}
+{% include('inc/footer2.html') %}

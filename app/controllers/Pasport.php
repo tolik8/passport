@@ -96,6 +96,14 @@ END;';
 
     }
 
+    public function loading ($guid): void
+    {
+        echo $guid;
+//        $this->x['loading_index'] = random_int(0,2);
+        $this->x['loading_index'] = 2;
+        $this->twig->showTemplate('pasport/loading.html', ['x' => $this->x, 'my' => $this->myUser]);
+    }
+
     public function prepare (): void
     {
         $start_time = microtime(true);

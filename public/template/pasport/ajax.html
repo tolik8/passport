@@ -1,0 +1,25 @@
+<link rel="stylesheet" href="/lib/bootstrap/4.1.3/css/bootstrap.min.css">
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+
+            <table class="table table-sm">
+            {% for step in x.pasp_steps %}
+                <tr>
+                    <td>{{ step.STEP }}</td>
+                    <td>{{ step.NAME }}</td>
+                    {% if step.IS_ERR == 1 %}
+                        <td>ERROR</td>
+                        <td>---</td>
+                    {% else %}
+                        <td>{{ step.TM }}</td>
+                        <td>{{ step.TM_TOTAL }}</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </table>
+
+        </div>
+    </div>
+</div>

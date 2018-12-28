@@ -4,10 +4,6 @@
 {% include('inc/menu.html') %}
 {% include('inc/bc_menu.html') %}
 
-<div id="loading" class="container">
-    {% include('inc/loading/' ~ x.loading_index ~ '.html') %}
-</div>
-
 <div id="prepare-data" class="container">
     <div class="row">
         <span class="bg-primary text-white font-weight-bold p-3">
@@ -17,6 +13,10 @@
             Прибуток - 0,321<br>
         </span>
     </div>
+</div>
+
+<div id="loading" class="container">
+    {% include('inc/loading/' ~ x.loading_index ~ '.html') %}
 </div>
 
 {% include('inc/footer1.html') %}

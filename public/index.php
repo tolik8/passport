@@ -41,6 +41,7 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->addRoute('GET', '/pasport', ['App\controllers\Pasport', 'pasport']);
     $r->addRoute('GET', '/pasport/job', ['App\controllers\Pasport', 'job']);
     $r->addRoute('GET', '/pasport/loading/{guid:[0-9a-zA-Z]{1,32}}', ['App\controllers\Pasport', 'loading']);
+    $r->addRoute('GET', '/pasport/ajax/{guid:[0-9a-zA-Z]{1,32}}', ['App\controllers\Pasport', 'ajax']);
     $r->addRoute('POST', '/pasport/check', ['App\controllers\Pasport', 'check']);
     $r->addRoute('GET', '/pasport/prepare', ['App\controllers\Pasport', 'prepare']);
     $r->addRoute('POST', '/pasport/prepare', ['App\controllers\Pasport', 'prepare']);

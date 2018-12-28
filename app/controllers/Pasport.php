@@ -99,10 +99,18 @@ END;';
     public function loading ($guid): void
     {
         $this->x['menu'] = $this->bc->getMenu('loading');
-//        echo $guid . '<br>';
-        $this->x['loading_index'] = random_int(0,9);
-//        $this->x['loading_index'] = 9;
+        $loading_index = 13;
+//        $loading_index = random_int(0,13);
+        if ($loading_index < 10) {$this->x['loading_index'] = 'a0'.$loading_index;} else {$this->x['loading_index'] = 'a'.$loading_index;}
+
         $this->twig->showTemplate('pasport/loading.html', ['x' => $this->x, 'my' => $this->myUser]);
+    }
+
+    public function ajax ($guid): void
+    {
+        $this->x['pasp_steps'] = $this->db->getAll('PIKALKA.pasp_steps', ['guid' => $guid], 'step');
+
+        $this->twig->showTemplate('pasport/ajax.html', ['x' => $this->x]);
     }
 
     public function prepare (): void
@@ -191,10 +199,8 @@ END;';
         PhpExcelTemplator::renderWorksheet($sheet1, $templateVars[1], $templateParams);
 
         // Контрагенти
-        //$sql = file_get_contents($this->root . '/sql/pasport/kontr_kre.sql');
         $sql = 'SELECT ROWNUM n, t.* FROM (SELECT * FROM PIKALKA.pasp_kontr_kre3 WHERE guid = :guid ORDER BY obs DESC, tin) t';
         $params_01 = $this->excelKontr($sql, $params, 'T1.');
-        //$sql = file_get_contents($this->root . '/sql/pasport/kontr_zob.sql');
         $sql = 'SELECT ROWNUM n, t.* FROM (SELECT * FROM PIKALKA.pasp_kontr_zob3 WHERE guid = :guid ORDER BY obs DESC, cp_tin) t';
         $params_02 = $this->excelKontr($sql, $params, 'T2.');
         $params_from_ora = array_merge($params_01, $params_02);

@@ -99,7 +99,8 @@ END;';
     public function loading ($guid): void
     {
         $this->x['menu'] = $this->bc->getMenu('loading');
-        $loading_index = 13;
+//        echo $guid;
+        $loading_index = 0;
 //        $loading_index = random_int(0,13);
         if ($loading_index < 10) {$this->x['loading_index'] = 'a0'.$loading_index;} else {$this->x['loading_index'] = 'a'.$loading_index;}
 
@@ -108,9 +109,14 @@ END;';
 
     public function ajax ($guid): void
     {
-        $this->x['pasp_steps'] = $this->db->getAll('PIKALKA.pasp_steps', ['guid' => $guid], 'step');
-
-        $this->twig->showTemplate('pasport/ajax.html', ['x' => $this->x]);
+        $sql = 'SELECT COUNT(*) FROM PIKALKA.pasp_jrn WHERE guid = :guid AND tm IS NOT NULL';
+        $cnt = $this->db->getOneValueFromSQL($sql, ['guid' => $guid]);
+        if ($cnt === '1') {
+            echo 'Підготовка завершена';
+        } else {
+            $this->x['pasp_steps'] = $this->db->getAll('PIKALKA.pasp_steps', ['guid' => $guid], 'step');
+            $this->twig->showTemplate('pasport/ajax.html', ['x' => $this->x]);
+        }
     }
 
     public function prepare (): void

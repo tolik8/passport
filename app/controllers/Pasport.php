@@ -100,8 +100,9 @@ END;';
     {
         $this->x['menu'] = $this->bc->getMenu('loading');
 //        echo $guid;
-        $loading_index = 0;
-//        $loading_index = random_int(0,13);
+        $loading_index = 1;
+//        $loading_index = random_int(1,12);
+//        echo $loading_index;
         if ($loading_index < 10) {$this->x['loading_index'] = 'a0'.$loading_index;} else {$this->x['loading_index'] = 'a'.$loading_index;}
 
         $this->twig->showTemplate('pasport/loading.html', ['x' => $this->x, 'my' => $this->myUser]);
@@ -117,6 +118,21 @@ END;';
             $this->x['pasp_steps'] = $this->db->getAll('PIKALKA.pasp_steps', ['guid' => $guid], 'step');
             $this->twig->showTemplate('pasport/ajax.html', ['x' => $this->x]);
         }
+    }
+
+    public function prepare2 (): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->x['data'] = $params = $this->getPost();
+        } else {
+            if (!isset($_SESSION['post'])) {header('Location: /pasport');}
+            $params = $_SESSION['post'];
+            unset($_SESSION['post']);
+        }
+        $sql = 'BEGIN pasport.create_job(:tin, :dt1, :dt2, :user_guid); END;';
+        $params = array_merge($params, ['user_guid' => $this->myUser->guid]);
+        $this->db->runSQL($sql, $params);
+
     }
 
     public function prepare (): void

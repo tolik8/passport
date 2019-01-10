@@ -1,5 +1,6 @@
 <!--<link rel="stylesheet" href="/lib/bootstrap/4.1.3/css/bootstrap.min.css">-->
 
+{% if x.pasp_steps|length > 0 %}
 <table class="table table-sm table-bordered">
 {% for step in x.pasp_steps %}
     <tr>
@@ -15,3 +16,6 @@
     </tr>
 {% endfor %}
 </table>
+{% else %}
+Підготовка ...
+{% endif %}

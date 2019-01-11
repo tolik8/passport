@@ -1,0 +1,25 @@
+{% include('inc/header1.html') %}
+{% include('inc/header2.html') %}
+{% include('inc/menu.html') %}
+{% include('inc/bc_menu.html') %}
+
+<div class="container col-lg-6">
+    <div class="container text-center pt-3 pb-3">
+        <div class="alert alert-success font-weight-bold">
+            {% if my.debug %}{{ x.guid }}<br>{% endif %}
+            Дані підготовлено за {{ x.prepare_time }} сек
+        </div>
+    </div>
+    <div class="container text-center">
+        <form method="POST" action="/passport/excel">
+            <input type="hidden" name="guid" value="{{ x.guid }}">
+            <input type="hidden" name="tin" value="{{ x.data.tin }}">
+            <input type="hidden" name="dt1" value="{{ x.data.dt1 }}">
+            <input type="hidden" name="dt2" value="{{ x.data.dt2 }}">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-angle-double-right mr-2"></i>Сформувати Excel</button>
+        </form>
+    </div>
+</div>
+
+{% include('inc/footer1.html') %}
+{% include('inc/footer2.html') %}

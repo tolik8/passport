@@ -1,0 +1,26 @@
+{% include('inc/header1.html') %}
+{% include('inc/header2.html') %}
+{% include('inc/menu.html') %}
+{% include('inc/bc_menu.html') %}
+
+<div class="container">
+    <h5 class="pb-4">По даному платнику за вказаний період вже існує сформована інформація</h5>
+    {% if my.debug %}<p>GUID: <b>{{ x.data.GUID }}</b></p>{% endif %}
+    <p>Код платника: <b>{{ x.post.tin }}</b></p>
+    <p>Вказаний період: <b>{{ x.post.dt1 }} - {{ x.post.dt2 }}</b></p>
+    <p>Дата сформованої інформації: <b>{{ x.data.DT0 }}</b></p>
+    <p>Хто формував інформацію: <b>{{ x.data.FIO1|e }} {{ x.data.FIO2|e }} {{ x.data.FIO3|e }}</b></p>
+    <form method="POST" action="/passport/excel" class="mb-3">
+        <input type="hidden" name="guid" value="{{ x.data.GUID }}">
+        <input type="submit" class="btn btn-success" value="Скористатися вже готовою інформацією (рекомендується)">
+    </form>
+    <form method="POST" action="/passport/prepare">
+        <input type="hidden" name="tin" value="{{ x.post.tin }}">
+        <input type="hidden" name="dt1" value="{{ x.post.dt1 }}">
+        <input type="hidden" name="dt2" value="{{ x.post.dt2 }}">
+        <input type="submit" class="btn btn-primary" value="Сформувати заново">
+    </form>
+</div>
+
+{% include('inc/footer1.html') %}
+{% include('inc/footer2.html') %}

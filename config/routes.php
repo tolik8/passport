@@ -15,5 +15,5 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->get('/passport/ajax/{guid:[0-9a-zA-Z]{1,32}}', ['App\controllers\Passport', 'ajax']);
     $r->post('/passport/excel', ['App\controllers\Passport', 'toExcel']);
     
-//    $r->get('/token/{token:[0-9a-zA-Z]{64}}', ['App\controllers\Token', 'index']);
+    $r->get('/token/{token:[0-9a-zA-Z]{64}}', ['App\controllers\Token', 'index']);
 });

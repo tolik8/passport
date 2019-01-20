@@ -45,17 +45,6 @@ class MyUser
                 ini_set('display_startup_errors', 1);
             }
             
-            /*$row = $this->db->getOneRow('PIKALKA.people', ['guid' => $_SESSION['my']['guid'] ]);
-            if (count($row) > 0) {
-                $this->login = $row['LOGIN'];
-                $this->fio1 = $row['FIO1'];
-                $this->fio2 = $row['FIO2'];
-                $this->fio3 = $row['FIO3'];
-                $this->viddil = $row['VIDDIL_ID'];
-                $sql = file_get_contents('../sql/myuser/get_roles.sql');
-                $my_roles = $this->db->getOneColFromSQL($sql, ['guid' => $this->guid]);
-                $this->roles = implode(',', $my_roles);
-            }*/
         }
     }
 

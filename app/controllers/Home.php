@@ -2,22 +2,14 @@
 
 namespace App\controllers;
 
-class Home 
+class Home extends Controller
 {
-    protected $twig;
-    protected $db;
-    protected $myUser;
-
-    public function __construct (\App\Twig $twig, \App\QueryBuilder $db, \App\MyUser $myUser)
-    {
-        $this->twig = $twig;
-        $this->db = $db;
-        $this->myUser = $myUser;
-    }
+    protected $title = 'ALISA2';
+    protected $need_access = false;
 
     public function index (): void
     {
-        $this->twig->showTemplate('index.html', ['my' => $this->myUser]);
+        $this->twig->showTemplate('index.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
     public function about (): void

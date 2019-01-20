@@ -4,49 +4,11 @@ namespace App\controllers;
 
 use alhimik1986\PhpExcelTemplator\PhpExcelTemplator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use App\QueryBuilder;
-use App\Twig;
-use App\MyUser;
-use App\Breadcrumb;
 
-class Passport
+class Passport extends Controller
 {
-    private $root;
-    protected $twig;
-    protected $db;
-    protected $myUser;
-    protected $bc;
     protected $role = '22'; // Роль 22 - Паспорт платника
-    protected $x;
-    protected $new_guid;
-    protected $c_distr;
-    protected $ss;
-
-    public function __construct (Twig $twig, QueryBuilder $db, MyUser $myUser, Breadcrumb $bc)
-    {
-        $this->root = $_SERVER['DOCUMENT_ROOT'];
-        $this->twig = $twig;
-        $this->db = $db;
-        $this->myUser = $myUser;
-        $this->bc = $bc;
-        $access = in_string($this->role, $this->myUser->roles);
-        $this->x['title'] = 'Паспорт';
-
-        if (!$access) {
-            $this->twig->showTemplate('index.html', ['my' => $this->myUser]);
-            if (DEBUG) {d($this);}
-            Exit;
-        }
-
-        if ($this->bc->isUnderConstruct) {
-            try {
-                $this->x['img_number'] = random_int(0, 9);
-            } catch (\Exception $e) {
-                $this->x['img_number'] = 0;
-            }
-            $this->twig->showTemplate('isUnderConstruct.html', ['x' => $this->x, 'my' => $this->myUser]); Exit;
-        }
-    }
+    protected $title = 'Паспорт';
 
     public function index (): void
     {
@@ -85,29 +47,9 @@ class Passport
         if (DEBUG) {d($this);}
     }
 
-    /*public function job (): void
-    {
-        $sql = 'DECLARE job_n# NUMBER;
-BEGIN 
-    job_n# := passport.create_job(:tin, :dt1, :dt2, :guid);
-END;';
-        $data = [
-            'tin' => '300400',
-            'dt1' => '01.01.2017',
-            'dt2' => '31.12.2018',
-            'guid' => '06F2EF58972B2E32E050130A64136A5F',
-        ];
-
-        //$result = $this->db->getAllFromSQL($sql, $data);
-        $result = $this->db->runSQL($sql, $data);
-        vd($result);
-
-    }*/
-
     public function loading ($guid): void
     {
         $this->x['menu'] = $this->bc->getMenu('loading');
-//        echo $guid;
         $loading_index = 1;
 //        $loading_index = random_int(1,12);
 //        echo $loading_index;
@@ -257,11 +199,6 @@ END;';
         $this->setSheet(5, $array);
 
         // Пов’язані
-        /*$sql = file_get_contents($this->root . '/sql/passport/pov_t1.sql');
-        $array1 = $this->db->getAllFromSQL($sql, $params);
-        $array1 = $this->transform1($array1);
-        $array1 = $this->transform2($array1, 'T1.');*/
-
         $sql = 'SELECT t.*, \'\' blank FROM PIKALKA.pass_pov_t1 t WHERE guid = :guid ORDER BY c_distr, tin, c_stan';
         $array1 = $this->db->getAllFromSQL($sql, $guid_param);
         $array1 = $this->transform1($array1);
@@ -279,11 +216,6 @@ END;';
         $array4 = $this->transform1($array4);
         $array4 = $this->transform2($array4, 'T4.');
 
-        /*$sql = file_get_contents($this->root . '/sql/passport/pov_t5.sql');
-        $array5 = $this->db->getAllFromSQL($sql, $params);
-        $array5 = $this->transform1($array5);
-        $array5 = $this->transform2($array5, 'T5.');*/
-
         $array5 = $this->db->getAll('PIKALKA.pass_pov_t5', $guid_param, 't DESC, tin, c_distr, c_stan');
         $array5 = $this->transform1($array5);
         $array5 = $this->transform2($array5, 'T5.');
@@ -294,7 +226,7 @@ END;';
         $templateParams = array_merge($default_params[6], $params_from_ora);
         PhpExcelTemplator::renderWorksheet($sheet6, $templateVars[6], $templateParams);
 
-        // запис в post_log
+        // запис в pass_log
         $sql_params = [
             'guid' => $this->new_guid, 'dt1' => $params['DT1'], 'dt2' => $params['DT2'],
             'tin' => $params['TIN'], 'guid_user' => $this->myUser->guid, 'tm' => 0,

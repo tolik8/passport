@@ -1,14 +1,14 @@
 <?php
+/** @noinspection ClassConstantCanBeUsedInspection */
 
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->get('/', ['App\controllers\Home', 'index']);
-    $r->get('/refresh', ['App\MyUser', 'refresh']);
-    $r->get('/logout', ['App\MyUser', 'logout']);
     $r->get('/about', ['App\controllers\Home', 'about']);
+    $r->get('/refresh', ['App\MyUser', 'refresh']); // погано викликати замість контроллера обєкт
+    $r->get('/logout', ['App\MyUser', 'logout']);   // погано викликати замість контроллера обєкт
     $r->get('/test', ['App\controllers\Test', 'index']);
     
     $r->get('/passport', ['App\controllers\Passport', 'index']);
-//    $r->get('/passport/job', ['App\controllers\Passport', 'job']);
     $r->post('/passport/check', ['App\controllers\Passport', 'check']);
     $r->addRoute(['GET', 'POST'], '/passport/prepare', ['App\controllers\Passport', 'prepare']);
     $r->get('/passport/loading/{guid:[0-9a-zA-Z]{1,32}}', ['App\controllers\Passport', 'loading']);

@@ -11,7 +11,7 @@ function updateClock () {
     let $guid = result[0].substr(1);
     let $domen = $url.match(/http:\/\/[0-9A-Z.]+\//gi);
     let $ajax_url = $domen + 'passport/ajax/' + $guid;
-    console.log($ajax_url);
+    //console.log($ajax_url);
 
     let request = $.ajax({
         url: $ajax_url,
@@ -33,7 +33,7 @@ function updateClock () {
     });
 
     request.fail(function(jqXHR, textStatus) {
-        alert('Request failed: ' + textStatus);
+        //alert('Request failed: ' + textStatus);
     });
 }
 

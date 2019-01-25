@@ -83,14 +83,19 @@ class Passport extends Controller
             $params = $_SESSION['post'];
             unset($_SESSION['post']);
         }
-        $new_guid = $this->db->getNewGUID();
-        $sql = 'BEGIN passport.create_job(:tin, :dt1, :dt2, :user_guid, :guid); END;';
-        $params = array_merge($params, ['user_guid' => $this->myUser->guid, 'guid' => $new_guid]);
-        $this->db->runSQL($sql, $params);
-        header('Location: /passport/loading/' . $new_guid);
+        $count = $this->db->getCount('RG02.r21taxpay', ['tin' => $params['tin']]);
+        if ($count === 0) {
+            header('Location: /passport/taxpayer_not_found');
+        } else {
+            $new_guid = $this->db->getNewGUID();
+            $sql = 'BEGIN passport.create_job(:tin, :dt1, :dt2, :user_guid, :guid); END;';
+            $params = array_merge($params, ['user_guid' => $this->myUser->guid, 'guid' => $new_guid]);
+            $this->db->runSQL($sql, $params);
+            header('Location: /passport/loading/' . $new_guid);
+        }
     }
 
-    public function prepare_old (): void
+    /*public function prepare_old (): void
     {
         $start_time = microtime(true);
         $this->x['menu'] = $this->bc->getMenu('prepare');
@@ -140,7 +145,7 @@ class Passport extends Controller
             $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]);
         }
         if (DEBUG) {d($this);}
-    }
+    }*/
 
     public function toExcel (): void
     {
@@ -237,6 +242,12 @@ class Passport extends Controller
         else {PhpExcelTemplator::saveSpreadsheetToFile($this->ss, $outputFile);}
     }
 
+    public function taxpayer_not_found (): void
+    {
+        $this->x['errors'][] = 'Вказаний платник не знайдений в базі даних';
+        $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]);
+    }
+
     protected function setSheet ($index, $array): void
     {
         $array = $this->transform1($array);
@@ -307,7 +318,7 @@ class Passport extends Controller
         return array_merge($reg_params, $reg_params_ur, $stan_h);
     }
 
-    protected function prepareKontr ($params, $type): bool
+    /*protected function prepareKontr ($params, $type): bool
     {
         $prepared = false;
 
@@ -417,7 +428,7 @@ class Passport extends Controller
         else {$this->x['prepare_errors'][] = 'Пов’язані';}
 
         return $prepared;
-    }
+    }*/
 
     protected function excelKontr ($sql, $params, $prefix): array
     {

@@ -95,58 +95,6 @@ class Passport extends Controller
         }
     }
 
-    /*public function prepare_old (): void
-    {
-        $start_time = microtime(true);
-        $this->x['menu'] = $this->bc->getMenu('prepare');
-        $this->x['guid'] = $this->new_guid = $this->db->getNewGUID();
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->x['data'] = $params = $this->getPost();
-        } else {
-            if (!isset($_SESSION['post'])) {header('Location: /passport');}
-            $params = $_SESSION['post'];
-            unset($_SESSION['post']);
-        }
-
-        $sql = 'SELECT PIKALKA.get_dpi_by_tin(:tin) FROM dual';
-        $this->c_distr = $this->db->getOneValueFromSQL($sql, $params);
-
-        // Підготовка даних - Контрагенти (кредит)
-        $this->prepareKontr($params, 'kre');
-        // Підготовка даних - Контрагенти (зобов’язання)
-        $this->prepareKontr($params, 'zob');
-        // Підготовка даних - Баланс
-        $this->prepareBalance($params);
-        // Підготовка даних - Прибуток
-        $this->preparePributok($params);
-        // Підготовка даних - ЄСВ
-        $this->prepareESV($params);
-        // Підготовка даних - Повя’зані
-        $this->preparePov($params);
-
-        $sql_params = [
-            'guid' => $this->new_guid, 'dt1' => $params['dt1'], 'dt2' => $params['dt2'],
-            'tin' => $params['tin'], 'guid_user' => $this->myUser->guid,
-        ];
-
-        // запис в post_jrn
-        $this->db->insert('PIKALKA.pass_jrn', $sql_params);
-
-        $this->x['prepare_time'] = round(microtime(true) - $start_time, 4);
-        $sql_params['tm'] = str_replace('.', ',', $this->x['prepare_time']);
-
-        // запис в post_log
-        $this->db->insert('PIKALKA.pass_log', $sql_params);
-
-        if (empty($this->x['prepare_errors'])) {
-            $this->twig->showTemplate('passport/prepared.html', ['x' => $this->x, 'my' => $this->myUser]);
-        } else {
-            $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]);
-        }
-        if (DEBUG) {d($this);}
-    }*/
-
     public function toExcel (): void
     {
         $templateFile = $this->root . '/xls/passport/template.xlsx';
@@ -230,6 +178,18 @@ class Passport extends Controller
         catch (\Exception $e) {echo $e->getMessage(); Exit;}
         $templateParams = array_merge($default_params[6], $params_from_ora);
         PhpExcelTemplator::renderWorksheet($sheet6, $templateVars[6], $templateParams);
+
+        // ПДВ
+        $array = $this->db->getAll('PIKALKA.pass_pdv', $guid_param, 'period');
+        $this->setSheet(7, $array);
+
+        // ПДВ РІК
+        $array = $this->db->getAll('PIKALKA.pass_pdv_rik', $guid_param, 'period_year');
+        $this->setSheet(8, $array);
+
+        // Повідомлення
+        $array = $this->db->getAll('PIKALKA.pass_povidom', $guid_param, 'period_year');
+        $this->setSheet(9, $array);
 
         // запис в pass_log
         $sql_params = [
@@ -317,118 +277,6 @@ class Passport extends Controller
 
         return array_merge($reg_params, $reg_params_ur, $stan_h);
     }
-
-    /*protected function prepareKontr ($params, $type): bool
-    {
-        $prepared = false;
-
-        $guid_param = ['guid' => $this->new_guid];
-        $params = array_merge($params, $guid_param);
-
-        $count = [];
-        for ($i=1; $i<=3; $i++) {
-            $count[$i] = $this->db->getCount('PIKALKA.pass_kontr_'.$type.$i, $guid_param);
-            if ($count[$i] === 0) {
-                $sql = file_get_contents($this->root . '/sql/passport/insert/kontr_'.$type.$i.'.sql');
-                $this->db->runSQL($sql, $params);
-            }
-        }
-
-        if ($count[3] > 0) {$prepared = true; return $prepared;}
-
-        if ($this->db->errors_count === 0) {$prepared = true;}
-        else {$this->x['prepare_errors'][] = 'Контрагенти - Таблиця ' . $type;}
-
-        return $prepared;
-    }
-
-    protected function prepareBalance ($params): bool
-    {
-        $prepared = false;
-
-        $guid_param = ['guid' => $this->new_guid];
-        $params = array_merge($params, $guid_param);
-
-        $count1 = $this->db->getCount('PIKALKA.pass_balance', $guid_param);
-        if ($count1 > 0) {$prepared = true; return $prepared;}
-
-        if ($count1 === 0) {
-            $sql = file_get_contents($this->root . '/sql/passport/insert/balance.sql');
-            $this->db->runSQL($sql, $params);
-        }
-
-        if ($this->db->errors_count === 0) {$prepared = true;}
-        else {$this->x['prepare_errors'][] = 'Баланс';}
-
-        return $prepared;
-    }
-
-    protected function preparePributok ($params): bool
-    {
-        $prepared = false;
-
-        $guid_param = ['guid' => $this->new_guid];
-        $params = array_merge($params, $guid_param);
-
-        $count1 = $this->db->getCount('PIKALKA.pass_pributok', $guid_param);
-        if ($count1 > 0) {$prepared = true; return $prepared;}
-
-        if ($count1 === 0) {
-            $sql = file_get_contents($this->root . '/sql/passport/insert/pributok.sql');
-            $this->db->runSQL($sql, $params);
-        }
-
-        if ($this->db->errors_count === 0) {$prepared = true;}
-        else {$this->x['prepare_errors'][] = 'Прибуток';}
-
-        return $prepared;
-    }
-
-    protected function prepareESV ($params): bool
-    {
-        $prepared = false;
-
-        $guid_param = ['guid' => $this->new_guid];
-        $params = array_merge($params, $guid_param);
-
-        $count1 = $this->db->getCount('PIKALKA.pass_esv', $guid_param);
-        if ($count1 > 0) {$prepared = true; return $prepared;}
-
-        if ($count1 === 0) {
-            $sql = file_get_contents($this->root . '/sql/passport/insert/esv.sql');
-            $this->db->runSQL($sql, $params);
-        }
-
-        if ($this->db->errors_count === 0) {$prepared = true;}
-        else {$this->x['prepare_errors'][] = 'ЄСВ';}
-
-        return $prepared;
-    }
-
-    protected function preparePov ($params): bool
-    {
-        $prepared = false;
-
-        $guid_param = ['guid' => $this->new_guid];
-        $params = array_merge($params, $guid_param, ['c_distr' => $this->c_distr]);
-
-        $sql = file_get_contents($this->root . '/sql/passport/insert/pov.sql');
-        $count1 = $this->db->runSQL($sql, $params);
-
-        if ($count1 > 0) {
-            $sql = file_get_contents($this->root . '/sql/passport/insert/pov_t2.sql');
-            $this->db->runSQL($sql, $params);
-            $sql = file_get_contents($this->root . '/sql/passport/insert/pov_t3.sql');
-            $this->db->runSQL($sql, $params);
-            $sql = file_get_contents($this->root . '/sql/passport/insert/pov_t4.sql');
-            $this->db->runSQL($sql, $params);
-        }
-
-        if ($this->db->errors_count === 0) {$prepared = true;}
-        else {$this->x['prepare_errors'][] = 'Пов’язані';}
-
-        return $prepared;
-    }*/
 
     protected function excelKontr ($sql, $params, $prefix): array
     {

@@ -191,6 +191,18 @@ class Passport extends Controller
         $array = $this->db->getAll('PIKALKA.pass_povidom', $guid_param, 'period_year');
         $this->setSheet(9, $array);
 
+        // Реєстр ПДВ
+        $array = $this->db->getAll('AISR.pdv_act_r', ['tin' => $params['TIN']], 'dat_svd');
+        $this->setSheet(10, $array);
+
+        // Засновники
+        $sql = 'SELECT SUM(sum_infund) FROM rg02.r21pfound WHERE tin = :tin';
+        $sum_infund = $this->db->getOneValueFromSQL($sql, $params);
+        $sql = file_get_contents($this->root . '/sql/passport/founders.sql');
+        $tmp_params = array_merge($params, ['sum_infund' => $sum_infund]);
+        $array = $this->db->getAllFromSQL($sql, $tmp_params);
+        $this->setSheet(11, $array);
+
         // запис в pass_log
         $sql_params = [
             'guid' => $this->new_guid, 'dt1' => $params['DT1'], 'dt2' => $params['DT2'],

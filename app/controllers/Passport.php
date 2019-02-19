@@ -35,11 +35,13 @@ class Passport extends Controller
             $_SESSION['post'] = $params;
             // Passport not found, prepare passport
             header('Location: /passport/prepare');
+            exit;
         } else {
             /** @noinspection NestedPositiveIfStatementsInspection */
             if ($this->x['data']['TM'] === null) {
                 // Passport created at the moment
                 header('Location: /passport/loading/'.$this->x['data']['GUID']);
+                exit;
             }
         }
         // Passport exists, show the choice between "Use existing" and "Generate new"
@@ -79,7 +81,7 @@ class Passport extends Controller
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->x['data'] = $params = $this->getPost();
         } else {
-            if (!isset($_SESSION['post'])) {header('Location: /passport');}
+            if (!isset($_SESSION['post'])) {header('Location: /passport'); exit;}
             $params = $_SESSION['post'];
             unset($_SESSION['post']);
         }
@@ -93,6 +95,7 @@ class Passport extends Controller
             $this->db->runSQL($sql, $params);
             header('Location: /passport/loading/' . $new_guid);
         }
+        exit;
     }
 
     public function toExcel (): void

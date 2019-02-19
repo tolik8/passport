@@ -24,6 +24,7 @@ class MyUser
             $_SESSION['token_uri'] = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
             $server = ['alisa2.loc' => 'alisa.loc', 'start2.tr.sta' => 'start.tr.sta', '10.19.19.122' => '10.19.191.121'];
             header('Location: http://' . $server[$_SERVER['SERVER_NAME']] . '/token.php');
+            exit;
         } else {
             $this->guid = $_SESSION['my']['guid'];
             $this->login = $_SESSION['my']['login'];
@@ -52,6 +53,7 @@ class MyUser
     {
         session_destroy();
         header('Location: /');
+        exit;
     }
 
     public function logout (): void
@@ -59,5 +61,6 @@ class MyUser
         session_destroy();
         setcookie('alisa2', '', time() );
         header('Location: /');
+        exit;
     }
 }

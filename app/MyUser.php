@@ -15,6 +15,8 @@ class MyUser
     public $roles;
     public $admin = false;
     public $debug;
+    public $log_files_count = 0;
+    public $table_error_count = 0;
 
     public function __construct (\App\QueryBuilder $db)
     {
@@ -44,6 +46,9 @@ class MyUser
                 ini_set('error_reporting', E_ALL);
                 ini_set('display_errors', 1);
                 ini_set('display_startup_errors', 1);
+                /** @noinspection ScandirUsageInspection */
+                $this->log_files_count = count(scandir('../logs/'))-2;
+                $this->table_error_count = $db->getCount('PIKALKA.pass_errors');
             }
             
         }

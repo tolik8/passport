@@ -3,7 +3,7 @@
 
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->get('/', ['App\controllers\Home', 'index']);
-    $r->get('/token/{token:[0-9a-zA-Z]{64}}', ['App\controllers\Token', 'index']);
+    $r->get('/cookie/{cookie:[0-9a-zA-Z]{64}}', ['App\controllers\Cookie', 'index']);
     $r->get('/refresh', ['App\MyUser', 'refresh']); // погано викликати замість контроллера обєкт
     $r->get('/logout', ['App\MyUser', 'logout']);   // погано викликати замість контроллера обєкт
     $r->get('/about', ['App\controllers\Home', 'about']);

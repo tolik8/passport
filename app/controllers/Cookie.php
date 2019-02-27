@@ -2,7 +2,7 @@
 
 namespace App\controllers;
 
-class Token 
+class Cookie 
 {
     protected $db;
 
@@ -11,9 +11,9 @@ class Token
         $this->db = $db;
     }
 
-    public function index ($token): void
+    public function index ($cookie): void
     {
-        $row = $this->db->getOneRow('PIKALKA.people', ['token' => $token]);
+        $row = $this->db->getOneRow('PIKALKA.people', ['cookie' => $cookie]);
         if (count($row) > 0) {
             $my['guid'] = $row['GUID'];
             $my['login'] = $row['LOGIN'];
@@ -30,10 +30,10 @@ class Token
 
             $_SESSION['my'] = $my;
 
-            if (isset($_SESSION['token_uri'])) {
-                $token_uri = $_SESSION['token_uri'];
-                unset($_SESSION['token_uri']);
-                header('Location: ' . $token_uri);
+            if (isset($_SESSION['cookie_uri'])) {
+                $cookie_uri = $_SESSION['cookie_uri'];
+                unset($_SESSION['cookie_uri']);
+                header('Location: ' . $cookie_uri);
             } else {
                 header('Location: /');
             }
@@ -41,7 +41,7 @@ class Token
         }
     }
 
-    public function noToken (): void
+    public function noCookie (): void
     {
         $server = ['alisa2.loc' => 'alisa.loc', 'start2.tr.sta' => 'start.tr.sta', '10.19.19.122' => '10.19.191.121'];
         header('Location: http://' . $server[$_SERVER['SERVER_NAME']] . '/login.php');

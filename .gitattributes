@@ -3,3 +3,4 @@
 *.css linguist-detectable=false
 *.sql linguist-detectable=false
 *.pck linguist-detectable=false
+*.css linguist-detectable=false

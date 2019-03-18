@@ -17,6 +17,13 @@ class Passport extends Controller
         if (DEBUG) {d($this);}
     }
 
+    public function choice (): void
+    {
+        $this->x['menu'] = $this->bc->getMenu('choice');
+        $this->twig->showTemplate('passport/choice.html', ['x' => $this->x, 'my' => $this->myUser]);
+        vd($_POST);
+    }
+
     public function check (): void
     {
         $this->x['menu'] = $this->bc->getMenu('check');

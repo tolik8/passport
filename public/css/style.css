@@ -1,11 +1,11 @@
 
 .tooltip-inner {
-    color: #fff;
-    background-color: #294;
+    color: #ffffff;
+    background-color: #007BFF;
 }
 
 .tooltip.bs-tooltip-auto[x-placement^=bottom] .arrow::before, .tooltip.bs-tooltip-bottom .arrow::before {
-    border-bottom-color: #294;
+    border-bottom-color: #007BFF;
 }
 
 .border1 {

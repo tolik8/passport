@@ -9,6 +9,11 @@ return [
         'full' => 'Паспорт платника',
         'par' => 'index',
     ],
+    'choice' => [
+        'link' => '/passport/choice',
+        'name' => 'Вибір даних',
+        'par' => 'passport',
+    ],
     'check' => [
         'link' => '/passport/check',
         'name' => 'Перевірка',

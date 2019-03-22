@@ -16,11 +16,10 @@ class QueryBuilder implements QueryBuilderInterface
     public $columns = [];
     public $resultIsOk;
 
-    public function __construct (\PDO $pdo, \App\Logger $Logger)
+    public function __construct (\PDO $pdo)
     {
         $this->p = chr(13).chr(10);
         $this->pdo = $pdo;
-        $this->log = $Logger;
     }
 
     public function getAll ($tables, array $data = [], $sort = ''): array
@@ -304,7 +303,7 @@ class QueryBuilder implements QueryBuilderInterface
         } catch (\Exception $e) {
             $this->resultIsOk = false;
             $this->errors_count++;
-            $this->log->save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
+            Log::save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
         }
 
         return $stmt;

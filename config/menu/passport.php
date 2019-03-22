@@ -29,6 +29,11 @@ return [
         'name' => 'Підготовка',
         'par' => 'passport',
     ],
+    'work' => [
+        'link' => '/passport/work',
+        'name' => 'Підготовка',
+        'par' => 'passport',
+    ],
     'job' => [
         'link' => '/passport/job',
         'name' => 'Job',

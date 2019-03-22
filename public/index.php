@@ -3,6 +3,7 @@
 
 if (!session_id()) {@session_start();}
 header('Content-Type: text/html; charset=windows-1251');
+date_default_timezone_set('Europe/Kiev');
 
 require_once '../config/main.php';
 require_once '../app/functions.php';

@@ -13,12 +13,12 @@ function updateClock () {
     let $ajax_url = $domen + 'passport/ajax/' + $guid;
     //console.log($ajax_url);
 
-    // let request = $.ajax({
-    //     url: $ajax_url,
-    //     method: 'GET',
-    //     cache: false,
-    //     dataType: 'html'
-    // });
+    let request = $.ajax({
+        url: $ajax_url,
+        method: 'GET',
+        cache: false,
+        dataType: 'html'
+    });
     
     request.done(function(msg){
         if (msg.substr(0,6) === 'FINISH') {

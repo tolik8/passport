@@ -1,0 +1,44 @@
+{% include('inc/header1.html') %}
+<link rel="stylesheet" href="/css/loading/{{x.loading_index}}.css">
+{% include('inc/header2.html') %}
+{% include('inc/menu.html') %}
+{% include('inc/bc_menu.html') %}
+
+<div class="container-fluid font-weight-bold">
+{% for work in x.works %}
+    <div class="row text-white">
+        <div class="col-lg-4 bg-primary pb-1">{{ work.NAME }} <span id="id{{ work.ID }}">{{ work.TM }}</span></div>
+    </div>
+{% endfor %}
+</div>
+
+<!--<div id="result" class="container col-lg-6 d-none">-->
+    <!--<div class="container text-center pt-3 pb-3">-->
+        <!--<div class="alert alert-success font-weight-bold">-->
+            <!--{% if my.debug %}{{ x.guid }}<br>{% endif %}-->
+            <!--Дані підготовлено за <span id="prepared_time"></span> сек-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--<div class="container text-center">-->
+        <!--<form method="POST" action="/passport/excel">-->
+            <!--<input type="hidden" name="guid" value="{{ x.guid }}">-->
+            <!--<button type="submit" class="btn btn-success"><i class="fas fa-angle-double-right mr-2"></i>Сформувати Excel</button>-->
+        <!--</form>-->
+    <!--</div>-->
+<!--</div>-->
+
+<div id="loading" class="container">
+{% include('inc/loading/' ~ x.loading_index ~ '.html') %}
+</div>
+
+<!--<div id="prepare-data" class="container">-->
+    <!--<div class="row">-->
+        <!--<span id="steps" class="bg-primary text-white font-weight-bold p-3">-->
+            <!--Підготовка ...-->
+        <!--</span>-->
+    <!--</div>-->
+<!--</div>-->
+
+{% include('inc/footer1.html') %}
+<script type="text/javascript" src="/js/passport.js"></script>
+{% include('inc/footer2.html') %}

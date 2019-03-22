@@ -29,7 +29,14 @@ function utf8 ($input)
     return mb_convert_encoding($input, 'utf-8', 'windows-1251');
 }
 
-function add ($input)
+function ArrayToUtf8 (array $array)
 {
-    return mb_convert_encoding($input, 'utf-8', 'windows-1251');
+    array_walk_recursive($array, function(&$item, $key){
+        if(!mb_detect_encoding($item, 'utf-8', true)){
+//            $item = utf8_encode($item);
+            $item = mb_convert_encoding($item, 'utf-8', 'windows-1251');
+        }
+    });
+
+    return $array;
 }

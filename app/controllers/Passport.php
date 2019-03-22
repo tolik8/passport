@@ -20,8 +20,11 @@ class Passport extends Controller
     public function choice (): void
     {
         $this->x['menu'] = $this->bc->getMenu('choice');
+        $this->x['post'] = $params = $this->getPost();
+
+        $this->x['info'] = $this->db->getAll('PIKALKA.d_pass_info', [], 'id');
+
         $this->twig->showTemplate('passport/choice.html', ['x' => $this->x, 'my' => $this->myUser]);
-        vd($_POST);
     }
 
     public function check (): void
@@ -68,7 +71,7 @@ class Passport extends Controller
         $this->twig->showTemplate('passport/loading.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
-    public function ajax ($guid): void
+    public function ajax_ ($guid): void
     {
         $params = ['guid' => $guid];
         $sql = 'SELECT COUNT(*) FROM PIKALKA.pass_jrn WHERE guid = :guid AND tm IS NOT NULL';
@@ -83,10 +86,24 @@ class Passport extends Controller
         }
     }
 
+    public function ajax ($guid): void
+    {
+        $sql = 'SELECT work_id, tm FROM PIKALKA.pass_work WHERE guid = :guid ORDER BY work_id';
+        $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
+//        $sql = file_get_contents($this->root . '/sql/passport/get_work_info.sql');
+//        $this->x['works'] = ArrayToUtf8($this->x['works']);
+        echo json_encode($this->x['works']);
+    }
+
     public function prepare (): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->x['data'] = $params = $this->getPost();
+            $work = [];
+            foreach ($_POST as $key => $post) {
+                if (strpos($key,'id') === 0) {$work[] = substr($key,2);}
+            }
+            $work = implode(',', $work);
         } else {
             if (!isset($_SESSION['post'])) {header('Location: /passport'); exit;}
             $params = $_SESSION['post'];
@@ -97,12 +114,32 @@ class Passport extends Controller
             header('Location: /passport/taxpayer_not_found');
         } else {
             $new_guid = $this->db->getNewGUID();
-            $sql = 'BEGIN passport.create_job(:tin, :dt1, :dt2, :user_guid, :guid); END;';
-            $params = array_merge($params, ['user_guid' => $this->myUser->guid, 'guid' => $new_guid]);
+            if (DEBUG) {$package = 'passport_dev';} else {$package = 'passport';}
+            $sql = 'BEGIN '.$package.'.create_job(:tin, :dt1, :dt2, :work, :user_guid, :guid); END;';
+            $params = array_merge($params, ['work' => $work, 'user_guid' => $this->myUser->guid, 'guid' => $new_guid]);
             $this->db->runSQL($sql, $params);
             header('Location: /passport/loading/' . $new_guid);
         }
         exit;
+    }
+
+    public function work (): void
+    {
+        $this->x['menu'] = $this->bc->getMenu('work');
+        $loading_index = 1;
+//        $loading_index = random_int(1,12);
+//        echo $loading_index;
+        if ($loading_index < 10) {$this->x['loading_index'] = 'a0'.$loading_index;} else {$this->x['loading_index'] = 'a'.$loading_index;}
+
+        $work = [];
+        foreach ($_POST as $key => $post) {
+            if (strpos($key,'id') === 0) {$work[] = substr($key,2);}
+        }
+        $work = implode(',', $work);
+        $sql = "SELECT id, name FROM PIKALKA.d_pass_info WHERE INSTR(',' || '" . $work . "' || ',', ',' || id || ',') > 0";
+        $this->x['works'] = $this->db->getAllFromSQL($sql);
+
+        $this->twig->showTemplate('passport/work.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
     public function toExcel (): void

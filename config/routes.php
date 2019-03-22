@@ -11,6 +11,7 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     
     $r->get('/passport', ['App\controllers\Passport', 'index']);
     $r->post('/passport/choice', ['App\controllers\Passport', 'choice']);
+    $r->post('/passport/work', ['App\controllers\Passport', 'work']);
     $r->post('/passport/check', ['App\controllers\Passport', 'check']);
     $r->addRoute(['GET', 'POST'], '/passport/prepare', ['App\controllers\Passport', 'prepare']);
     $r->get('/passport/loading/{guid:[0-9a-zA-Z]{1,32}}', ['App\controllers\Passport', 'loading']);

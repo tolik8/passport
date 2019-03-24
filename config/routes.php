@@ -18,4 +18,9 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->get('/passport/ajax/{guid:[0-9a-zA-Z]{1,32}}', ['App\controllers\Passport', 'ajax']);
     $r->post('/passport/excel', ['App\controllers\Passport', 'toExcel']);
     $r->get('/passport/taxpayer_not_found', ['App\controllers\Passport', 'taxpayer_not_found']);
+
+    $r->get('/adminka', ['App\controllers\Adminka', 'index']);
+    $r->get('/adminka/passport', ['App\controllers\Adminka', 'passport']);
+//    $r->get('/adminka/user_find/{find:.*}', ['App\controllers\Adminka', 'user_find']);
+    $r->post('/adminka/user_find', ['App\controllers\Adminka', 'user_find']);
 });

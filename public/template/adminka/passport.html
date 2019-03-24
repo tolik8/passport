@@ -1,0 +1,14 @@
+{% include('inc/header1.html') %}
+{% include('inc/header2.html') %}
+{% include('inc/menu.html') %}
+
+<form method="POST" action="">
+    <label>Знайти користувача:</label>
+    <input type="hidden" id="guid" name="guid" />
+    <label><input class="find_user_autocomplete" type="text" id="find" name="find" autofocus size="80"></label>
+</form>
+
+{% include('inc/footer1.html') %}
+<script type="text/javascript" src="/lib/autocomplete/jquery.autocomplete.js"></script>
+<script type="text/javascript" src="/js/user_find.js"></script>
+{% include('inc/footer2.html') %}

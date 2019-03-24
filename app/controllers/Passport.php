@@ -88,10 +88,10 @@ class Passport extends Controller
 
     public function ajax ($guid): void
     {
-        $sql = 'SELECT work_id, tm FROM PIKALKA.pass_work WHERE guid = :guid ORDER BY work_id';
+        $sql = file_get_contents($this->root . '/sql/passport/get_work_info.sql');
         $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
-//        $sql = file_get_contents($this->root . '/sql/passport/get_work_info.sql');
-//        $this->x['works'] = ArrayToUtf8($this->x['works']);
+
+        // якби в масив≥ був текст то додатково застосувати функц≥ю ArrayToUtf8
         echo json_encode($this->x['works']);
     }
 
@@ -139,6 +139,7 @@ class Passport extends Controller
         $sql = "SELECT id, name FROM PIKALKA.d_pass_info WHERE INSTR(',' || '" . $work . "' || ',', ',' || id || ',') > 0";
         $this->x['works'] = $this->db->getAllFromSQL($sql);
 
+        $this->x['GUID'] = 'test';
         $this->twig->showTemplate('passport/work.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 

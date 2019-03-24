@@ -8,28 +8,26 @@ $(document).ready(function() {
 function updateClock () {
     let $url = window.location.href;
     let result = $url.match(/\/[0-9A-Z]{1,32}$/gi);
-    let $guid = result[0].substr(1);
+    // let $guid = result[0].substr(1);
+    let $guid = $('#guid').text();
     let $domen = $url.match(/http:\/\/[0-9A-Z.]+\//gi);
     let $ajax_url = $domen + 'passport/ajax/' + $guid;
-    //console.log($ajax_url);
 
-    // let request = $.ajax({
-    //     url: $ajax_url,
-    //     method: 'GET',
-    //     cache: false,
-    //     dataType: 'html'
-    // });
+    let request = $.ajax({
+        url: $ajax_url,
+        method: 'GET',
+        cache: false,
+        dataType: 'json'
+    });
     
-    request.done(function(msg){
-        if (msg.substr(0,6) === 'FINISH') {
-            $('#loading').hide();
-            $('#steps').hide();
-            let tm = msg.substr(7);
-            $('#prepared_time').html(tm);
-            $('#result').removeClass('d-none');
-        } else {
-            $('#steps').html(msg);
-        }
+    request.done(function(data){
+        data.forEach(function(item){
+            work_id = item['WORK_ID'];
+            tm = item['TM'];
+
+            el = '#id'+work_id;
+            $(el).text(tm);
+        });
     });
 
     request.fail(function(jqXHR, textStatus) {

@@ -32,11 +32,8 @@ class Controller
         $access = in_string($this->role, $this->myUser->roles);
         $this->x['title'] = $this->title;
 
-        if (!$access && $this->need_access) {
-            $this->twig->showTemplate('index.html', ['my' => $this->myUser]);
-            if (DEBUG) {d($this);}
-            Exit;
-        }
+        // якщо сторінка вимагає доступ і цього доступа немає то перекинути на головну
+        if (!$access && $this->need_access) {header('Location: /'); Exit;}
 
         if ($this->bc->isUnderConstruct) {
             try {

@@ -29,6 +29,11 @@ function utf8 ($input)
     return mb_convert_encoding($input, 'utf-8', 'windows-1251');
 }
 
+function cp1251 ($input)
+{
+    return mb_convert_encoding($input, 'windows-1251', 'utf-8');
+}
+
 function ArrayToUtf8 (array $array)
 {
     array_walk_recursive($array, function(&$item, $key){

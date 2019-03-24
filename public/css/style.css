@@ -11,3 +11,8 @@
 .border1 {
     border: 1px solid red;
 }
+
+.find_user_autocomplete {
+    font-size: 14px;
+    padding: 3px;
+}

@@ -21,6 +21,7 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
 
     $r->get('/adminka', ['App\controllers\Adminka', 'index']);
     $r->get('/adminka/passport', ['App\controllers\Adminka', 'passport']);
-//    $r->get('/adminka/user_find/{find:.*}', ['App\controllers\Adminka', 'user_find']);
+    $r->post('/adminka/passport/users', ['App\controllers\Adminka', 'users']);
+    $r->get('/adminka/passport/user/{guid:[0-9a-zA-Z]{1,32}}', ['App\controllers\Adminka', 'user']);
     $r->post('/adminka/user_find', ['App\controllers\Adminka', 'user_find']);
 });

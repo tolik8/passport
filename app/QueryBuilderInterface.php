@@ -20,7 +20,7 @@ interface QueryBuilderInterface
 
     public function getOneColFromSQL ($sql, array $data = []): array;
 
-    public function getKeyValue ($fields, $tables, array $data = []): array;
+    public function getKeyValue ($fields, $tables, array $data = [], $sort = ''): array;
 
     public function getKeyValueFromSQL ($sql, array $data = []): array;
 

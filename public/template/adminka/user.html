@@ -1,0 +1,21 @@
+{% include('inc/header1.html') %}
+{% include('inc/header2.html') %}
+{% include('inc/menu.html') %}
+
+<div class="container">
+<h5>{{x.user.FIO1}} {{x.user.FIO2}} {{x.user.FIO3}} ({{x.user.PLACE}})</h5>
+<div class="text-success">{{x.user.VIDDIL_ID}} {{x.user.VIDDIL_NAME}}</div>
+{{x.user.LOGIN}} <span class="text-primary">{{x.user.POSADA}}</span><br>
+Êאב.<span class="text-success">{{x.user.KAB}}</span> IP עוכ.<span class="text-primary">{{x.user.PHONE_IP}}</span>
+<hr>
+
+<form method="POST" action="">
+{% for key, work in x.works %}
+    <div><input type="checkbox" id="id{{key}}"> <label for="id{{key}}">{{work}}</label></div>
+{% endfor %}
+    <input type="submit" class="btn btn-primary" value="Çבונודעט">
+</form>
+</div>
+
+{% include('inc/footer1.html') %}
+{% include('inc/footer2.html') %}

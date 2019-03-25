@@ -74,9 +74,9 @@ class QueryBuilder implements QueryBuilderInterface
         return $result;
     }
 
-    public function getOneRow ($table, array $data = []): array
+    public function getOneRow ($table, array $data = [], $fields = '*'): array
     {
-        $sql = 'SELECT * FROM ' . $table . $this->p;
+        $sql = 'SELECT ' . $fields . ' FROM ' . $table . $this->p;
         $string = $this->ParametersString($data);
         if (!empty($data)) {$sql .= 'WHERE ' . $string;}
 
@@ -126,9 +126,10 @@ class QueryBuilder implements QueryBuilderInterface
     }
 
     // Результат массив в котором первый столбец это ключ, а второй значение
-    public function getKeyValue ($fields, $tables, array $data = []): array
+    public function getKeyValue ($fields, $tables, array $data = [], $sort = ''): array
     {
-        $sql = "SELECT {$fields} FROM {$tables}";
+        $sql = 'SELECT ' . $fields . ' FROM ' . $tables . $this->p;
+        if ($sort !== '') {$sql .= 'ORDER BY ' . $sort;}
         $string = $this->ParametersString($data);
         if (!empty($data)) {$sql .= ' WHERE ' . $string;}
 

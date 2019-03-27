@@ -1,13 +1,14 @@
 {% include('inc/header1.html') %}
 {% include('inc/header2.html') %}
 {% include('inc/menu.html') %}
+{% include('inc/bc_menu.html') %}
 
 <form method="POST" action="/adminka/passport/users">
     <input id="guid" name="guid" value="" type="hidden">
     <label>Знайти користувача:
     <input class="autocomplete_input" type="text" id="find" name="find" autofocus size="60"></label>
     <input type="submit" value="Пошук" class="btn btn-primary"><br>
-    <input id="checkbox" type="checkbox" no_checked> <label for="checkbox">Автопошук</label>
+    <input id="checkbox" type="checkbox" checked> <label for="checkbox">Автопошук</label>
 </form>
 
 {% include('inc/footer1.html') %}

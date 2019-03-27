@@ -6,6 +6,7 @@ use App\QueryBuilder;
 use App\Twig;
 use App\MyUser;
 use App\Breadcrumb;
+use App\Helper;
 
 class Controller
 {
@@ -29,7 +30,7 @@ class Controller
         $this->db = $db;
         $this->myUser = $myUser;
         $this->bc = $bc;
-        $access = in_string($this->role, $this->myUser->roles);
+        $access = Helper::in_string($this->myUser->roles, $this->role);
         $this->x['title'] = $this->title;
 
         // якщо сторінка вимагає доступ і цього доступа немає то перекинути на головну

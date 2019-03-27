@@ -9,7 +9,9 @@ $(document).ready(function() {
             minChars: 3,
             onSelect: function (suggestion) {
                 //console.log('You selected: ' + suggestion.value + ', ' + suggestion.data);
-                $('#guid').val(suggestion.data);
+                //$('#guid').val(suggestion.data);
+                let url = 'http://' + location.hostname + '/adminka/passport/user/' + suggestion.data;
+                $(location).attr('href', url);
             }
         });
     }

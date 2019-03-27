@@ -23,5 +23,6 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->get('/adminka/passport', ['App\controllers\Adminka', 'passport']);
     $r->post('/adminka/passport/users', ['App\controllers\Adminka', 'users']);
     $r->get('/adminka/passport/user/{guid:[0-9a-zA-Z]{1,32}}', ['App\controllers\Adminka', 'user']);
+    $r->post('/adminka/passport/update', ['App\controllers\Adminka', 'passport_access_update']);
     $r->post('/adminka/user_find', ['App\controllers\Adminka', 'user_find']);
 });

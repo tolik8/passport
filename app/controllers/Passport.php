@@ -4,6 +4,7 @@ namespace App\controllers;
 
 use alhimik1986\PhpExcelTemplator\PhpExcelTemplator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Helper;
 
 class Passport extends Controller
 {
@@ -20,7 +21,7 @@ class Passport extends Controller
     public function choice (): void
     {
         $this->x['menu'] = $this->bc->getMenu('choice');
-        $this->x['post'] = $params = $this->getPost();
+        $this->x['post'] = $this->getPost();
 
         $this->x['info'] = $this->db->getAll('PIKALKA.d_pass_info', [], 'id');
 
@@ -46,13 +47,10 @@ class Passport extends Controller
             // Passport not found, prepare passport
             header('Location: /passport/prepare');
             exit;
-        } else {
-            /** @noinspection NestedPositiveIfStatementsInspection */
-            if ($this->x['data']['TM'] === null) {
-                // Passport created at the moment
-                header('Location: /passport/loading/'.$this->x['data']['GUID']);
-                exit;
-            }
+        } /** @noinspection RedundantElseClauseInspection */ else if (empty($this->x['data']['TM'])) {
+            // Passport created at the moment
+            header('Location: /passport/loading/'.$this->x['data']['GUID']);
+            exit;
         }
         // Passport exists, show the choice between "Use existing" and "Generate new"
         $this->twig->showTemplate('passport/check.html', ['x' => $this->x, 'my' => $this->myUser]);
@@ -97,13 +95,14 @@ class Passport extends Controller
 
     public function prepare (): void
     {
+        $work_string = '';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->x['data'] = $params = $this->getPost();
             $work = [];
             foreach ($_POST as $key => $post) {
                 if (strpos($key,'id') === 0) {$work[] = substr($key,2);}
             }
-            $work = implode(',', $work);
+            $work_string = implode(',', $work);
         } else {
             if (!isset($_SESSION['post'])) {header('Location: /passport'); exit;}
             $params = $_SESSION['post'];
@@ -116,7 +115,7 @@ class Passport extends Controller
             $new_guid = $this->db->getNewGUID();
             if (DEBUG) {$package = 'passport_dev';} else {$package = 'passport';}
             $sql = 'BEGIN '.$package.'.create_job(:tin, :dt1, :dt2, :work, :user_guid, :guid); END;';
-            $params = array_merge($params, ['work' => $work, 'user_guid' => $this->myUser->guid, 'guid' => $new_guid]);
+            $params = array_merge($params, ['work' => $work_string, 'user_guid' => $this->myUser->guid, 'guid' => $new_guid]);
             $this->db->runSQL($sql, $params);
             header('Location: /passport/loading/' . $new_guid);
         }
@@ -161,7 +160,7 @@ class Passport extends Controller
         } catch (\Exception $e) {echo $e->getMessage(); Exit;}
 
         $pattern = '#^[0-9a-zA-Z]{32}$#';
-        $this->new_guid = regex($pattern, $_POST['guid'], 0);
+        $this->new_guid = Helper::regex($pattern, $_POST['guid'], 0);
 
         $params = $this->db->getOneRow('PIKALKA.pass_jrn', ['guid' => $this->new_guid]);
         $guid_param = ['guid' => $this->new_guid];
@@ -306,10 +305,10 @@ class Passport extends Controller
             $sql = 'SELECT c_post, pin, name, n_tel FROM RG02.r21manager WHERE tin = :tin';
             $r21manager = $this->db->getKeyValuesFromSQL($sql, $params);
             $reg_params_ur = [
-                '{r21manager.dir}' => utf8($r21manager[1]['NAME']),
-                '{r21manager.buh}' => utf8($r21manager[2]['NAME']),
-                '{r21manager.dir_tel}' => utf8($r21manager[1]['N_TEL']),
-                '{r21manager.buh_tel}' => utf8($r21manager[2]['N_TEL']),
+                '{r21manager.dir}' => Helper::utf8($r21manager[1]['NAME']),
+                '{r21manager.buh}' => Helper::utf8($r21manager[2]['NAME']),
+                '{r21manager.dir_tel}' => Helper::utf8($r21manager[1]['N_TEL']),
+                '{r21manager.buh_tel}' => Helper::utf8($r21manager[2]['N_TEL']),
             ];
         } else {
             $reg_params_ur = [];
@@ -322,13 +321,13 @@ class Passport extends Controller
 
         $reg_params = [
             '{r21taxpay.c_distr}' => $this->c_distr,
-            '{r21taxpay.name}' => utf8($r21taxpay['NAME']),
+            '{r21taxpay.name}' => Helper::utf8($r21taxpay['NAME']),
             '{r21taxpay.stan}' => $r21taxpay['C_STAN'],
-            '{r21taxpay.stan_name}' => utf8($stan_name),
+            '{r21taxpay.stan_name}' => Helper::utf8($stan_name),
             '{r21taxpay.kved}' => $r21taxpay['KVED'],
-            '{r21taxpay.kved_name}' => utf8($kved_name),
+            '{r21taxpay.kved_name}' => Helper::utf8($kved_name),
             '{r21taxpay.d_reg_sti}' => $r21taxpay['D_REG_STI'],
-            '{r21paddr.address}' => utf8($address),
+            '{r21paddr.address}' => Helper::utf8($address),
         ];
 
         $sql = 'SELECT * FROM AISR.pdv_act_r WHERE tin = :tin AND dat_anul IS NULL AND ROWNUM = 1';
@@ -399,11 +398,11 @@ class Passport extends Controller
     {
         $post = [];
         $pattern = '#^[0-9]{6,10}$#';
-        $post['tin'] = regex($pattern, $_POST['tin'], 0);
+        $post['tin'] = Helper::regex($pattern, $_POST['tin'], 0);
 
         $pattern = '#^\s*(3[01]|[12][0-9]|0?[1-9])\.(1[012]|0?[1-9])\.((?:19|20)\d{2})\s*$#';
-        $post['dt1'] = regex($pattern, $_POST['dt1'], '01.01.2017');
-        $post['dt2'] = regex($pattern, $_POST['dt2'], '31.12.2018');
+        $post['dt1'] = Helper::regex($pattern, $_POST['dt1'], '01.01.2017');
+        $post['dt2'] = Helper::regex($pattern, $_POST['dt2'], '31.12.2018');
         return $post;
     }
 

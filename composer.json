@@ -5,7 +5,8 @@
         "phpoffice/phpexcel": "dev-master",
         "php-di/php-di": "^6.0",
         "alhimik1986/php-excel-templator": "^1.0",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+        "ext-json": "*"
     },
     "require-dev": {
         "kint-php/kint": "^3.0"

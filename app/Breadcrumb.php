@@ -12,7 +12,7 @@ class Breadcrumb
         $pattern = '#(?<=^/).+?(?=/|$)#';
         preg_match($pattern, $_SERVER['REQUEST_URI'], $matches);
         if (count($matches) > 0) {$project = $matches[0];} else {$project = '';}
-        
+
         $first_menu['index'] = [
             'link' => '/',
             'name' => 'Головна',

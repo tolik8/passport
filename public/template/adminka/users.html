@@ -1,11 +1,12 @@
 {% include('inc/header1.html') %}
 {% include('inc/header2.html') %}
 {% include('inc/menu.html') %}
+{% include('inc/bc_menu.html') %}
 
 <p>По запиту <b>{{ x.find }}</b> зайдено:</p>
 
 {% for user in x.users %}
-<li><a href="/adminka/passport/user/{{ user.data }}">{{ user.value }}</a></li>
+<div><a href="/adminka/passport/user/{{ user.data }}">{{ user.value }}</a></div>
 {% endfor %}
 
 {% include('inc/footer1.html') %}

@@ -45,10 +45,16 @@ class Adminka extends Controller
     public function user ($guid): void
     {
         $this->x['menu'] = $this->bc->getMenu('user');
+        $this->x['guid'] = $guid;
         $sql = file_get_contents($this->root . '/sql/adminka/get_user.sql');
         $this->x['user'] = $this->db->getOneRowFromSQL($sql, ['guid' => $guid]);
-        $this->x['works'] = $this->db->getKeyValue('id, name', 'PIKALKA.d_pass_info', [],'id');
-        $this->x['guid'] = $guid;
+        $sql = file_get_contents($this->root . '/sql/adminka/get_passport_acceess.sql');
+        $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
+        if (isset($_SESSION['update']) && $_SESSION['update']) {
+            $this->x['update'] = true;
+            unset($_SESSION['update']);
+        }
+
         $this->twig->showTemplate('adminka/user.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
@@ -67,7 +73,8 @@ class Adminka extends Controller
         }
         $sql .= 'SELECT * FROM dual';
 
-        $this->db->runSQL($sql);
+        $res = $this->db->runSQL($sql);
+        if ($res > 0) {$_SESSION['update'] = true;}
 
         header('Location: /adminka/passport/user/' . $guid);
     }

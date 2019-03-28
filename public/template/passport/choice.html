@@ -5,13 +5,13 @@
 
 <div class="container">
 <h3>Виберіть необхідні для Вас дані:</h3>
-<form method="POST" action="/passport/work">
+<form method="POST" action="/passport/prepare">
     <input type="hidden" name="tin" value="{{ x.post.tin }}">
     <input type="hidden" name="dt1" value="{{ x.post.dt1 }}">
     <input type="hidden" name="dt2" value="{{ x.post.dt2 }}">
 {% for item in x.info %}
 {% if item.DEF == 1 %}{% set checked = "checked" %}{% else %}{% set checked = "" %}{% endif %}
-    <input type="checkbox" id="id{{ item.ID }}" name="id{{ item.ID }}" {{checked}}> <label for="id{{ item.ID }}">{{ item.NAME }}</label><br>
+    <input type="checkbox" id="id{{ item.ID }}" name="id{{ item.ID }}" {{checked}}><label for="id{{ item.ID }}">{{ item.NAME }}</label><br>
 {% endfor %}
     <button type="submit" class="btn btn-primary"><i class="fas fa-angle-double-right mr-2"></i>Підготувати</button>
 </form>

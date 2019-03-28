@@ -28,6 +28,50 @@ class Passport extends Controller
         $this->twig->showTemplate('passport/choice.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
+    public function prepare (): void
+    {
+        $this->x['menu'] = $this->bc->getMenu('work');
+        $loading_index = 1;
+//        $loading_index = random_int(1,12);
+//        echo $loading_index;
+        if ($loading_index < 10) {$this->x['loading_index'] = 'a0'.$loading_index;} else {$this->x['loading_index'] = 'a'.$loading_index;}
+
+        $work = [];
+        foreach ($_POST as $key => $post) {
+            if (strpos($key,'id') === 0) {$work[] = substr($key,2);}
+        }
+        $work = implode(',', $work);
+        $sql = "SELECT id, name FROM PIKALKA.d_pass_info WHERE INSTR(',' || '" . $work . "' || ',', ',' || id || ',') > 0";
+        $this->x['works'] = $this->db->getAllFromSQL($sql);
+
+        $this->x['GUID'] = 'test';
+        $this->twig->showTemplate('passport/work.html', ['x' => $this->x, 'my' => $this->myUser]);
+    }
+
+    public function ajax ($guid): void
+    {
+        $sql = file_get_contents($this->root . '/sql/passport/get_work_info.sql');
+        $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
+
+        // якби в масив≥ був текст то додатково застосувати функц≥ю ArrayToUtf8
+        echo json_encode($this->x['works']);
+    }
+
+    public function ajax_ ($guid): void
+    {
+        $params = ['guid' => $guid];
+        $sql = 'SELECT COUNT(*) FROM PIKALKA.pass_jrn WHERE guid = :guid AND tm IS NOT NULL';
+        $cnt = $this->db->getOneValueFromSQL($sql, $params);
+        if ($cnt === '1') {
+            $tm = $this->db->getOneValue('tm', 'PIKALKA.pass_jrn', $params);
+            echo 'FINISH ' . $tm;
+        } else {
+            $sql = 'SELECT * FROM PIKALKA.pass_steps WHERE guid = :guid and step > 0 ORDER BY step';
+            $this->x['steps'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
+            $this->twig->showTemplate('passport/ajax.html', ['x' => $this->x]);
+        }
+    }
+
     public function check (): void
     {
         $this->x['menu'] = $this->bc->getMenu('check');
@@ -69,31 +113,7 @@ class Passport extends Controller
         $this->twig->showTemplate('passport/loading.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
-    public function ajax_ ($guid): void
-    {
-        $params = ['guid' => $guid];
-        $sql = 'SELECT COUNT(*) FROM PIKALKA.pass_jrn WHERE guid = :guid AND tm IS NOT NULL';
-        $cnt = $this->db->getOneValueFromSQL($sql, $params);
-        if ($cnt === '1') {
-            $tm = $this->db->getOneValue('tm', 'PIKALKA.pass_jrn', $params);
-            echo 'FINISH ' . $tm;
-        } else {
-            $sql = 'SELECT * FROM PIKALKA.pass_steps WHERE guid = :guid and step > 0 ORDER BY step';
-            $this->x['steps'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
-            $this->twig->showTemplate('passport/ajax.html', ['x' => $this->x]);
-        }
-    }
-
-    public function ajax ($guid): void
-    {
-        $sql = file_get_contents($this->root . '/sql/passport/get_work_info.sql');
-        $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
-
-        // якби в масив≥ був текст то додатково застосувати функц≥ю ArrayToUtf8
-        echo json_encode($this->x['works']);
-    }
-
-    public function prepare (): void
+    public function prepare_ (): void
     {
         $work_string = '';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -120,26 +140,6 @@ class Passport extends Controller
             header('Location: /passport/loading/' . $new_guid);
         }
         exit;
-    }
-
-    public function work (): void
-    {
-        $this->x['menu'] = $this->bc->getMenu('work');
-        $loading_index = 1;
-//        $loading_index = random_int(1,12);
-//        echo $loading_index;
-        if ($loading_index < 10) {$this->x['loading_index'] = 'a0'.$loading_index;} else {$this->x['loading_index'] = 'a'.$loading_index;}
-
-        $work = [];
-        foreach ($_POST as $key => $post) {
-            if (strpos($key,'id') === 0) {$work[] = substr($key,2);}
-        }
-        $work = implode(',', $work);
-        $sql = "SELECT id, name FROM PIKALKA.d_pass_info WHERE INSTR(',' || '" . $work . "' || ',', ',' || id || ',') > 0";
-        $this->x['works'] = $this->db->getAllFromSQL($sql);
-
-        $this->x['GUID'] = 'test';
-        $this->twig->showTemplate('passport/work.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
     public function toExcel (): void

@@ -12,12 +12,16 @@
 
 <form method="POST" action="/adminka/passport/update">
     <input name="guid" value="{{x.guid}}" type="hidden">
-{% for key, work in x.works %}
-    <div><input type="checkbox" id="id{{key}}" name="id{{key}}"> <label for="id{{key}}">{{work}}</label></div>
+{% for row in x.works %}
+    <div><input type="checkbox" id="id{{row.ID}}" name="id{{row.ID}}" {{row.CHECKED}}><label for="id{{row.ID}}">{{row.NAME}}</label></div>
 {% endfor %}
     <input type="submit" class="btn btn-primary" value="Зберегти">
+{% if x.update %}
+    <div id="DataSave" class="btn btn-success d-none">Дані збережено</div>
+{% endif %}
 </form>
 </div>
 
 {% include('inc/footer1.html') %}
+<script type="text/javascript" src="/js/fade_out.js"></script>
 {% include('inc/footer2.html') %}

@@ -297,7 +297,7 @@ class Passport extends Controller
         $stan_name = $this->db->getOneValue('N_STAN','ETALON.E_S_STAN', ['c_stan' => $r21taxpay['C_STAN']]);
         $kved_name = $this->db->getOneValue('NU','ETALON.E_KVED', ['kod' => $r21taxpay['KVED']]);
 
-        $sql = 'SELECT AISR.rpp_util.getfulladdress(c_city,t_street,c_street,house,house_add,unit,apartment) adr '.chr(10).
+        $sql = 'SELECT AISR.rpp_util.getfulladdress(c_city,t_street,c_street,house,house_add,unit,apartment) adr ' . CR .
             'FROM RG02.r21paddr WHERE tin = :tin AND c_distr = :c_distr AND c_adr = 1';
         $address = $this->db->getOneValueFromSQL($sql, ['tin' => $tin, 'c_distr' => $dpi]);
 

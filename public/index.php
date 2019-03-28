@@ -22,7 +22,7 @@ $containerBuilder->addDefinitions([
         try {
             return new \PDO('oci:dbname='.$dbconfig['oracle_tns'], $dbconfig['username'], $dbconfig['password'], $dbconfig['pdo_options']);
         } catch (\PDOException $e) {
-            echo $e->getMessage();
+            echo '<h3>' . $e->getMessage() . '</h3>';
         }
         return null;
     }

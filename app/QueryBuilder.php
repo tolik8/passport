@@ -18,13 +18,12 @@ class QueryBuilder implements QueryBuilderInterface
 
     public function __construct (\PDO $pdo)
     {
-        $this->p = chr(13).chr(10);
         $this->pdo = $pdo;
     }
 
     public function getAll ($tables, array $data = [], $sort = ''): array
     {
-        $sql = 'SELECT * FROM ' . $tables . $this->p;
+        $sql = 'SELECT * FROM ' . $tables . CR;
         $string = $this->ParametersString($data);
         if (!empty($data)) {$sql .= 'WHERE ' . $string . $this->p;}
         if ($sort !== '') {$sql .= 'ORDER BY ' . $sort;}

@@ -24,7 +24,7 @@ class Adminka extends Controller
     {
         //$find = $_POST['query'];
         $find = filter_input(INPUT_POST, 'query', FILTER_SANITIZE_SPECIAL_CHARS);
-        $sql = file_get_contents($this->root . '/sql/user_find.sql');
+        $sql = file_get_contents($this->root . '/sql/adminka/user_find.sql');
         $res = $this->db->getAllFromSQL($sql, ['find' => Helper::cp1251($find)]);
         $users = ['suggestions' => $res];
         /** @noinspection PhpComposerExtensionStubsInspection */
@@ -36,7 +36,7 @@ class Adminka extends Controller
         $this->x['menu'] = $this->bc->getMenu('users');
 
         $this->x['find'] = $find = filter_input(INPUT_POST, 'find', FILTER_SANITIZE_SPECIAL_CHARS);
-        $sql = file_get_contents($this->root . '/sql/user_find.sql');
+        $sql = file_get_contents($this->root . '/sql/adminka/user_find.sql');
         $this->x['users'] = $this->db->getAllFromSQL($sql, ['find' => $find]);
 
         $this->twig->showTemplate('adminka/users.html', ['x' => $this->x, 'my' => $this->myUser]);
@@ -63,13 +63,12 @@ class Adminka extends Controller
         $pattern = '#^[0-9a-zA-Z]{32}$#';
         $guid = Helper::regex($pattern, $_POST['guid'], 0);
         $works_id = Helper::getArrayIdFromPost($_POST, 'id');
-        $p = chr(13).chr(10);
 
         $this->db->delete('PIKALKA.pass_access', ['guid' => $guid]);
 
-        $sql = 'INSERT ALL' . $p;
+        $sql = 'INSERT ALL' . CR;
         foreach ($works_id as $item) {
-            $sql .= 'INTO PIKALKA.pass_access (guid, work_id) VALUES (\'' . $guid . '\', ' . $item . ')' . $p;
+            $sql .= 'INTO PIKALKA.pass_access (guid, work_id) VALUES (\'' . $guid . '\', ' . $item . ')' . CR;
         }
         $sql .= 'SELECT * FROM dual';
 

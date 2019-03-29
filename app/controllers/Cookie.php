@@ -22,7 +22,7 @@ class Cookie
             $my['fio3'] = $row['FIO3'];
             $my['viddil'] = $row['VIDDIL_ID'];
 
-            $sql = file_get_contents('../sql/myuser/get_roles.sql');
+            $sql = getSQL('myuser/get_roles.sql');
             $my_roles = $this->db->getOneColFromSQL($sql, ['guid' => $my['guid']]);
             $my['roles'] = implode(',', $my_roles);
 

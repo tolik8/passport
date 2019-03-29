@@ -23,7 +23,8 @@ class Passport extends Controller
         $this->x['menu'] = $this->bc->getMenu('choice');
         $this->x['post'] = $this->getPost();
 
-        $this->x['info'] = $this->db->getAll('PIKALKA.d_pass_info', [], 'id');
+        $sql = getSQL('passport\access_works.sql');
+        $this->x['info'] = $this->db->getAllFromSQL($sql, ['guid' => $this->myUser->guid]);
 
         $this->twig->showTemplate('passport/choice.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
@@ -50,7 +51,7 @@ class Passport extends Controller
 
     public function ajax ($guid): void
     {
-        $sql = file_get_contents($this->root . '/sql/passport/get_work_info.sql');
+        $sql = getSQL('passport/get_work_info.sql');
         $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
 
         // Якби в масиві був текст то додатково застосувати функцію ArrayToUtf8
@@ -77,7 +78,7 @@ class Passport extends Controller
         $this->x['menu'] = $this->bc->getMenu('check');
         $this->x['post'] = $params = $this->getPost();
 
-        $sql = file_get_contents($this->root . '/sql/passport/check.sql');
+        $sql = getSQL('passport/check.sql');
         $this->x['data'] = $this->db->getOneRowFromSQL($sql, $params);
 
         if (!$this->db->resultIsOk) {
@@ -245,7 +246,7 @@ class Passport extends Controller
         // Засновники
         $sql = 'SELECT SUM(sum_infund) FROM rg02.r21pfound WHERE tin = :tin';
         $sum_infund = $this->db->getOneValueFromSQL($sql, $params);
-        $sql = file_get_contents($this->root . '/sql/passport/founders.sql');
+        $sql = getSQL('passport/founders.sql');
         $tmp_params = array_merge($params, ['sum_infund' => $sum_infund]);
         $array = $this->db->getAllFromSQL($sql, $tmp_params);
         $this->setSheet(11, $array);
@@ -314,7 +315,7 @@ class Passport extends Controller
             $reg_params_ur = [];
         }
 
-        $sql = file_get_contents($this->root . '/sql/passport/get_r21stan_h.sql');
+        $sql = getSQL('passport/get_r21stan_h.sql');
         $array = $this->db->getAllFromSQL($sql, ['tin' => $tin, 'c_distr' => $dpi]);
         $array = $this->transform1($array);
         $stan_h = $this->transform2($array, 'SH.');

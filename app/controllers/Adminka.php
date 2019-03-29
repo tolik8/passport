@@ -24,7 +24,7 @@ class Adminka extends Controller
     {
         //$find = $_POST['query'];
         $find = filter_input(INPUT_POST, 'query', FILTER_SANITIZE_SPECIAL_CHARS);
-        $sql = file_get_contents($this->root . '/sql/adminka/user_find.sql');
+        $sql = getSQL('adminka/user_find.sql');
         $res = $this->db->getAllFromSQL($sql, ['find' => Helper::cp1251($find)]);
         $users = ['suggestions' => $res];
         /** @noinspection PhpComposerExtensionStubsInspection */
@@ -36,7 +36,7 @@ class Adminka extends Controller
         $this->x['menu'] = $this->bc->getMenu('users');
 
         $this->x['find'] = $find = filter_input(INPUT_POST, 'find', FILTER_SANITIZE_SPECIAL_CHARS);
-        $sql = file_get_contents($this->root . '/sql/adminka/user_find.sql');
+        $sql = getSQL('adminka/user_find.sql');
         $this->x['users'] = $this->db->getAllFromSQL($sql, ['find' => $find]);
 
         $this->twig->showTemplate('adminka/users.html', ['x' => $this->x, 'my' => $this->myUser]);
@@ -46,9 +46,9 @@ class Adminka extends Controller
     {
         $this->x['menu'] = $this->bc->getMenu('user');
         $this->x['guid'] = $guid;
-        $sql = file_get_contents($this->root . '/sql/adminka/get_user.sql');
+        $sql = getSQL('adminka/get_user.sql');
         $this->x['user'] = $this->db->getOneRowFromSQL($sql, ['guid' => $guid]);
-        $sql = file_get_contents($this->root . '/sql/adminka/get_passport_acceess.sql');
+        $sql = getSQL('adminka/get_passport_acceess.sql');
         $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
         if (isset($_SESSION['update']) && $_SESSION['update']) {
             $this->x['update'] = true;

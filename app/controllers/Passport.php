@@ -10,6 +10,7 @@ class Passport extends Controller
 {
     protected $role = '22'; // Роль 22 - Паспорт платника
     protected $title = 'Паспорт';
+    protected $ss; // SpreadSheet
 
     public function index (): void
     {
@@ -32,21 +33,32 @@ class Passport extends Controller
     public function prepare (): void
     {
         $this->x['menu'] = $this->bc->getMenu('work');
-        $loading_index = 1;
-//        $loading_index = random_int(1,12);
-//        echo $loading_index;
-        if ($loading_index < 10) {$this->x['loading_index'] = 'a0'.$loading_index;} else {$this->x['loading_index'] = 'a'.$loading_index;}
+        $this->x['data'] = $params = $this->getPost();
+
+//        $this->x['loading_index'] = 'a101';
+        try {
+            $this->x['loading_index'] = 'a' . random_int(101, 114);
+        } catch (\Exception $e) {
+            $this->x['loading_index'] = 'a101';
+        }
 
         $work = [];
         foreach ($_POST as $key => $post) {
             if (strpos($key,'id') === 0) {$work[] = substr($key,2);}
         }
-        $work = implode(',', $work);
-        $sql = "SELECT id, name FROM PIKALKA.d_pass_info WHERE INSTR(',' || '" . $work . "' || ',', ',' || id || ',') > 0";
-        $this->x['works'] = $this->db->getAllFromSQL($sql);
+        $work_string = implode(',', $work);
+        //$sql = "SELECT id, name FROM PIKALKA.d_pass_info WHERE INSTR(',' || '" . $work . "' || ',', ',' || id || ',') > 0";
+        $sql = getSQL('passport/selected_works.sql');
+        $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $this->myUser->guid, 'work' => $work_string]);
 
-        $this->x['GUID'] = 'test';
-        $this->twig->showTemplate('passport/work.html', ['x' => $this->x, 'my' => $this->myUser]);
+//        $guid = $this->x['GUID'] = 'test';
+        $new_guid = $this->x['guid'] = $this->db->getNewGUID();
+        if (DEBUG) {$package = 'passport_dev';} else {$package = 'passport';}
+        $sql = 'BEGIN '.$package.'.create_job(:tin, :dt1, :dt2, :work, :user_guid, :guid); END;';
+        $params = array_merge($params, ['work' => $work_string, 'user_guid' => $this->myUser->guid, 'guid' => $new_guid]);
+        $this->db->runSQL($sql, $params);
+
+        $this->twig->showTemplate('passport/prepare.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
     public function ajax ($guid): void

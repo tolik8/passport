@@ -1,11 +1,13 @@
 <?php
+/** @noinspection PhpUndefinedMethodInspection */
 
 namespace App;
 
 use PHPUnit\Framework\TestCase;
 
-if ($_SERVER['DOCUMENT_ROOT'] == '') {$_SERVER['DOCUMENT_ROOT'] = 'D:/www/alisa2.loc';}
+if ($_SERVER['DOCUMENT_ROOT'] === '') {$_SERVER['DOCUMENT_ROOT'] = 'D:/www/alisa2.loc';}
 
+require_once $_SERVER['DOCUMENT_ROOT'] . '/config/main.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/app/functions.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
 
@@ -17,10 +19,9 @@ class QueryBuilderTest extends TestCase
 
     protected function setUp()
     {
-        $logger = new Logger();
         $dbconfig = require $_SERVER['DOCUMENT_ROOT'] . '/config/config_ora.php';
         $pdo = new \PDO('oci:dbname='.$dbconfig['oracle_tns'], $dbconfig['username'], $dbconfig['password'], $dbconfig['pdo_options']);
-        $this->QB = new QueryBuilder($pdo, $logger);
+        $this->QB = new QueryBuilder($pdo);
     }
 
     protected function tearDown()

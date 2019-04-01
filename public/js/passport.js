@@ -4,14 +4,16 @@ $(document).ready(function() {
     let max_i = 1800; /* 1800 сек = 30 хвилин */
     let j = 5;
     let max_j = 5;
-
-function updateClock () {
+    let finish = false;
+    let debug = $('#debug').text();
     let $url = window.location.href;
-    let result = $url.match(/\/[0-9A-Z]{1,32}$/gi);
+    // let result = $url.match(/\/[0-9A-Z]{1,32}$/gi);
     // let $guid = result[0].substr(1);
     let $guid = $('#guid').text();
     let $domen = $url.match(/http:\/\/[0-9A-Z.]+\//gi);
     let $ajax_url = $domen + 'passport/ajax/' + $guid;
+
+    function updateClock () {
 
     let request = $.ajax({
         url: $ajax_url,
@@ -22,23 +24,35 @@ function updateClock () {
     
     request.done(function(data){
         data.forEach(function(item){
-            work_id = item['WORK_ID'];
-            tm = item['TM'];
+            let work_id = item['WORK_ID'];
+            let tm = item['TM'];
 
-            el = '#id'+work_id;
-            $(el).text(tm);
+            let el = '#id'+work_id;
+            if (debug === '1' && work_id !== 0) {
+                $(el).text(tm);
+            } else {
+                $(el).text('+');
+            }
+
+            if (work_id === '0' && tm !== null) {
+                $('#loading').fadeOut();
+                $('#total-time').removeClass('d-none');
+                $('#excel').removeClass('d-none');
+                $('#id0').text(tm);
+                finish = true;
+            }
         });
     });
 
     request.fail(function(jqXHR, textStatus) {
-        //alert('Request failed: ' + textStatus);
+        console.log('Request failed: ' + textStatus);
     });
 }
 
 setTimeout(function run() {
     i++;
     j--;
-    if (j < 1) {
+    if (j < 1 && !finish) {
         j = max_j;
         updateClock();
     }

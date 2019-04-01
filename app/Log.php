@@ -17,7 +17,9 @@ class Log
         $line = [];
 
         $filename = $directory . '/' . date('Y-m-d') . ' ' . date('His') . '.' . $extension;
-        $content .= 'IP: ' . $_SERVER['REMOTE_ADDR'] . CR.CR;
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $content .= 'IP: ' . $_SERVER['REMOTE_ADDR'] . CR.CR;
+        }
 
         foreach ($debugs as $key => $item) {
             if (!isset($item['class'])) {continue;}

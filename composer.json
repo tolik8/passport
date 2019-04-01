@@ -9,7 +9,8 @@
         "ext-json": "*"
     },
     "require-dev": {
-        "kint-php/kint": "^3.0"
+        "kint-php/kint": "^3.0",
+        "phpunit/phpunit": "^7"
     },
     "autoload": {
         "psr-4": {

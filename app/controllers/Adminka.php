@@ -48,7 +48,7 @@ class Adminka extends Controller
         $this->x['guid'] = $guid;
         $sql = getSQL('adminka/get_user.sql');
         $this->x['user'] = $this->db->getOneRowFromSQL($sql, ['guid' => $guid]);
-        $sql = getSQL('adminka/get_passport_acceess.sql');
+        $sql = getSQL('adminka/get_passport_access.sql');
         $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
         if (isset($_SESSION['update']) && $_SESSION['update']) {
             $this->x['update'] = true;
@@ -66,14 +66,17 @@ class Adminka extends Controller
 
         $this->db->delete('PIKALKA.pass_access', ['guid' => $guid]);
 
-        $sql = 'INSERT ALL' . CR;
-        foreach ($works_id as $item) {
-            $sql .= 'INTO PIKALKA.pass_access (guid, work_id) VALUES (\'' . $guid . '\', ' . $item . ')' . CR;
+        if (count($works_id) > 0) {
+            $sql = 'INSERT ALL' . CR;
+            foreach ($works_id as $item) {
+                $sql .= 'INTO PIKALKA.pass_access (guid, work_id) VALUES (\'' . $guid . '\', ' . $item . ')' . CR;
+            }
+            $sql .= 'SELECT * FROM dual';
+            $res = $this->db->runSQL($sql);
+            if ($res > 0) {$_SESSION['update'] = true;}
+        } else {
+            $_SESSION['update'] = true;
         }
-        $sql .= 'SELECT * FROM dual';
-
-        $res = $this->db->runSQL($sql);
-        if ($res > 0) {$_SESSION['update'] = true;}
 
         header('Location: /adminka/passport/user/' . $guid);
     }

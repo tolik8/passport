@@ -11,10 +11,12 @@ require_once '../vendor/autoload.php';
 
 use DI\ContainerBuilder;
 $containerBuilder = new ContainerBuilder;
+
 $containerBuilder->addDefinitions([
-    Twig_Environment::class => function() {
-        $loader = new \Twig_Loader_Filesystem('template');
-        return new \Twig_Environment($loader, ['charset' => 'windows-1251']);
+
+    Twig\Environment::class => function() {
+        $loader = new \Twig\Loader\FilesystemLoader('template');
+        return new \Twig\Environment($loader, ['charset' => 'windows-1251']);
     },
 
     PDO::class => function() {

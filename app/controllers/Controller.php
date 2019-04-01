@@ -18,7 +18,6 @@ class Controller
     protected $x;
     protected $new_guid;
     protected $c_distr;
-    protected $ss;
     protected $role;
     protected $need_access = true;
     protected $title;

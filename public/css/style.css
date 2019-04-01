@@ -15,3 +15,7 @@
 input[type='checkbox'] {
     margin-right: 7px;
 }
+
+.text-yellow {
+    color: yellow;
+}

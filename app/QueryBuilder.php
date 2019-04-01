@@ -5,7 +5,6 @@ namespace App;
 
 class QueryBuilder implements QueryBuilderInterface
 {
-    protected $p;
     protected $pdo;
     protected $log;
     protected $errors_before_transaction;
@@ -25,7 +24,7 @@ class QueryBuilder implements QueryBuilderInterface
     {
         $sql = 'SELECT * FROM ' . $tables . CR;
         $string = $this->ParametersString($data);
-        if (!empty($data)) {$sql .= 'WHERE ' . $string . $this->p;}
+        if (!empty($data)) {$sql .= 'WHERE ' . $string . CR;}
         if ($sort !== '') {$sql .= 'ORDER BY ' . $sort;}
 
         return $this->getAllFromSQL($sql, $data);
@@ -49,7 +48,7 @@ class QueryBuilder implements QueryBuilderInterface
 
     public function getOneValue ($field, $table, array $data = [])
     {
-        $sql = 'SELECT ' . $field . $this->p . 'FROM ' . $table . $this->p;
+        $sql = 'SELECT ' . $field . CR . 'FROM ' . $table . CR;
         $string = $this->ParametersString($data);
         if (!empty($data)) {$sql .= 'WHERE ' . $string;}
 
@@ -75,7 +74,7 @@ class QueryBuilder implements QueryBuilderInterface
 
     public function getOneRow ($table, array $data = [], $fields = '*'): array
     {
-        $sql = 'SELECT ' . $fields . ' FROM ' . $table . $this->p;
+        $sql = 'SELECT ' . $fields . ' FROM ' . $table . CR;
         $string = $this->ParametersString($data);
         if (!empty($data)) {$sql .= 'WHERE ' . $string;}
 
@@ -99,7 +98,7 @@ class QueryBuilder implements QueryBuilderInterface
 
     public function getOneCol ($fields, $tables, array $data = []): array
     {
-        $sql = 'SELECT ' . $fields . $this->p . 'FROM ' . $tables . $this->p;
+        $sql = 'SELECT ' . $fields . CR . 'FROM ' . $tables . CR;
         $string = $this->ParametersString($data);
         if (!empty($data)) {$sql .= 'WHERE ' . $string;}
 
@@ -127,7 +126,7 @@ class QueryBuilder implements QueryBuilderInterface
     // Результат массив в котором первый столбец это ключ, а второй значение
     public function getKeyValue ($fields, $tables, array $data = [], $sort = ''): array
     {
-        $sql = 'SELECT ' . $fields . ' FROM ' . $tables . $this->p;
+        $sql = 'SELECT ' . $fields . ' FROM ' . $tables . CR;
         if ($sort !== '') {$sql .= 'ORDER BY ' . $sort;}
         $string = $this->ParametersString($data);
         if (!empty($data)) {$sql .= ' WHERE ' . $string;}
@@ -222,7 +221,7 @@ class QueryBuilder implements QueryBuilderInterface
 
     public function getCount ($table, array $data = []): int
     {
-        $sql = 'SELECT COUNT(*) cnt FROM ' . $table . $this->p;
+        $sql = 'SELECT COUNT(*) cnt FROM ' . $table . CR;
         $string = $this->ParametersString($data);
         if (!empty($data)) {$sql .= 'WHERE ' . $string;}
 

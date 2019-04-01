@@ -6,7 +6,7 @@ class Twig
 {
     protected $twig;
 
-    public function __construct (\Twig_Environment $twig)
+    public function __construct (\Twig\Environment $twig)
     {
         $this->twig = $twig;
     }

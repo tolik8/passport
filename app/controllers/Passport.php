@@ -37,7 +37,7 @@ class Passport extends Controller
 
 //        $this->x['loading_index'] = 'a101';
         try {
-            $this->x['loading_index'] = 'a' . random_int(101, 114);
+            $this->x['loading_index'] = 'a' . random_int(101, 112);
         } catch (\Exception $e) {
             $this->x['loading_index'] = 'a101';
         }

@@ -6,7 +6,8 @@
         "php-di/php-di": "^6.0",
         "alhimik1986/php-excel-templator": "^1.0",
         "ext-pdo": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+        "umpirsky/twig-php-function": "^0.2.0"
     },
     "require-dev": {
         "kint-php/kint": "^3.0",

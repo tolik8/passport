@@ -21,3 +21,12 @@ function getSQL ($path)
 
     return $content;
 }
+
+function filetime ($file)
+{
+    $filename = $_SERVER['DOCUMENT_ROOT'] . '/public/' . $file;
+    if (file_exists($filename)) {
+        return $file . '?tm=' . filemtime($filename);
+    }
+    return 'File not found ' . $file;
+}

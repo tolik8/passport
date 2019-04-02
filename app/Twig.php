@@ -2,6 +2,8 @@
 
 namespace App;
 
+use Umpirsky\Twig\Extension\PhpFunctionExtension;
+
 class Twig
 {
     protected $twig;
@@ -9,6 +11,10 @@ class Twig
     public function __construct (\Twig\Environment $twig)
     {
         $this->twig = $twig;
+        $functions = [
+            'filetime',
+        ];
+        $this->twig->addExtension(new PhpFunctionExtension($functions));
     }
 
     public function showTemplate ($template, $params = []): void

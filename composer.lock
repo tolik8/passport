@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dc38178629d72b5ec84b4a74945cc4ee",
+    "content-hash": "7432a224f38fff1dfbd7b76d06dcd167",
     "packages": [
         {
             "name": "alhimik1986/php-excel-templator",
@@ -1058,6 +1058,47 @@
                 "templating"
             ],
             "time": "2019-03-23T14:28:58+00:00"
+        },
+        {
+            "name": "umpirsky/twig-php-function",
+            "version": "0.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/umpirsky/twig-php-function.git",
+                "reference": "c06c5c8d09a84a4f51910e9326ebd3438de6b63d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/umpirsky/twig-php-function/zipball/c06c5c8d09a84a4f51910e9326ebd3438de6b63d",
+                "reference": "c06c5c8d09a84a4f51910e9326ebd3438de6b63d",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.0",
+                "twig/twig": "~1.28|~2.0"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "~2.0",
+                "phpunit/phpunit": "~4.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Umpirsky\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Saša Stamenković",
+                    "email": "umpirsky@gmail.com"
+                }
+            ],
+            "description": "Call (almost) any PHP function from your Twig templates.",
+            "time": "2017-03-13T13:46:16+00:00"
         }
     ],
     "packages-dev": [

@@ -10,6 +10,6 @@ $('.input-daterange').datepicker({
 
 $(function () {
     $('[data-toggle="tooltip"]').tooltip()
-})
+});
 
 });

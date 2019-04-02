@@ -1,4 +1,5 @@
 {% include('inc/header1.html') %}
+<link rel="stylesheet" href="/lib/autocomplete/1.4.10/styles.css">
 {% include('inc/header2.html') %}
 {% include('inc/menu.html') %}
 {% include('inc/bc_menu.html') %}
@@ -12,6 +13,6 @@
 </form>
 
 {% include('inc/footer1.html') %}
-<script type="text/javascript" src="/lib/autocomplete/jquery.autocomplete.js"></script>
-<script type="text/javascript" src="/js/user_find.js"></script>
+<script type="text/javascript" src="/lib/autocomplete/1.4.10/jquery.autocomplete.js"></script>
+<script type="text/javascript" src="{{filetime('/js/user_find.js')}}"></script>
 {% include('inc/footer2.html') %}

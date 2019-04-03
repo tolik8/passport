@@ -7,6 +7,7 @@ use App\Twig;
 use App\MyUser;
 use App\Breadcrumb;
 use App\Helper;
+use App\Tax;
 
 class Controller
 {
@@ -21,14 +22,17 @@ class Controller
     protected $role;
     protected $need_access = true;
     protected $title;
+    protected $tax;
 
-    public function __construct (Twig $twig, QueryBuilder $db, MyUser $myUser, Breadcrumb $bc)
+    public function __construct (Twig $twig, QueryBuilder $db, MyUser $myUser, Breadcrumb $bc, Tax $tax)
     {
         $this->root = $_SERVER['DOCUMENT_ROOT'];
         $this->twig = $twig;
         $this->db = $db;
         $this->myUser = $myUser;
         $this->bc = $bc;
+        $this->tax = $tax;
+
         $access = Helper::in_string($this->myUser->roles, $this->role);
         $this->x['title'] = $this->title;
 

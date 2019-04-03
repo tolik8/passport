@@ -4,7 +4,14 @@
 {% include('inc/bc_menu.html') %}
 
 <div class="container">
+
+<div class="p-3 mb-3 border border-primary">
+    <div><b>{{x.post.tin}}</b> {{x.name}}</div>
+    <div>{{x.post.dt1}} - {{x.post.dt2}}</div>
+</div>
+
 <h3>Виберіть необхідні для Вас дані:</h3>
+
 <form method="POST" action="/passport/prepare">
     <input type="hidden" name="tin" value="{{ x.post.tin }}">
     <input type="hidden" name="dt1" value="{{ x.post.dt1 }}">
@@ -15,6 +22,7 @@
 {% endfor %}
     <button type="submit" class="btn btn-primary"><i class="fas fa-angle-double-right mr-2"></i>Підготувати</button>
 </form>
+
 </div>
 
 {% include('inc/footer1.html') %}

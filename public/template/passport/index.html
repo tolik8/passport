@@ -3,7 +3,7 @@
 {% include('inc/menu.html') %}
 {% include('inc/bc_menu.html') %}
 
-<div class="container col-lg-4">
+<div class="container col-lg-5">
     <form action="/passport/choice" method="POST">
         <div class="form-group row">
             <label for="inputTin" class="col-form-label">Код платника</label>
@@ -17,7 +17,8 @@
                 <input type="text" name="dt1" class="input-sm form-control" value="01.01.2017" id="dt1">
                 <span class="input-group-addon ml-1 mr-1">-</span>
                 <!--suppress HtmlFormInputWithoutLabel -->
-                <input type="text" name="dt2" class="input-sm form-control" value="31.12.2018">
+                <input type="text" name="dt2" class="input-sm form-control" value="31.12.2018" id="dt2">
+                <div id="setToday" type="button" class="ml-2 btn btn-success">Сьогодні</div>
             </div>
         </div>
 
@@ -30,4 +31,5 @@
 </div>
 
 {% include('inc/footer1.html') %}
+<script type="text/javascript" src="{{filetime('/js/set_today.js')}}"></script>
 {% include('inc/footer2.html') %}

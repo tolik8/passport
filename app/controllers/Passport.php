@@ -22,7 +22,9 @@ class Passport extends Controller
     public function choice (): void
     {
         $this->x['menu'] = $this->bc->getMenu('choice');
-        $this->x['post'] = $this->getPost();
+        $params = $this->x['post'] = $this->getPost();
+
+        $this->x['name'] = $this->tax->getName($params['tin']);
 
         $sql = getSQL('passport\access_works.sql');
         $this->x['info'] = $this->db->getAllFromSQL($sql, ['guid' => $this->myUser->guid]);
@@ -33,7 +35,9 @@ class Passport extends Controller
     public function prepare (): void
     {
         $this->x['menu'] = $this->bc->getMenu('work');
-        $this->x['data'] = $params = $this->getPost();
+        $params = $this->x['post'] = $this->getPost();
+
+        $this->x['name'] = $this->tax->getName($params['tin']);
 
 //        $this->x['loading_index'] = 'a101';
         try {

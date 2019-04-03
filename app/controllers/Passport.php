@@ -6,7 +6,7 @@ use alhimik1986\PhpExcelTemplator\PhpExcelTemplator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Helper;
 
-class Passport extends Controller
+class Passport extends DBController
 {
     protected $role = '22'; // Роль 22 - Паспорт платника
     protected $title = 'Паспорт';

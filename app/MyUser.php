@@ -18,7 +18,7 @@ class MyUser
     public $log_files_count = 0;
     public $table_error_count = 0;
 
-    public function __construct (\App\QueryBuilder $db)
+    public function __construct (QueryBuilder $db)
     {
         $this->db = $db;
 
@@ -27,31 +27,31 @@ class MyUser
             $server = ['alisa2.loc' => 'alisa.loc', 'start2.tr.sta' => 'start.tr.sta', '10.19.19.122' => '10.19.191.121'];
             header('Location: http://' . $server[$_SERVER['SERVER_NAME']] . '/cookie.php');
             exit;
-        } else {
-            $this->guid = $_SESSION['my']['guid'];
-            $this->login = $_SESSION['my']['login'];
-            $this->fio1 = $_SESSION['my']['fio1'];
-            $this->fio2 = $_SESSION['my']['fio2'];
-            $this->fio3 = $_SESSION['my']['fio3'];
-            $this->viddil = $_SESSION['my']['viddil'];
-            $this->roles = $_SESSION['my']['roles'];
-            $this->admin = $_SESSION['my']['admin'];
-            $this->debug = DEBUG;
-
-            if ($_SERVER['REMOTE_ADDR'] === '10.19.190.164' || $_SERVER['REMOTE_ADDR'] === '127.0.0.1' || $this->login === 'admin19t') {
-                $this->debug = true;
-            }
-            
-            if ($this->admin) {
-                ini_set('error_reporting', E_ALL);
-                ini_set('display_errors', 1);
-                ini_set('display_startup_errors', 1);
-                /** @noinspection ScandirUsageInspection */
-                $this->log_files_count = count(scandir('../logs/'))-2;
-                $this->table_error_count = $db->getCount('PIKALKA.pass_errors');
-            }
-            
         }
+
+        $this->guid = $_SESSION['my']['guid'];
+        $this->login = $_SESSION['my']['login'];
+        $this->fio1 = $_SESSION['my']['fio1'];
+        $this->fio2 = $_SESSION['my']['fio2'];
+        $this->fio3 = $_SESSION['my']['fio3'];
+        $this->viddil = $_SESSION['my']['viddil'];
+        $this->roles = $_SESSION['my']['roles'];
+        $this->admin = $_SESSION['my']['admin'];
+        $this->debug = DEBUG;
+
+        if ($_SERVER['REMOTE_ADDR'] === '10.19.190.164' || $_SERVER['REMOTE_ADDR'] === '127.0.0.1' || $this->login === 'admin19t') {
+            $this->debug = true;
+        }
+
+        if ($this->admin) {
+            ini_set('error_reporting', E_ALL);
+            ini_set('display_errors', 1);
+            ini_set('display_startup_errors', 1);
+            /** @noinspection ScandirUsageInspection */
+            $this->log_files_count = count(scandir('../logs/'))-2;
+            $this->table_error_count = $db->getCount('PIKALKA.pass_errors');
+        }
+            
     }
 
     public function refresh (): void

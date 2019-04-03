@@ -2,11 +2,13 @@
 
 namespace App\controllers;
 
+use App\QueryBuilder;
+
 class Cookie 
 {
     protected $db;
 
-    public function __construct (\App\QueryBuilder $db)
+    public function __construct (QueryBuilder $db)
     {
         $this->db = $db;
     }

@@ -1,9 +1,10 @@
 <?php
 
 namespace App\controllers;
+
 use App\Helper;
 
-class Adminka extends Controller
+class Adminka extends DBController
 {
     protected $role = '7'; // Ðîëü 7 - Àäì³íêà
     protected $title = 'Àäì³íêà';

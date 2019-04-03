@@ -2,7 +2,7 @@
 
 namespace App\controllers;
 
-class Home extends Controller
+class Home extends DBController
 {
     protected $title = 'ALISA2';
     protected $need_access = false;

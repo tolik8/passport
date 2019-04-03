@@ -2,14 +2,9 @@
 
 namespace App\controllers;
 
-class Test
+class Test extends DBController
 {
-    protected $db;
-
-    public function __construct (\App\QueryBuilder $db)
-    {
-        $this->db = $db;
-    }
+    protected $need_access = false;
 
     public function index (): void
     {
@@ -19,5 +14,6 @@ class Test
         $this->db->insert('a123', ['id' => '222']);
         $this->db->insert('a123', ['id' => '111']);
         $this->db->endTransaction();
+        echo '123';
     }
 }

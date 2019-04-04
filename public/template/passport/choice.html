@@ -18,7 +18,12 @@
     <input type="hidden" name="dt2" value="{{ x.post.dt2 }}">
 {% for item in x.info %}
 {% if item.DEF == 1 %}{% set checked = "checked" %}{% else %}{% set checked = "" %}{% endif %}
-    <input type="checkbox" id="id{{ item.ID }}" name="id{{ item.ID }}" {{checked}}><label for="id{{ item.ID }}">{{ item.NAME }}</label><br>
+    <input type="checkbox" id="id{{item.ID}}" name="id{{item.ID}}" {{checked}}><label for="id{{item.ID}}">{{item.NAME}}</label>
+{% if item.DT0 is not null %}
+    <span class="ml-2 text-success">{{item.DT0}}</span>
+    <input type="checkbox" id="rf{{item.ID}}" name="rf{{item.ID}}"><label for="rf{{item.ID}}">Оновити</label>
+{% endif %}
+    <br>
 {% endfor %}
     <button type="submit" class="btn btn-primary"><i class="fas fa-angle-double-right mr-2"></i>Підготувати</button>
 </form>

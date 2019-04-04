@@ -22,13 +22,15 @@ class Passport extends DBController
     public function choice (): void
     {
         $this->x['menu'] = $this->bc->getMenu('choice');
-        $params = $this->x['post'] = $this->getPost();
+        $params = $this->getPost();
+        $params['user_guid'] = $this->myUser->guid;
 
         $this->x['name'] = $this->tax->getName($params['tin']);
 
         $sql = getSQL('passport\access_works.sql');
-        $this->x['info'] = $this->db->getAllFromSQL($sql, ['guid' => $this->myUser->guid]);
+        $this->x['info'] = $this->db->getAllFromSQL($sql, $params);
 
+        $this->x['post'] = $params;
         $this->twig->showTemplate('passport/choice.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
@@ -46,20 +48,30 @@ class Passport extends DBController
             $this->x['loading_index'] = 'a101';
         }
 
-        $work = [];
+        $work = $refresh = [];
         foreach ($_POST as $key => $post) {
-            if (strpos($key,'id') === 0) {$work[] = substr($key,2);}
+            if (strpos($key,'id') === 0) {
+                $id = substr($key,2);
+                $work[] = $id;
+                if (array_key_exists('rf' . $id, $_POST) && $_POST['rf' . $id] === 'on') {$refresh[] = $id;}
+            }
         }
         $work_string = implode(',', $work);
-        //$sql = "SELECT id, name FROM PIKALKA.d_pass_info WHERE INSTR(',' || '" . $work . "' || ',', ',' || id || ',') > 0";
+        $refresh_string = implode(',', $refresh);
+
         $sql = getSQL('passport/selected_works.sql');
         $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $this->myUser->guid, 'work' => $work_string]);
 
 //        $guid = $this->x['GUID'] = 'test';
         $new_guid = $this->x['guid'] = $this->db->getNewGUID();
         if (DEBUG) {$package = 'passport_dev';} else {$package = 'passport';}
-        $sql = 'BEGIN '.$package.'.create_job(:tin, :dt1, :dt2, :work, :user_guid, :guid); END;';
-        $params = array_merge($params, ['work' => $work_string, 'user_guid' => $this->myUser->guid, 'guid' => $new_guid]);
+        $sql = 'BEGIN '.$package.'.create_job(:tin, :dt1, :dt2, :work, :refresh, :user_guid, :guid); END;';
+        $params = array_merge($params, [
+            'work' => $work_string,
+            'refresh' => $refresh_string,
+            'user_guid' => $this->myUser->guid,
+            'guid' => $new_guid
+        ]);
         $this->db->runSQL($sql, $params);
 
         $this->twig->showTemplate('passport/prepare.html', ['x' => $this->x, 'my' => $this->myUser]);

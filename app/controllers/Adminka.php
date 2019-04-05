@@ -50,7 +50,7 @@ class Adminka extends DBController
         $sql = getSQL('adminka/get_user.sql');
         $this->x['user'] = $this->db->getOneRowFromSQL($sql, ['guid' => $guid]);
         $sql = getSQL('adminka/get_passport_access.sql');
-        $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
+        $this->x['tasks'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
         if (isset($_SESSION['update']) && $_SESSION['update']) {
             $this->x['update'] = true;
             unset($_SESSION['update']);
@@ -63,14 +63,16 @@ class Adminka extends DBController
     {
         $pattern = '#^[0-9a-zA-Z]{32}$#';
         $guid = Helper::regex($pattern, $_POST['guid'], 0);
-        $works_id = Helper::getArrayIdFromPost($_POST, 'id');
+        $tasks_id = Helper::getArrayIdFromPost($_POST, 'id');
+
+        $this->db->beginTransaction();
 
         $this->db->delete('PIKALKA.pass_access', ['guid' => $guid]);
 
-        if (count($works_id) > 0) {
+        if (count($tasks_id) > 0) {
             $sql = 'INSERT ALL' . CR;
-            foreach ($works_id as $item) {
-                $sql .= 'INTO PIKALKA.pass_access (guid, work_id) VALUES (\'' . $guid . '\', ' . $item . ')' . CR;
+            foreach ($tasks_id as $item) {
+                $sql .= 'INTO PIKALKA.pass_access (guid, task_id) VALUES (\'' . $guid . '\', ' . $item . ')' . CR;
             }
             $sql .= 'SELECT * FROM dual';
             $res = $this->db->runSQL($sql);
@@ -78,6 +80,7 @@ class Adminka extends DBController
         } else {
             $_SESSION['update'] = true;
         }
+        $this->db->endTransaction();
 
         header('Location: /adminka/passport/user/' . $guid);
     }

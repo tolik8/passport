@@ -11,8 +11,8 @@
     <div class="row">
         <div class="col">
             <div class="p-3 mb-3">
-                {% for work in x.works %}
-                <div>{{work.NAME}} <span id="id{{work.ID}}" class="font-weight-bold">{{work.TM}}</span></div>
+                {% for task in x.tasks %}
+                <div>{{task.NAME}} <span id="id{{task.ID}}" class="font-weight-bold">{{task.TM}}</span></div>
                 {% endfor %}
                 <div class="font-weight-bold">Дані підготовлено (сек): <span id="id0"></span></div>
             </div>

@@ -12,7 +12,7 @@
 
 <form method="POST" action="/adminka/passport/update">
     <input name="guid" value="{{x.guid}}" type="hidden">
-{% for row in x.works %}
+{% for row in x.tasks %}
     <div><input type="checkbox" id="id{{row.ID}}" name="id{{row.ID}}" {{row.CHECKED}}><label for="id{{row.ID}}">{{row.NAME}}</label></div>
 {% endfor %}
     <input type="submit" class="btn btn-primary" value="ַבונודעט">

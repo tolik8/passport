@@ -27,7 +27,7 @@ class Passport extends DBController
 
         $this->x['name'] = $this->tax->getName($params['tin']);
 
-        $sql = getSQL('passport\access_works.sql');
+        $sql = getSQL('passport\access_tasks.sql');
         $this->x['info'] = $this->db->getAllFromSQL($sql, $params);
 
         $this->x['post'] = $params;
@@ -36,7 +36,7 @@ class Passport extends DBController
 
     public function prepare (): void
     {
-        $this->x['menu'] = $this->bc->getMenu('work');
+        $this->x['menu'] = $this->bc->getMenu('prepare');
         $params = $this->x['post'] = $this->getPost();
 
         $this->x['name'] = $this->tax->getName($params['tin']);
@@ -48,26 +48,26 @@ class Passport extends DBController
             $this->x['loading_index'] = 'a101';
         }
 
-        $work = $refresh = [];
+        $task = $refresh = [];
         foreach ($_POST as $key => $post) {
             if (strpos($key,'id') === 0) {
                 $id = substr($key,2);
-                $work[] = $id;
+                $task[] = $id;
                 if (array_key_exists('rf' . $id, $_POST) && $_POST['rf' . $id] === 'on') {$refresh[] = $id;}
             }
         }
-        $work_string = implode(',', $work);
+        $task_string = implode(',', $task);
         $refresh_string = implode(',', $refresh);
 
-        $sql = getSQL('passport/selected_works.sql');
-        $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $this->myUser->guid, 'work' => $work_string]);
+        $sql = getSQL('passport/selected_tasks.sql');
+        $this->x['tasks'] = $this->db->getAllFromSQL($sql, ['guid' => $this->myUser->guid, 'task' => $task_string]);
 
 //        $guid = $this->x['GUID'] = 'test';
         $new_guid = $this->x['guid'] = $this->db->getNewGUID();
         if (DEBUG) {$package = 'passport_dev';} else {$package = 'passport';}
-        $sql = 'BEGIN '.$package.'.create_job(:tin, :dt1, :dt2, :work, :refresh, :user_guid, :guid); END;';
+        $sql = 'BEGIN '.$package.'.create_job(:tin, :dt1, :dt2, :task, :refresh, :user_guid, :guid); END;';
         $params = array_merge($params, [
-            'work' => $work_string,
+            'task' => $task_string,
             'refresh' => $refresh_string,
             'user_guid' => $this->myUser->guid,
             'guid' => $new_guid
@@ -79,11 +79,11 @@ class Passport extends DBController
 
     public function ajax ($guid): void
     {
-        $sql = getSQL('passport/get_work_info.sql');
-        $this->x['works'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
+        $sql = getSQL('passport/get_task_info.sql');
+        $this->x['tasks'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
 
         // якби в масив≥ був текст то додатково застосувати функц≥ю ArrayToUtf8
-        echo json_encode($this->x['works']);
+        echo json_encode($this->x['tasks']);
     }
 
     public function ajax_ ($guid): void

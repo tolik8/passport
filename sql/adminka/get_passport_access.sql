@@ -1,6 +1,6 @@
 -- get_passport_acceess
-SELECT i.id, i.name, DECODE(a.work_id, NULL, '', 'checked') checked
-FROM PIKALKA.d_pass_info i,
+SELECT t.id, t.name, DECODE(a.task_id, NULL, '', 'checked') checked
+FROM PIKALKA.d_pass_task t,
      (SELECT * FROM PIKALKA.pass_access WHERE guid = :guid) a
-WHERE i.id = a.work_id(+)
-ORDER BY i.id
+WHERE t.id = a.task_id(+)
+ORDER BY t.id

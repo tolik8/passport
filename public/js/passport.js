@@ -24,17 +24,17 @@ $(document).ready(function() {
     
     request.done(function(data){
         data.forEach(function(item){
-            let work_id = item['WORK_ID'];
+            let task_id = item['TASK_ID'];
             let tm = item['TM'];
 
-            let el = '#id'+work_id;
-            if (debug === '1' && work_id !== 0) {
+            let el = '#id' + task_id;
+            if (debug === '1' && task_id !== 0) {
                 $(el).text(tm);
             } else {
                 $(el).text('+');
             }
 
-            if (work_id === '0' && tm !== null) {
+            if (task_id === '0' && tm !== null) {
                 $('#loading').fadeOut();
                 $('#total-time').removeClass('d-none');
                 $('#excel').removeClass('d-none');

@@ -44,9 +44,9 @@ class MyUser
         }
 
         if ($this->admin) {
-            ini_set('error_reporting', E_ALL);
             ini_set('display_errors', 1);
             ini_set('display_startup_errors', 1);
+            ini_set('error_reporting', E_ALL);
             /** @noinspection ScandirUsageInspection */
             $this->log_files_count = count(scandir('../logs/'))-2;
             $this->table_error_count = $db->getCount('PIKALKA.pass_errors');

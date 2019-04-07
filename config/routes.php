@@ -7,7 +7,8 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->get('/refresh', ['App\MyUser', 'refresh']); // погано викликати замість контроллера обєкт
     $r->get('/logout', ['App\MyUser', 'logout']);   // погано викликати замість контроллера обєкт
     $r->get('/about', ['App\controllers\Home', 'about']);
-    $r->get('/test', ['App\controllers\Test', 'index']);
+    $r->get('/test', ['App\controllers\TestExcel', 'index']);
+    $r->get('/test/export', ['App\controllers\TestExcel', 'export']);
     
     $r->get('/passport', ['App\controllers\Passport', 'index']);
     $r->post('/passport/choice', ['App\controllers\Passport', 'choice']);

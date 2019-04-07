@@ -11,8 +11,7 @@ class Controller
     protected $twig;
     protected $bc;
     protected $x;
-    protected $new_guid;
-    protected $c_distr;
+
     protected $role;
     protected $need_access = true;
     protected $title;

@@ -21,7 +21,7 @@
     <input type="checkbox" id="id{{item.ID}}" name="id{{item.ID}}" {{checked}}><label for="id{{item.ID}}">{{item.NAME}}</label>
 {% if item.DT0 is not null %}
     <span class="ml-2 text-success">{{item.DT0}}</span>
-    <input type="checkbox" id="rf{{item.ID}}" name="rf{{item.ID}}"><label for="rf{{item.ID}}">Оновити</label>
+    <input type="checkbox" id="rf{{item.ID}}" name="rf{{item.ID}}" class="ml-2"><label for="rf{{item.ID}}">Оновити</label>
 {% endif %}
     <br>
 {% endfor %}

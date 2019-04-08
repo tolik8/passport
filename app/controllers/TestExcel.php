@@ -27,6 +27,7 @@ class TestExcel extends DBController
         } catch (\Exception $e) {
             echo $e->getMessage(); Exit;
         }
+        $data1 = ['{N}' => 123, '{NAME}' => 'HELLO'];
 
         $sql = 'SELECT c_distr, tin, name, c_stan, kved FROM RG02.r21taxpay WHERE c_stan NOT IN (17,27) AND tin IN (300400, 24630349)';
         $array1 = $this->db->getAllFromSQL($sql);
@@ -38,12 +39,12 @@ class TestExcel extends DBController
         $t_array2 = $this->transform($array2, 'T2.');
         $sum2 = $this->getSumFromArray($t_array2, 'T2.ID');
 
-        $data_array = array_merge($t_array1, $t_array2, $sum1, $sum2);
+        $data_array = array_merge($t_array1, $t_array2, $sum1, $sum2, $data1);
 
         // Вставка інформації в Лист 1
         $this->setSheet(1, $data_array);
 
-        $sql = 'SELECT * FROM PIKALKA.d_enter ORDER BY ID';
+        $sql = 'SELECT id as n, name, type_id FROM PIKALKA.d_enter ORDER BY ID';
         $array = $this->db->getAllFromSQL($sql);
         $t_array = $this->transform($array, 'T1.');
         $sum = $this->getSumFromArray($t_array, 'T1.TYPE_ID');

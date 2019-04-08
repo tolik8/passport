@@ -53,16 +53,22 @@ class Passport extends DBController
             $this->x['loading_index'] = 'a101';
         }
 
-        $task = $refresh = [];
+        $task = $ready = $refresh = [];
         foreach ($_POST as $key => $post) {
             if (strpos($key,'id') === 0) {
                 $id = substr($key,2);
                 $task[] = $id;
+                if (array_key_exists('ir' . $id, $_POST) && $_POST['ir' . $id] !== '') {$ready[] = $id;}
                 if (array_key_exists('rf' . $id, $_POST) && $_POST['rf' . $id] === 'on') {$refresh[] = $id;}
             }
         }
         $task_string = implode(',', $task);
+        $ready_string = implode(',', $ready);
         $refresh_string = implode(',', $refresh);
+        vd($_POST);
+        vd($task_string);
+        vd($ready_string);
+        dd($refresh_string);
 
         $sql = getSQL('passport/selected_tasks.sql');
         $this->x['tasks'] = $this->db->getAllFromSQL($sql, ['guid' => $this->myUser->guid, 'task' => $task_string]);

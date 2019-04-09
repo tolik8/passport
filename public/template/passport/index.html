@@ -1,8 +1,6 @@
-{% include('inc/header1.html') %}
-{% include('inc/header2.html') %}
-{% include('inc/menu.html') %}
-{% include('inc/bc_menu.html') %}
+{% extends 'main.html' %}
 
+{% block content %}
 <div class="container col-lg-5">
     <form action="/passport/choice" method="POST">
         <div class="form-group row">
@@ -29,7 +27,9 @@
         </div>
     </form>
 </div>
+{% endblock %}
 
-{% include('inc/footer1.html') %}
+{% block js %}
+{{ parent() }}
 <script type="text/javascript" src="{{filetime('/js/set_today.js')}}"></script>
-{% include('inc/footer2.html') %}
+{% endblock %}

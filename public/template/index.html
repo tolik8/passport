@@ -1,7 +1,9 @@
-{% include('inc/header1.html') %}
-{% include('inc/header2.html') %}
-{% include('inc/menu.html') %}
+{% extends 'main.html' %}
 
+{% block bc %}
+{% endblock %}
+
+{% block content %}
 <nav>
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
         <a class="nav-item nav-link active" id="nav-reg00-tab" data-toggle="tab" href="#nav-reg00" role="tab" aria-controls="nav-reg00" aria-selected="true"><i class="fas fa-university mr-2"></i>Київські ресурси</a>
@@ -14,6 +16,4 @@
     <div class="tab-pane fade" id="nav-reg19" role="tabpanel" aria-labelledby="nav-reg19-tab">222</div>
     <div class="tab-pane fade" id="nav-links" role="tabpanel" aria-labelledby="nav-links-tab">333</div>
 </div>
-
-{% include('inc/footer1.html') %}
-{% include('inc/footer2.html') %}
+{% endblock %}

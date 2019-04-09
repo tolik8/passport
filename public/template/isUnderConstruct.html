@@ -1,11 +1,14 @@
-{% include('inc/header1.html') %}
-{% include('inc/header2.html') %}
-{% include('inc/menu.html') %}
+{% extends 'main.html' %}
 
+{% block bc %}
+{% endblock %}
+
+{% block content %}
 <div class="container text-center pt-5 pb-5">
     <span class="p-3 mb-2 bg-warning text-dark font-weight-bold">Даний розділ знаходиться в розробці!</span>
 </div>
 <img src="img/under_construct/{{x.img_number}}.jpg" class="mx-auto d-block mt-3" alt="Under Construct">
+{% endblock %}
 
-{% include('inc/footer1.html') %}
-{% include('inc/footer2.html') %}
+{% block js %}
+{% endblock %}

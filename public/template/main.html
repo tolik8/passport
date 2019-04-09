@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="windows-1251">
+<title>{{ x.title }}</title>
+{% block css %}
+<link rel="stylesheet" href="/lib/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="/lib/font-awesome/5.4.2/css/all.min.css">
+<link rel="stylesheet" href="/lib/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker3.min.css">
+<link rel="stylesheet" href="{{filetime('/css/style.css')}}">
+{% endblock %}
+</head>
+<body>
+
+<div class="container-fluid">
+
+{% block menu %}
+{% include('inc/menu.html') %}
+{% endblock %}
+
+{% block bc %}
+{% include('inc/breadcrumb.html') %}
+{% endblock %}
+
+{% block content %}
+{% endblock %}
+
+</div>
+
+{% block js %}
+<script type="text/javascript" src="/lib/jquery/3.3.1/jquery.js"></script>
+<script type="text/javascript" src="/lib/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="/lib/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
+<script type="text/javascript" src="/lib/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.uk.min.js" charset="UTF-8"></script>
+<script type="text/javascript" src="{{filetime('/js/main.js')}}"></script>
+{% endblock %}
+
+</body>
+</html>

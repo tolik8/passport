@@ -6,191 +6,17 @@ use alhimik1986\PhpExcelTemplator\PhpExcelTemplator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Helper;
 
-class Passport extends DBController
+class PassToExcel extends DBController
 {
     protected $role = '22'; // Роль 22 - Паспорт платника
-    protected $title = 'Паспорт';
     protected $ss; // SpreadSheet
     protected $pass_guid;
     protected $c_distr;
     protected $default_params;
     protected $templateVars;
+    protected $task;
 
     public function index (): void
-    {
-        $this->x['menu'] = $this->bc->getMenu('passport');
-        $this->twig->showTemplate('passport/index.html', ['x' => $this->x, 'my' => $this->myUser]);
-        if (DEBUG) {d($this);}
-    }
-
-    public function choice (): void
-    {
-        $this->x['menu'] = $this->bc->getMenu('choice');
-        $params = $this->getPost();
-        $params['user_guid'] = $this->myUser->guid;
-
-        $this->x['name'] = $this->tax->getName($params['tin']);
-
-        $sql = getSQL('passport\access_tasks.sql');
-        $this->x['info'] = $this->db->getAllFromSQL($sql, $params);
-
-        $this->x['post'] = $params;
-        $this->twig->showTemplate('passport/choice.html', ['x' => $this->x, 'my' => $this->myUser]);
-    }
-
-    public function prepare (): void
-    {
-        $this->x['menu'] = $this->bc->getMenu('prepare');
-        $params = $this->x['post'] = $this->getPost();
-        $this->x['info_is_not_ready'] = true;
-
-        $this->x['name'] = $this->tax->getName($params['tin']);
-
-//        $this->x['loading_index'] = 'a101';
-        try {
-            $this->x['loading_index'] = 'a' . random_int(101, 112);
-        } catch (\Exception $e) {
-            $this->x['loading_index'] = 'a101';
-        }
-
-        $task = $ready = $refresh = [];
-        foreach ($_POST as $key => $post) {
-            if (strpos($key,'id') === 0) {
-                $id = substr($key,2);
-                $task[] = $id;
-                if (array_key_exists('ir' . $id, $_POST) && $_POST['ir' . $id] !== '') {$ready[] = $id;}
-                if (array_key_exists('rf' . $id, $_POST) && $_POST['rf' . $id] === 'on') {$refresh[] = $id;}
-            }
-        }
-        $task_string = implode(',', $task);
-        $ready_string = implode(',', $ready);
-        $refresh_string = implode(',', $refresh);
-
-        if ($task_string === $ready_string && $refresh_string === '') {
-            $this->x['info_is_not_ready'] = false;
-        }
-
-        $sql = getSQL('passport/selected_tasks.sql');
-        $this->x['tasks'] = $this->db->getAllFromSQL($sql, ['guid' => $this->myUser->guid, 'task' => $task_string]);
-
-        if ($this->x['info_is_not_ready']) {
-//            $guid = $this->x['GUID'] = 'test';
-            $new_guid = $this->x['guid'] = $this->db->getNewGUID();
-            if (DEBUG) {$package = 'passport_dev';} else {$package = 'passport';}
-            $sql = 'BEGIN ' . $package . '.create_job(:tin, :dt1, :dt2, :task, :refresh, :user_guid, :guid); END;';
-            $params = array_merge($params, [
-                'task'      => $task_string,
-                'refresh'   => $refresh_string,
-                'user_guid' => $this->myUser->guid,
-                'guid'      => $new_guid
-            ]);
-            $this->db->runSQL($sql, $params);
-        }
-        $this->x['task'] = $task_string;
-
-        $this->twig->showTemplate('passport/prepare.html', ['x' => $this->x, 'my' => $this->myUser]);
-    }
-
-    public function ajax ($guid): void
-    {
-        $sql = getSQL('passport/get_task_info.sql');
-        $this->x['tasks'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
-
-        // Якби в масиві був текст то додатково застосувати функцію ArrayToUtf8
-        echo json_encode($this->x['tasks']);
-    }
-
-    /*public function ajax_ ($guid): void
-    {
-        $params = ['guid' => $guid];
-        $sql = 'SELECT COUNT(*) FROM PIKALKA.pass_jrn WHERE guid = :guid AND tm IS NOT NULL';
-        $cnt = $this->db->getOneValueFromSQL($sql, $params);
-        if ($cnt === '1') {
-            $tm = $this->db->getOneValue('tm', 'PIKALKA.pass_jrn', $params);
-            echo 'FINISH ' . $tm;
-        } else {
-            $sql = 'SELECT * FROM PIKALKA.pass_steps WHERE guid = :guid and step > 0 ORDER BY step';
-            $this->x['steps'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
-            $this->twig->showTemplate('passport/ajax.html', ['x' => $this->x]);
-        }
-    }*/
-
-    /*public function check (): void
-    {
-        $this->x['menu'] = $this->bc->getMenu('check');
-        $this->x['post'] = $params = $this->getPost();
-
-        $sql = getSQL('passport/check.sql');
-        $this->x['data'] = $this->db->getOneRowFromSQL($sql, $params);
-
-        if (!$this->db->resultIsOk) {
-            $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]); Exit;
-            if (DEBUG) {d($this);}
-        }
-
-        if (empty($this->x['data'])) {
-            $_SESSION['post'] = $params;
-            // Passport not found, prepare passport
-            header('Location: /passport/prepare');
-            exit;
-        } else if (empty($this->x['data']['TM'])) {
-            // Passport created at the moment
-            header('Location: /passport/loading/'.$this->x['data']['GUID']);
-            exit;
-        }
-        // Passport exists, show the choice between "Use existing" and "Generate new"
-        $this->twig->showTemplate('passport/check.html', ['x' => $this->x, 'my' => $this->myUser]);
-        if (DEBUG) {d($this);}
-    }*/
-
-    /*public function loading ($guid): void
-    {
-        $this->x['menu'] = $this->bc->getMenu('loading');
-        $loading_index = 1;
-//        $loading_index = random_int(1,12);
-//        echo $loading_index;
-        if ($loading_index < 10) {$this->x['loading_index'] = 'a0'.$loading_index;} else {$this->x['loading_index'] = 'a'.$loading_index;}
-
-        $this->x['guid'] = $guid;
-        $this->twig->showTemplate('passport/loading.html', ['x' => $this->x, 'my' => $this->myUser]);
-    }*/
-
-    /*public function prepare_ (): void
-    {
-        $work_string = '';
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->x['data'] = $params = $this->getPost();
-            $work = [];
-            foreach ($_POST as $key => $post) {
-                if (strpos($key,'id') === 0) {$work[] = substr($key,2);}
-            }
-            $work_string = implode(',', $work);
-        } else {
-            if (!isset($_SESSION['post'])) {header('Location: /passport'); exit;}
-            $params = $_SESSION['post'];
-            unset($_SESSION['post']);
-        }
-        $count = $this->db->getCount('RG02.r21taxpay', ['tin' => $params['tin']]);
-        if ($count === 0) {
-            header('Location: /passport/taxpayer_not_found');
-        } else {
-            $new_guid = $this->db->getNewGUID();
-            if (DEBUG) {$package = 'passport_dev';} else {$package = 'passport';}
-            $sql = 'BEGIN '.$package.'.create_job(:tin, :dt1, :dt2, :work, :user_guid, :guid); END;';
-            $params = array_merge($params, ['work' => $work_string, 'user_guid' => $this->myUser->guid, 'guid' => $new_guid]);
-            $this->db->runSQL($sql, $params);
-            header('Location: /passport/loading/' . $new_guid);
-        }
-        exit;
-    }*/
-
-    public function taxpayer_not_found (): void
-    {
-        $this->x['errors'][] = 'Вказаний платник не знайдений в базі даних';
-        $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]);
-    }
-
-    public function toExcel (): void
     {
         $templateFile = $this->root . '/xls/passport/template.xlsx';
         $outputFile = './passport.xlsx';
@@ -222,7 +48,9 @@ class Passport extends DBController
         $task = $this->db->getKeyValueFromSQL($sql, ['guid' => $this->pass_guid]);
 
         // Реєстраційні дані
-        $this->toExcel_RegData(1, $params);
+        if (isset($task[1])) {
+            $this->toExcel_RegData(1, $params);
+        }
 
         // Пов’язані
         $this->toExcel_Related(2, $task);
@@ -300,13 +128,11 @@ class Passport extends DBController
 //        }
 
         if ($outputMethod) {PhpExcelTemplator::outputSpreadsheetToFile($this->ss, $outputFile);}
-            else {PhpExcelTemplator::saveSpreadsheetToFile($this->ss, $outputFile);}
+        else {PhpExcelTemplator::saveSpreadsheetToFile($this->ss, $outputFile);}
     }
 
     protected function toExcel_RegData ($index, $params): void
     {
-        if (!isset($task[$index])) {return;}
-
         try {
             /** @noinspection PhpUndefinedMethodInspection */
             $sheet = $this->ss->getSheet($index - 1);
@@ -470,18 +296,6 @@ class Passport extends DBController
         return $result;
     }
 
-    protected function getPost (): array
-    {
-        $post = [];
-        $pattern = '#^[0-9]{6,10}$#';
-        $post['tin'] = Helper::regex($pattern, $_POST['tin'], 0);
-
-        $pattern = '#^\s*(3[01]|[12][0-9]|0?[1-9])\.(1[012]|0?[1-9])\.((?:19|20)\d{2})\s*$#';
-        $post['dt1'] = Helper::regex($pattern, $_POST['dt1'], '01.01.2017');
-        $post['dt2'] = Helper::regex($pattern, $_POST['dt2'], '31.12.2018');
-        return $post;
-    }
-
     /* $sum = $this->getSumFromArray($t_array, 'T1.PDV'); */
     protected function getSumFromArray (array $array, $find): array
     {
@@ -492,21 +306,6 @@ class Passport extends DBController
         $sum = array_sum($array[$prefix . $field . '#']);
         return [$sum_name => $sum];
     }
-
-    /*protected function setSheet_old ($index, $array): void
-    {
-        $transform_array = $this->transform1($array);
-        $params_from_ora = $this->transform2($transform_array);
-        try {
-            $sheet = $this->ss->getSheet($index - 1);
-            $templateVars = $sheet->toArray();
-            $default_params = $this->prepareParams($templateVars);
-        } catch (\Exception $e) {
-            echo $e->getMessage(); Exit;
-        }
-        $templateParams = array_merge($default_params, $params_from_ora);
-        PhpExcelTemplator::renderWorksheet($sheet, $templateVars, $templateParams);
-    }*/
 
     protected function setSheet ($index, $array): void
     {
@@ -523,29 +322,6 @@ class Passport extends DBController
         }
     }
 
-    /*protected function excelKontr ($sql, $params, $prefix): array
-    {
-        $array = $this->db->getAllFromSQL($sql, $params);
-        $array = $this->transform($array, $prefix);
-
-        if (empty($array)) {
-            $fields = ['N', 'STI', 'TIN', 'NAME', 'OBS', 'PDV', 'NOM'];
-            foreach ($fields as $value) {$array[$value] = [];}
-        }
-
-        $obs_sum = array_sum($array[$prefix . 'OBS']);
-        $pdv_sum = array_sum($array[$prefix . 'PDV']);
-        $array[$prefix . 'VIDS'] = $this->vidsFromArray($array[$prefix . 'OBS']);
-
-        //$kontr = $this->transform($array, $prefix);
-        $kontr = $array;
-        $calculate_params = ['{'.$prefix.'OBS_SUM}' => $obs_sum, '{'.$prefix.'PDV_SUM}' => $pdv_sum];
-        //vd($calculate_params);
-        //vd(array_merge($kontr, $calculate_params));
-
-        return array_merge($kontr, $calculate_params);
-    }*/
-
     protected function transform (array $array, $prefix = ''): array
     {
         $result = [];
@@ -561,46 +337,5 @@ class Passport extends DBController
         }
         return $result;
     }
-
-    /*protected function transform1 (array $array = []): array
-    {
-        $result = [];
-        if (empty($array)) {return $result;}
-        $columns = array_keys($array[0]);
-
-        foreach ($array as $row) {
-            foreach ($columns as $col) {
-                try {
-                    $value_utf8 = mb_convert_encoding($row[$col], 'utf-8', 'windows-1251');
-                    $result[$col][] = $value_utf8;
-                } catch (\Exception $e) {
-
-                }
-            }
-        }
-        return $result;
-    }*/
-
-    /*protected function transform2 (array $array = [], $prefix = ''): array
-    {
-        $result = [];
-        if (empty($array)) {return $result;}
-
-        foreach ($array as $key => $value) {$result['['.$prefix.$key.']'] = $value;}
-
-        return $result;
-    }*/
-
-    /*protected function vidsFromArray (array $array = [], $precision = 0): array
-    {
-        $result = [];
-        if (empty($array)) {return $result;}
-        $sum = array_sum($array);
-
-        foreach ($array as $row) {
-            $result[] = round($row / $sum * 100, $precision);
-        }
-        return $result;
-    }*/
 
 }

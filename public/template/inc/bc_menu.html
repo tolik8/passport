@@ -1,12 +1,12 @@
 
 <nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
+    <ol class="breadcrumb">
 {% for el in x.menu %}
 {% if el.active == 1 %}
-    <li class="breadcrumb-item active font-weight-bold" aria-current="page" title="{{ el.full }}">{{ el.name|e }}</li>
+        <li class="breadcrumb-item active font-weight-bold" aria-current="page" title="{{ el.full }}">{{ el.name|e }}</li>
 {% else %}
-    <li class="breadcrumb-item"><a href="{{ el.link|e }}" data-toggle="tooltip" data-placement="bottom" class="red-tooltip" title="" data-original-title="{{ el.full }}">{{ el.name|e }}</a></li>
+        <li class="breadcrumb-item"><a href="{{ el.link|e }}" data-toggle="tooltip" data-placement="bottom" class="red-tooltip" title="" data-original-title="{{ el.full }}">{{ el.name|e }}</a></li>
 {% endif %}
 {% endfor %}
-  </ol>
+    </ol>
 </nav>

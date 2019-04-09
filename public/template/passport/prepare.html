@@ -7,14 +7,22 @@
 <div id="debug" class="d-none">{{my.debug}}</div>
 <div id="guid" class="d-none">{{x.guid}}</div>
 
+{% if x.info_is_not_ready == 1 %}
+{% set d_none='d-none' %}
+{% set plus='' %}
+{% else %}
+{% set d_none='' %}
+{% set plus='+' %}
+{% endif %}
+
 <div class="container">
     <div class="row">
         <div class="col">
             <div class="p-3 mb-3">
-                {% for task in x.tasks %}
-                <div>{{task.NAME}} <span id="id{{task.ID}}" class="font-weight-bold">{{task.TM}}</span></div>
-                {% endfor %}
-                <div class="font-weight-bold">Дані підготовлено (сек): <span id="id0"></span></div>
+{% for task in x.tasks %}
+                <div>{{task.NAME}} <span id="id{{task.ID}}" class="font-weight-bold">{{plus}}{{task.TM}}</span></div>
+{% endfor %}
+                <div class="font-weight-bold">Дані підготовлено <span id="id0">{{plus}}</span></div>
             </div>
         </div>
 
@@ -22,12 +30,18 @@
             <div class="p-3 mb-3 border border-primary">
                 <div><b>{{x.post.tin}}</b> {{x.name}}</div>
                 <div>{{x.post.dt1}} - {{x.post.dt2}}</div>
-                {% if my.debug %}<div>{{x.guid}}</div>{% endif %}
+{% if my.debug %}
+                <div>{{x.guid}}</div>
+{% endif %}
             </div>
 
-            <div id="excel" class="mt-3 d-none">
+            <div id="excel" class="mt-3 {{d_none}}">
                 <form method="POST" action="/passport/excel">
-                    <input type="hidden" name="guid" value="{{ x.guid }}">
+                    <input type="hidden" name="guid" value="{{x.guid}}">
+                    <input type="hidden" name="tin" value="{{x.post.tin}}">
+                    <input type="hidden" name="dt1" value="{{x.post.dt1}}">
+                    <input type="hidden" name="dt2" value="{{x.post.dt2}}">
+                    <input type="hidden" name="task" value="{{x.task}}">
                     <button type="submit" class="btn btn-primary font-weight-bold"><i class="fas fa-angle-double-right mr-2"></i>Сформувати Excel</button>
                 </form>
             </div>
@@ -35,10 +49,14 @@
     </div>
 </div>
 
+{% if x.info_is_not_ready == 1 %}
 <div id="loading" class="container">
 {% include('inc/loading/' ~ x.loading_index ~ '.html') %}
 </div>
+{% endif %}
 
 {% include('inc/footer1.html') %}
+{% if x.info_is_not_ready == 1 %}
 <script type="text/javascript" src="{{filetime('/js/passport.js')}}"></script>
+{% endif %}
 {% include('inc/footer2.html') %}

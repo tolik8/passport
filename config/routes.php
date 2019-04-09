@@ -18,8 +18,8 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->post('/passport/check', ['App\controllers\Passport', 'check']);
     //$r->addRoute(['GET', 'POST'], '/passport/prepare', ['App\controllers\Passport', 'prepare']);
     $r->get('/passport/loading/{guid:[0-9a-zA-Z]{1,32}}', ['App\controllers\Passport', 'loading']);
-    $r->post('/passport/excel', ['App\controllers\Passport', 'toExcel']);
     $r->get('/passport/taxpayer_not_found', ['App\controllers\Passport', 'taxpayer_not_found']);
+    $r->post('/passport/excel', ['App\controllers\PassToExcel', 'index']);
 
     $r->get('/adminka', ['App\controllers\Adminka', 'index']);
     $r->get('/adminka/passport', ['App\controllers\Adminka', 'passport']);

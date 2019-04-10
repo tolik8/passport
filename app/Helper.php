@@ -10,10 +10,32 @@ class Helper
         return in_array($find, $array, true);
     }
 
-    public static function regex ($pattern, $subject, $default = null)
+    public static function getPattern ($pattern)
     {
-        if (preg_match($pattern, $subject)) {$result = $subject;} else {$result = $default;}
-        return $result;
+        $patterns = [
+            'guid' => '#^[0-9a-zA-Z]{32}$#',
+            'tin' => '#^[0-9]{6,10}$#',
+            'date' => '#^\s*(3[01]|[12][0-9]|0?[1-9])\.(1[012]|0?[1-9])\.((?:19|20)\d{2})\s*$#',
+        ];
+        return $patterns[$pattern] ?? null;
+    }
+
+    public static function RegEx ($pattern, $post, $default = null)
+    {
+        if (preg_match($pattern, $post)) {
+            return $post;
+        }
+        return $default;
+    }
+
+    public static function CheckRegEx ($pattern_name, $post, $default = null)
+    {
+        $pattern = self::getPattern($pattern_name);
+
+        if ($pattern === null) {
+            return null;
+        }
+        return self::RegEx($pattern, $post, $default);
     }
 
     public static function utf8 ($input)

@@ -13,13 +13,13 @@ class Passport extends DBController
     {
         $this->x['menu'] = $this->bc->getMenu('passport');
         $this->twig->showTemplate('passport/index.html', ['x' => $this->x, 'my' => $this->myUser]);
-        if (DEBUG) {d($this);}
     }
 
     public function choice (): void
     {
         $this->x['menu'] = $this->bc->getMenu('choice');
         $params = $this->getPost();
+        vd($params);
         $params['user_guid'] = $this->myUser->guid;
 
         $this->x['name'] = $this->tax->getName($params['tin']);
@@ -47,6 +47,7 @@ class Passport extends DBController
         }
 
         $task = $ready = $refresh = [];
+
         foreach ($_POST as $key => $post) {
             if (strpos($key,'id') === 0) {
                 $id = substr($key,2);
@@ -89,7 +90,7 @@ class Passport extends DBController
         $sql = getSQL('passport/get_task_info.sql');
         $this->x['tasks'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
 
-        // Якби в масиві був текст то додатково застосувати функцію ArrayToUtf8
+        /* Якщо в масиві буде текст, то додатково застосувати функцію ArrayToUtf8 */
         echo json_encode($this->x['tasks']);
     }
 
@@ -101,12 +102,9 @@ class Passport extends DBController
 
     protected function getPost (): array
     {
-        $pattern = '#^[0-9]{6,10}$#';
-        $post['tin'] = Helper::regex($pattern, $_POST['tin'], 0);
-
-        $pattern = '#^\s*(3[01]|[12][0-9]|0?[1-9])\.(1[012]|0?[1-9])\.((?:19|20)\d{2})\s*$#';
-        $post['dt1'] = Helper::regex($pattern, $_POST['dt1'], '01.01.2017');
-        $post['dt2'] = Helper::regex($pattern, $_POST['dt2'], '31.12.2018');
+        $post['tin'] = Helper::CheckRegEx('tin', $_POST['tin'], 0);
+        $post['dt1'] = Helper::CheckRegEx('date', $_POST['dt1'], '01.01.2017');
+        $post['dt2'] = Helper::CheckRegEx('date', $_POST['dt2'], '31.12.2018');
 
         return $post;
     }

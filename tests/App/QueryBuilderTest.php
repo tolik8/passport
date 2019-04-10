@@ -29,7 +29,7 @@ class QueryBuilderTest extends TestCase
         $this->QB = NULL;
     }
 
-    public function testGetAll()
+    public function testGetAll(): void
     {
         $result = $this->QB->getAll('PIKALKA.people');
         $count = count($result);
@@ -37,13 +37,13 @@ class QueryBuilderTest extends TestCase
         $this->assertTrue($countRes);
     }
 
-    public function testGetCount()
+    public function testGetCount(): void
     {
         $result = $this->QB->getCount('PIKALKA.people', ['viddil_id' => '19-00-09-01']);
         $this->assertEquals(4, $result);
     }
 
-    public function testGetOneValue()
+    public function testGetOneValue(): void
     {
         $result = $this->QB->getOneValue('login', 'PIKALKA.people', ['guid' => '06F2EF58972B2E32E050130A64136A5F']);
         $this->assertEquals('admin19t', $result);

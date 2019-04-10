@@ -10,7 +10,7 @@ class PassToExcel extends DBController
 {
     protected $role = '22'; // Роль 22 - Паспорт платника
     protected $ss; // SpreadSheet
-    protected $pass_guid;
+    protected $guid;
     protected $c_distr;
     protected $default_params;
     protected $templateVars;
@@ -38,14 +38,15 @@ class PassToExcel extends DBController
             echo $e->getMessage(); Exit;
         }
 
-        $pattern = '#^[0-9a-zA-Z]{32}$#';
-        $this->pass_guid = Helper::regex($pattern, $_POST['guid'], 0);
+        //$pattern = '#^[0-9a-zA-Z]{32}$#';
+        //$this->pass_guid = Helper::RegEx($pattern, $_POST['guid'], 0);
+        $this->guid = Helper::CheckRegEx('guid', $_POST['guid']);
 
-        $params = $this->db->getOneRow('PIKALKA.pass_jrn', ['guid' => $this->pass_guid]);
+        $params = $this->db->getOneRow('PIKALKA.pass_jrn', ['guid' => $this->guid]);
         //$guid_param = ['guid' => $this->pass_guid];
 
         $sql = getSQL('passport/get_tasks_guid.sql');
-        $task = $this->db->getKeyValueFromSQL($sql, ['guid' => $this->pass_guid]);
+        $task = $this->db->getKeyValueFromSQL($sql, ['guid' => $this->guid]);
 
         // Реєстраційні дані
         if (isset($task[1])) {
@@ -113,7 +114,7 @@ class PassToExcel extends DBController
 
         // запис в pass_log
         $sql_params = [
-            'guid' => $this->pass_guid, 'dt1' => $params['DT1'], 'dt2' => $params['DT2'],
+            'guid' => $this->guid, 'dt1' => $params['DT1'], 'dt2' => $params['DT2'],
             'tin' => $params['TIN'], 'guid_user' => $this->myUser->guid, 'tm' => 0,
         ];
         $this->db->insert('PIKALKA.pass_log', $sql_params);

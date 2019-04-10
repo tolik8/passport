@@ -16,12 +16,14 @@ $(document).ready(function() {
         });
     }
 
-    if ($('#checkbox').prop('checked')) {
+    let checkbox = $('#checkbox');
+
+    if (checkbox.prop('checked')) {
         DevBridgeAutocompleteInit();
     }
 
-    $('#checkbox').click(function() {
-        if ($('#checkbox').prop('checked')) {
+    checkbox.click(function() {
+        if (checkbox.prop('checked')) {
             DevBridgeAutocompleteInit();
         } else {
             $('#guid').val('');

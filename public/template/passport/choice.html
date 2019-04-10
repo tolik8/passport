@@ -1,8 +1,6 @@
-{% include('inc/header1.html') %}
-{% include('inc/header2.html') %}
-{% include('inc/menu.html') %}
-{% include('inc/bc_menu.html') %}
+{% extends 'main.html' %}
 
+{% block content %}
 <div class="container">
 
 <div class="p-3 mb-3 border border-primary">
@@ -32,5 +30,4 @@
 
 </div>
 
-{% include('inc/footer1.html') %}
-{% include('inc/footer2.html') %}
+{% endblock %}

@@ -1,5 +1,7 @@
 {% extends 'main.html' %}
 
+{% set include_datepicker = true %}
+
 {% block content %}
 <div class="container col-lg-5">
     <form action="/passport/choice" method="POST">
@@ -16,7 +18,7 @@
                 <span class="input-group-addon ml-1 mr-1">-</span>
                 <!--suppress HtmlFormInputWithoutLabel -->
                 <input type="text" name="dt2" class="input-sm form-control" value="31.12.2018" id="dt2">
-                <div id="setToday" type="button" class="ml-2 btn btn-success">ׁüמדמהם³</div>
+                <button id="setToday" type="button" class="ml-2 btn btn-success">ׁüמדמהם³</button>
             </div>
         </div>
 

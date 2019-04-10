@@ -1,9 +1,11 @@
-{% include('inc/header1.html') %}
-<link rel="stylesheet" href="/css/loading/{{x.loading_index}}.css">
-{% include('inc/header2.html') %}
-{% include('inc/menu.html') %}
-{% include('inc/bc_menu.html') %}
+{% extends 'main.html' %}
 
+{% block css %}
+{{ parent() }}
+<link rel="stylesheet" href="/css/loading/{{x.loading_index}}.css">
+{% endblock %}
+
+{% block content %}
 <div id="debug" class="d-none">{{my.debug}}</div>
 <div id="guid" class="d-none">{{x.guid}}</div>
 
@@ -54,9 +56,11 @@
 {% include('inc/loading/' ~ x.loading_index ~ '.html') %}
 </div>
 {% endif %}
+{% endblock %}
 
-{% include('inc/footer1.html') %}
+{% block js %}
+{{ parent() }}
 {% if x.info_is_not_ready == 1 %}
 <script type="text/javascript" src="{{filetime('/js/passport.js')}}"></script>
 {% endif %}
-{% include('inc/footer2.html') %}
+{% endblock %}

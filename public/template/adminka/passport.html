@@ -1,9 +1,11 @@
-{% include('inc/header1.html') %}
-<link rel="stylesheet" href="/lib/autocomplete/1.4.10/styles.css">
-{% include('inc/header2.html') %}
-{% include('inc/menu.html') %}
-{% include('inc/bc_menu.html') %}
+{% extends 'main.html' %}
 
+{% block css %}
+{{ parent() }}
+<link rel="stylesheet" href="/lib/autocomplete/1.4.10/styles.css">
+{% endblock %}
+
+{% block content %}
 <form method="POST" action="/adminka/passport/users">
     <input id="guid" name="guid" value="" type="hidden">
     <label>Знайти користувача:
@@ -11,8 +13,10 @@
     <input type="submit" value="Пошук" class="btn btn-primary"><br>
     <input id="checkbox" type="checkbox" checked><label for="checkbox">Автопошук</label>
 </form>
+{% endblock %}
 
-{% include('inc/footer1.html') %}
+{% block js %}
+{{ parent() }}
 <script type="text/javascript" src="/lib/autocomplete/1.4.10/jquery.autocomplete.js"></script>
 <script type="text/javascript" src="{{filetime('/js/user_find.js')}}"></script>
-{% include('inc/footer2.html') %}
+{% endblock %}

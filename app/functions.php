@@ -2,12 +2,15 @@
 
 function vd ($input)
 {
-    echo '<pre>'; var_dump($input); echo '</pre>';
+    echo '<pre>';
+    /** @noinspection ForgottenDebugOutputInspection */
+    var_dump($input);
+    echo '</pre>';
 }
 
 function dd ($input)
 {
-    echo '<pre>'; var_dump($input); echo '</pre>'; die;
+    vd($input); die;
 }
 
 function getSQL ($path)

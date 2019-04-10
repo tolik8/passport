@@ -1,9 +1,8 @@
-{% include('inc/header1.html') %}
-{% include('inc/header2.html') %}
-{% include('inc/menu.html') %}
-{% include('inc/bc_menu.html') %}
+{% extends 'main.html' %}
 
+{% block content %}
 <div class="container">
+
 <h5>{{x.user.FIO1}} {{x.user.FIO2}} {{x.user.FIO3}} ({{x.user.PLACE}})</h5>
 <div class="text-success">{{x.user.VIDDIL_ID}} {{x.user.VIDDIL_NAME}}</div>
 {{x.user.LOGIN}} <span class="text-primary">{{x.user.POSADA}}</span><br>
@@ -13,15 +12,21 @@
 <form method="POST" action="/adminka/passport/update">
     <input name="guid" value="{{x.guid}}" type="hidden">
 {% for row in x.tasks %}
-    <div><input type="checkbox" id="id{{row.ID}}" name="id{{row.ID}}" {{row.CHECKED}}><label for="id{{row.ID}}">{{row.NAME}}</label></div>
+    <div>
+        <!--suppress HtmlUnknownAttribute -->
+        <input type="checkbox" id="id{{row.ID}}" name="id{{row.ID}}" {{row.CHECKED}}><label for="id{{row.ID}}">{{row.NAME}}</label>
+    </div>
 {% endfor %}
     <input type="submit" class="btn btn-primary" value="Зберегти">
 {% if x.update %}
     <div id="DataSave" class="btn btn-success d-none">Дані збережено</div>
 {% endif %}
 </form>
-</div>
 
-{% include('inc/footer1.html') %}
+</div>
+{% endblock %}
+
+{% block js %}
+{{ parent() }}
 <script type="text/javascript" src="{{filetime('/js/fade_out.js')}}"></script>
-{% include('inc/footer2.html') %}
+{% endblock %}

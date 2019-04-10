@@ -197,7 +197,7 @@ class QueryBuilder implements QueryBuilderInterface
         return $this->runSQL($sql, $data);
     }
 
-    public function update ($table, array $update, array $where = []): int
+    public function update ($table, array $update, array $where): int
     {
         $keys = array_keys($update);
         $string = '';

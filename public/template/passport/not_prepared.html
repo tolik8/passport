@@ -1,8 +1,6 @@
-{% include('inc/header1.html') %}
-{% include('inc/header2.html') %}
-{% include('inc/menu.html') %}
-{% include('inc/bc_menu.html') %}
+{% extends 'main.html' %}
 
+{% block content %}
 <div class="container text-center p-5">
     <span class="p-3 bg-danger text-light font-weight-bold">При підготовці даних виникли помилки в:</span>
 </div>
@@ -11,6 +9,7 @@
         <p>{{ error }}</p>
     {% endfor %}
 </div>
+{% endblock %}
 
-{% include('inc/footer1.html') %}
-{% include('inc/footer2.html') %}
+{% block js %}
+{% endblock %}

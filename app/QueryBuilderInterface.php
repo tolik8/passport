@@ -30,7 +30,7 @@ interface QueryBuilderInterface
 
     public function insert ($table, array $data): int;
 
-    public function update ($table, array $update, array $where = []): int;
+    public function update ($table, array $update, array $where): int;
 
     public function delete ($table, array $data): int;
 

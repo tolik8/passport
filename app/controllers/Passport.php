@@ -19,7 +19,6 @@ class Passport extends DBController
     {
         $this->x['menu'] = $this->bc->getMenu('choice');
         $params = $this->getPost();
-        vd($params);
         $params['user_guid'] = $this->myUser->guid;
 
         $this->x['name'] = $this->tax->getName($params['tin']);

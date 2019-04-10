@@ -18,6 +18,26 @@ class PassToExcel extends DBController
 
     public function index (): void
     {
+        $this->guid = Helper::CheckRegEx('guid', $_POST['guid']);
+
+        if ($this->guid === null) {
+            $params = [
+                'TIN' => Helper::CheckRegEx('tin', $_POST['tin']),
+                'DT1' => Helper::CheckRegEx('date', $_POST['dt1']),
+                'DT2' => Helper::CheckRegEx('date', $_POST['dt2']),
+                'TASK_LIST' => Helper::CheckRegEx('list', $_POST['task']),
+                'USER_GUID' => $this->myUser->guid,
+            ];
+            $sql = getSQL('passport\get_task_ready_guid.sql');
+            $task = $this->db->getKeyValueFromSQL($sql, $params);
+        } else {
+            $this->guid = Helper::CheckRegEx('guid', $_POST['guid']);
+            $params = $this->db->getOneRow('PIKALKA.pass_jrn', ['guid' => $this->guid]);
+
+            $sql = getSQL('passport/get_tasks_guid.sql');
+            $task = $this->db->getKeyValueFromSQL($sql, ['guid' => $this->guid]);
+        }
+
         $templateFile = $this->root . '/xls/passport/template.xlsx';
         $outputFile = './passport.xlsx';
         $outputMethod = true;
@@ -38,15 +58,9 @@ class PassToExcel extends DBController
             echo $e->getMessage(); Exit;
         }
 
-        //$pattern = '#^[0-9a-zA-Z]{32}$#';
-        //$this->pass_guid = Helper::RegEx($pattern, $_POST['guid'], 0);
-        $this->guid = Helper::CheckRegEx('guid', $_POST['guid']);
 
-        $params = $this->db->getOneRow('PIKALKA.pass_jrn', ['guid' => $this->guid]);
-        //$guid_param = ['guid' => $this->pass_guid];
 
-        $sql = getSQL('passport/get_tasks_guid.sql');
-        $task = $this->db->getKeyValueFromSQL($sql, ['guid' => $this->guid]);
+
 
         // –еЇстрац≥йн≥ дан≥
         if (isset($task[1])) {

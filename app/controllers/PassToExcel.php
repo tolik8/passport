@@ -5,7 +5,6 @@ namespace App\controllers;
 use alhimik1986\PhpExcelTemplator\PhpExcelTemplator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Helper;
-use Exception;
 
 class PassToExcel extends DBController
 {
@@ -49,7 +48,7 @@ class PassToExcel extends DBController
         /* Створити ss - SpreadSheets */
         try {
             $this->ss = IOFactory::load($templateFile);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             echo $e->getMessage(); Exit;
         }
 
@@ -111,7 +110,7 @@ class PassToExcel extends DBController
             if (!isset($task[$i])) {
                 try {
                     $this->ss->removeSheetByIndex($i - 1);
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     //echo $e->getMessage();
                 }
             }
@@ -130,7 +129,7 @@ class PassToExcel extends DBController
         try {
             /** @noinspection PhpUndefinedMethodInspection */
             $sheet = $this->ss->getSheet($index - 1);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             echo $e->getMessage(); Exit;
         }
         $reg_data = $this->excelRegData($params);
@@ -276,17 +275,9 @@ class PassToExcel extends DBController
         $kvedy = $this->transform($array, 'KVED.');
 
         /* Засновники */
-        /*$sql = 'SELECT SUM(sum_infund) FROM RG02.r21pfound WHERE tin = :tin';
-        $sum_infund = $this->db->getOneValueFromSQL($sql, $params);
         $sql = getSQL('passport/founders.sql');
-        $tmp_params = array_merge($params, ['sum_infund' => $sum_infund]);
-        $array = $this->db->getAllFromSQL($sql, $tmp_params);
-        $founders = $this->transform($array);*/
-
-        //$sql = getSQL('passport/founders.sql');
-        //$array = $this->db->getAllFromSQL($sql, ['tin' => $params['TIN']]);
-        //$founders = $this->transform($array, 'FNDR.');
-        $founders = [];
+        $array = $this->db->getAllFromSQL($sql, ['tin' => $params['TIN']]);
+        $founders = $this->transform($array, 'FNDR.');
 
         /* РРО */
         $sql = getSQL('passport/rro.sql');
@@ -336,7 +327,7 @@ class PassToExcel extends DBController
             $default_params = $this->getDefaultParams($templateCells);
             $templateParams = array_merge($default_params, $array);
             PhpExcelTemplator::renderWorksheet($sheet, $templateCells, $templateParams);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             echo $e->getMessage(); Exit;
         }
     }

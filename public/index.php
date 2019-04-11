@@ -1,5 +1,4 @@
 <?php
-/** @noinspection PhpFullyQualifiedNameUsageInspection */
 /** @noinspection ClassConstantCanBeUsedInspection */
 
 if (!session_id()) {@session_start();}
@@ -15,12 +14,12 @@ $containerBuilder = new ContainerBuilder;
 
 $containerBuilder->addDefinitions([
 
-    Twig\Environment::class => function() {
+    Twig\Environment::class => static function() {
         $loader = new \Twig\Loader\FilesystemLoader('template');
         return new \Twig\Environment($loader, ['charset' => 'windows-1251']);
     },
 
-    PDO::class => function() {
+    PDO::class => static function() {
         $dbconfig = require '../config/config_ora.php';
         try {
             return new \PDO('oci:dbname='.$dbconfig['oracle_tns'], $dbconfig['username'], $dbconfig['password'], $dbconfig['pdo_options']);

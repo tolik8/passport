@@ -4,7 +4,6 @@
 namespace App;
 
 use PHPUnit\Framework\TestCase;
-use PDO;
 
 if ($_SERVER['DOCUMENT_ROOT'] === '') {$_SERVER['DOCUMENT_ROOT'] = 'D:/www/alisa2.loc';}
 
@@ -21,7 +20,7 @@ class QueryBuilderTest extends TestCase
     protected function setUp()
     {
         $dbconfig = require $_SERVER['DOCUMENT_ROOT'] . '/config/config_ora.php';
-        $pdo = new PDO('oci:dbname='.$dbconfig['oracle_tns'], $dbconfig['username'], $dbconfig['password'], $dbconfig['pdo_options']);
+        $pdo = new \PDO('oci:dbname='.$dbconfig['oracle_tns'], $dbconfig['username'], $dbconfig['password'], $dbconfig['pdo_options']);
         $this->QB = new QueryBuilder($pdo);
     }
 

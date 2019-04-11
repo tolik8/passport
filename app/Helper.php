@@ -52,7 +52,7 @@ class Helper
 
     public static function ArrayToUtf8 (array $array): array
     {
-        array_walk_recursive($array, function(&$item) {
+        array_walk_recursive($array, static function(&$item) {
             if(!mb_detect_encoding($item, 'utf-8', true)){
                 $item = mb_convert_encoding($item, 'utf-8', 'windows-1251');
             }

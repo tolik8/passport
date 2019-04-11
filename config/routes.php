@@ -1,7 +1,7 @@
 <?php
 /** @noinspection ClassConstantCanBeUsedInspection */
 
-$dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
+$dispatcher = FastRoute\simpleDispatcher(static function(FastRoute\RouteCollector $r) {
     $r->get('/', ['App\controllers\Home', 'index']);
     $r->get('/cookie/{cookie:[0-9a-zA-Z]{64}}', ['App\controllers\Cookie', 'index']);
     $r->get('/refresh', ['App\MyUser', 'refresh']); // погано викликати замість контроллера обєкт
@@ -9,6 +9,8 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->get('/about', ['App\controllers\Home', 'about']);
     $r->get('/test', ['App\controllers\TestExcel', 'index']);
     $r->get('/test/export', ['App\controllers\TestExcel', 'export']);
+
+    $r->get('/test2', ['App\controllers\TestQB', 'index']);
     
     $r->get('/passport', ['App\controllers\Passport', 'index']);
     $r->post('/passport/choice', ['App\controllers\Passport', 'choice']);

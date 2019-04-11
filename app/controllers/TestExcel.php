@@ -4,7 +4,6 @@ namespace App\controllers;
 
 use alhimik1986\PhpExcelTemplator\PhpExcelTemplator;
 /*use PhpOffice\PhpSpreadsheet\Exception;*/
-use Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class TestExcel extends DBController
@@ -14,7 +13,6 @@ class TestExcel extends DBController
 
     public function index (): void
     {
-        /** @noinspection HtmlUnknownTarget */
         echo '<a href="/test/export">Export to Excel</a>';
     }
 
@@ -97,7 +95,7 @@ class TestExcel extends DBController
             $default_params = $this->getDefaultParams($templateCells);
             $templateParams = array_merge($default_params, $array);
             PhpExcelTemplator::renderWorksheet($sheet, $templateCells, $templateParams);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             echo $e->getMessage(); Exit;
         }
     }

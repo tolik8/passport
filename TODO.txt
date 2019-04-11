@@ -2,6 +2,4 @@
 
 Коли я запускаю формувати паспорт то з таблички d_sql запускаються виборки 2,3,5,6 не з пакета passport_dev (а з пакета passport)
 
-IVASYKB.j30010_rez_c
-IVASYKB.j30010_rez n
-IVASYKB.j30010_rez_d
+RRO.rro

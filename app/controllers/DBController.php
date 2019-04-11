@@ -8,7 +8,6 @@ use App\QueryBuilder;
 use App\MyUser;
 use App\Tax;
 use App\Helper;
-use Exception;
 
 class DBController extends Controller
 {
@@ -30,7 +29,7 @@ class DBController extends Controller
         if ($this->bc->isUnderConstruct) {
             try {
                 $this->x['img_number'] = random_int(0, 9);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $this->x['img_number'] = 0;
             }
             $this->twig->showTemplate('isUnderConstruct.html', ['x' => $this->x, 'my' => $this->myUser]);

@@ -3,12 +3,14 @@
 namespace App;
 
 use Umpirsky\Twig\Extension\PhpFunctionExtension;
+use Twig\Environment;
+use Exception;
 
 class Twig
 {
     protected $twig;
 
-    public function __construct (\Twig\Environment $twig)
+    public function __construct (Environment $twig)
     {
         $this->twig = $twig;
         $functions = [
@@ -21,7 +23,7 @@ class Twig
     {
         try {
             echo $this->twig->render($template, $params);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             echo $e->getMessage();
         }
     }

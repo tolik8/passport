@@ -29,6 +29,7 @@ class Helper
         return $default;
     }
 
+    /** @noinspection ReturnTypeCanBeDeclaredInspection */
     public static function CheckRegEx ($pattern_name, $post, $default = null)
     {
         $pattern = self::getPattern($pattern_name);

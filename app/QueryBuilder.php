@@ -3,6 +3,9 @@
 
 namespace App;
 
+use PDO;
+use Exception;
+
 class QueryBuilder implements QueryBuilderInterface
 {
     protected $pdo;
@@ -15,7 +18,7 @@ class QueryBuilder implements QueryBuilderInterface
     public $columns = [];
     public $resultIsOk;
 
-    public function __construct (\PDO $pdo)
+    public function __construct (PDO $pdo)
     {
         $this->pdo = $pdo;
     }
@@ -299,7 +302,7 @@ class QueryBuilder implements QueryBuilderInterface
             foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
             $stmt->execute();
             $this->sql_times[] = round(microtime(true) - $start_time, 4);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->resultIsOk = false;
             $this->errors_count++;
             Log::save(debug_backtrace(), [$e->getMessage(), $sql, $data]);

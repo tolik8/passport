@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpFullyQualifiedNameUsageInspection */
 /** @noinspection ClassConstantCanBeUsedInspection */
 
 if (!session_id()) {@session_start();}

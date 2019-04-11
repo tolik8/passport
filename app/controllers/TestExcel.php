@@ -4,6 +4,7 @@ namespace App\controllers;
 
 use alhimik1986\PhpExcelTemplator\PhpExcelTemplator;
 /*use PhpOffice\PhpSpreadsheet\Exception;*/
+use Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class TestExcel extends DBController
@@ -59,6 +60,7 @@ class TestExcel extends DBController
 
     protected function getDefaultParams ($params): array
     {
+        /* Шаблон для вибору з листа ексель комірок {data} [data] [[data]] */
         $pattern = '#(\{[0-9a-zA-Z_.]+?\})|(\[\[[0-9a-zA-Z_.]+?\]\])|(\[[0-9a-zA-Z_.]+?\])#';
         $result = $new_array = [];
 
@@ -95,7 +97,7 @@ class TestExcel extends DBController
             $default_params = $this->getDefaultParams($templateCells);
             $templateParams = array_merge($default_params, $array);
             PhpExcelTemplator::renderWorksheet($sheet, $templateCells, $templateParams);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             echo $e->getMessage(); Exit;
         }
     }

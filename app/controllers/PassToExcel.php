@@ -5,6 +5,7 @@ namespace App\controllers;
 use alhimik1986\PhpExcelTemplator\PhpExcelTemplator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Helper;
+use Exception;
 
 class PassToExcel extends DBController
 {
@@ -18,6 +19,7 @@ class PassToExcel extends DBController
 
     public function index (): void
     {
+        /* Отримати всі POST параметри */
         $this->guid = Helper::CheckRegEx('guid', $_POST['guid']);
 
         if ($this->guid === null) {
@@ -25,8 +27,8 @@ class PassToExcel extends DBController
                 'TIN' => Helper::CheckRegEx('tin', $_POST['tin']),
                 'DT1' => Helper::CheckRegEx('date', $_POST['dt1']),
                 'DT2' => Helper::CheckRegEx('date', $_POST['dt2']),
-                'TASK_LIST' => Helper::CheckRegEx('list', $_POST['task']),
-                'USER_GUID' => $this->myUser->guid,
+                'TASKS' => Helper::CheckRegEx('list', $_POST['task']),
+                'GUID_USER' => $this->myUser->guid,
             ];
             $sql = getSQL('passport\get_task_ready_guid.sql');
             $task = $this->db->getKeyValueFromSQL($sql, $params);
@@ -38,112 +40,89 @@ class PassToExcel extends DBController
             $task = $this->db->getKeyValueFromSQL($sql, ['guid' => $this->guid]);
         }
 
+        /* Параметри Excel */
+        $outputMethod = true;
         $templateFile = $this->root . '/xls/passport/template.xlsx';
         $outputFile = './passport.xlsx';
-        $outputMethod = true;
         $this->default_params = $this->templateVars = [];
 
+        /* Створити ss - SpreadSheets */
         try {
             $this->ss = IOFactory::load($templateFile);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             echo $e->getMessage(); Exit;
         }
 
-        try {
-            for ($i = 0; $i <= $this->ss->getSheetCount()-1; $i++) {
-                $this->templateVars[$i+1] = $this->ss->getSheet($i)->toArray();
-                $this->default_params[$i+1] = $this->getDefaultParams($this->templateVars[$i+1]);
-            }
-        } catch (\Exception $e) {
-            echo $e->getMessage(); Exit;
-        }
-
-
-
-
-
-        // Реєстраційні дані
+        /* Реєстраційні дані */
         if (isset($task[1])) {
             $this->toExcel_RegData(1, $params);
         }
 
-        // Пов’язані
+        /* Пов’язані */
         $this->toExcel_Related(2, $task);
 
-        // Контрагенти
+        /* Контрагенти */
         $this->toExcel_Kontr(3, $task);
 
-        // Баланс
+        /* Баланс */
         if (isset($task[4])) {
             $array = $this->db->getAll('PIKALKA.pass_balance', ['guid' => $task[4]], 'period_year, period_month');
-            $t_array = $this->transform($array);
-            $this->setSheet(4, $t_array);
+            $this->setSheet(4, $this->transform($array));
         }
 
         if (isset($task[5])) {
-            // ПДВ
+            /* ПДВ */
             $array1 = $this->db->getAll('PIKALKA.pass_pdv', ['guid' => $task[5]], 'period');
             $array1 = $this->addPrefix($array1, 'T1.');
-            //$this->setSheet(7, $array);
+            $t_array1 = $this->transform($array1);
 
-            // ПДВ РІК
+            /* ПДВ РІК */
             $array2 = $this->db->getAll('PIKALKA.pass_pdv_rik', ['guid' => $task[5]], 'period_year');
             $array2 = $this->addPrefix($array2, 'T2.');
-            $array = array_merge($array1, $array2);
-            $this->setSheet(7, $array);
+            $t_array2 = $this->transform($array2);
+
+            $this->setSheet(5, array_merge($t_array1, $t_array2));
         }
 
-        //PhpExcelTemplator::outputSpreadsheetToFile($this->ss, $outputFile);
-        //exit;
-
-        // Прибуток
+        /* Прибуток */
         if (isset($task[6])) {
             $array = $this->db->getAll('PIKALKA.pass_pributok', ['guid' => $task[6]], 'period_year, period_month');
-            $this->setSheet(4, $array);
+            $this->setSheet(6, $this->transform($array));
         }
 
-        // ЄСВ
+        /* ЄСВ */
         if (isset($task[7])) {
             $array = $this->db->getAll('PIKALKA.pass_esv', ['guid' => $task[7]], 'period');
-            $this->setSheet(5, $array);
+            $this->setSheet(7, $this->transform($array));
         }
 
-        // Повідомлення
+        /* Повідомлення */
         if (isset($task[8])) {
             $array = $this->db->getAll('PIKALKA.pass_povidom', ['guid' => $task[8]], 'period_year');
-            $this->setSheet(9, $array);
+            $this->setSheet(8, $this->transform($array));
         }
 
-        // Реєстр ПДВ
-        $array = $this->db->getAll('AISR.pdv_act_r', ['tin' => $params['TIN']], 'dat_svd');
-        $this->setSheet(10, $array);
+        /* Запис в pass_log */
+        $params['TM'] = 0;
+        $this->db->insert('PIKALKA.pass_log', $params);
 
-        // Засновники
-        $sql = 'SELECT SUM(sum_infund) FROM rg02.r21pfound WHERE tin = :tin';
-        $sum_infund = $this->db->getOneValueFromSQL($sql, $params);
-        $sql = getSQL('passport/founders.sql');
-        $tmp_params = array_merge($params, ['sum_infund' => $sum_infund]);
-        $array = $this->db->getAllFromSQL($sql, $tmp_params);
-        $this->setSheet(11, $array);
+        /* Видалення лишніх листів */
+        for ($i = $this->ss->getSheetCount(); $i > 0; $i--) {
+            if (!isset($task[$i])) {
+                try {
+                    $this->ss->removeSheetByIndex($i - 1);
+                } catch (Exception $e) {
+                    //echo $e->getMessage();
+                }
+            }
+        }
 
-        // запис в pass_log
-        $sql_params = [
-            'guid' => $this->guid, 'dt1' => $params['DT1'], 'dt2' => $params['DT2'],
-            'tin' => $params['TIN'], 'guid_user' => $this->myUser->guid, 'tm' => 0,
-        ];
-        $this->db->insert('PIKALKA.pass_log', $sql_params);
+        if ($outputMethod) {
+            PhpExcelTemplator::outputSpreadsheetToFile($this->ss, $outputFile);
+        } else {
+            PhpExcelTemplator::saveSpreadsheetToFile($this->ss, $outputFile);
+        }
 
-        // Повідомлення (видалення листа)
-//        if (!isset($task[8])) {
-//            try {
-//                $this->ss->removeSheetByIndex(8);
-//            } catch (\Exception $e) {
-//                echo $e->getMessage();
-//            }
-//        }
-
-        if ($outputMethod) {PhpExcelTemplator::outputSpreadsheetToFile($this->ss, $outputFile);}
-        else {PhpExcelTemplator::saveSpreadsheetToFile($this->ss, $outputFile);}
     }
 
     protected function toExcel_RegData ($index, $params): void
@@ -151,7 +130,7 @@ class PassToExcel extends DBController
         try {
             /** @noinspection PhpUndefinedMethodInspection */
             $sheet = $this->ss->getSheet($index - 1);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             echo $e->getMessage(); Exit;
         }
         $reg_data = $this->excelRegData($params);
@@ -261,6 +240,8 @@ class PassToExcel extends DBController
             $sql = 'SELECT c_post, pin, name, n_tel FROM RG02.r21manager WHERE tin = :tin';
             $r21manager = $this->db->getKeyValuesFromSQL($sql, $params);
             $reg_params_ur = [
+                '{r21manager.dir_pin}' => Helper::utf8($r21manager[1]['PIN']),
+                '{r21manager.buh_pin}' => Helper::utf8($r21manager[2]['PIN']),
                 '{r21manager.dir}' => Helper::utf8($r21manager[1]['NAME']),
                 '{r21manager.buh}' => Helper::utf8($r21manager[2]['NAME']),
                 '{r21manager.dir_tel}' => Helper::utf8($r21manager[1]['N_TEL']),
@@ -272,7 +253,6 @@ class PassToExcel extends DBController
 
         $sql = getSQL('passport/get_r21stan_h.sql');
         $array = $this->db->getAllFromSQL($sql, ['tin' => $tin, 'c_distr' => $dpi]);
-        //$array = $this->transform1($array);
         $stan_h = $this->transform($array, 'SH.');
 
         $reg_params = [
@@ -290,11 +270,35 @@ class PassToExcel extends DBController
         $pdv_act_r = $this->db->getOneRowFromSQL($sql, $params);
         if (!empty($pdv_act_r)) {$reg_params['{pdv_act_r.dat_reestr}'] = $pdv_act_r['DAT_REESTR'];}
 
-        return array_merge($reg_params, $reg_params_ur, $stan_h);
+        /* Види діяльності */
+        $sql = getSQL('passport/kvedy.sql');
+        $array = $this->db->getAllFromSQL($sql, ['tin' => $params['TIN']]);
+        $kvedy = $this->transform($array, 'KVED.');
+
+        /* Засновники */
+        /*$sql = 'SELECT SUM(sum_infund) FROM RG02.r21pfound WHERE tin = :tin';
+        $sum_infund = $this->db->getOneValueFromSQL($sql, $params);
+        $sql = getSQL('passport/founders.sql');
+        $tmp_params = array_merge($params, ['sum_infund' => $sum_infund]);
+        $array = $this->db->getAllFromSQL($sql, $tmp_params);
+        $founders = $this->transform($array);*/
+
+        //$sql = getSQL('passport/founders.sql');
+        //$array = $this->db->getAllFromSQL($sql, ['tin' => $params['TIN']]);
+        //$founders = $this->transform($array, 'FNDR.');
+        $founders = [];
+
+        /* РРО */
+        $sql = getSQL('passport/rro.sql');
+        $array = $this->db->getAllFromSQL($sql, ['tin' => $params['TIN']]);
+        $rro = $this->transform($array, 'RRO.');
+
+        return array_merge($reg_params, $reg_params_ur, $stan_h, $kvedy, $founders, $rro);
     }
 
     protected function getDefaultParams ($params): array
     {
+        /* Шаблон для вибору з листа ексель комірок {data} [data] [[data]] */
         $pattern = '@(\{[0-9a-zA-Z_.]+?\})|(\[\[[0-9a-zA-Z_.]+?#\]\])|(\[[0-9a-zA-Z_.]+?#\])@';
         $result = $new_array = [];
 
@@ -332,7 +336,7 @@ class PassToExcel extends DBController
             $default_params = $this->getDefaultParams($templateCells);
             $templateParams = array_merge($default_params, $array);
             PhpExcelTemplator::renderWorksheet($sheet, $templateCells, $templateParams);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             echo $e->getMessage(); Exit;
         }
     }

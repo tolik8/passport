@@ -3,6 +3,7 @@
 namespace App\controllers;
 
 use App\Helper;
+use Exception;
 
 class Passport extends DBController
 {
@@ -41,7 +42,7 @@ class Passport extends DBController
 //        $this->x['loading_index'] = 'a101';
         try {
             $this->x['loading_index'] = 'a' . random_int(101, 112);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->x['loading_index'] = 'a101';
         }
 

@@ -61,8 +61,7 @@ class Adminka extends DBController
 
     public function passport_access_update (): void
     {
-        $pattern = '#^[0-9a-zA-Z]{32}$#';
-        $guid = Helper::regex($pattern, $_POST['guid'], 0);
+        $guid = Helper::CheckRegEx('guid', $_POST['guid'], '');
         $tasks_id = Helper::getArrayIdFromPost($_POST, 'id');
 
         $this->db->beginTransaction();

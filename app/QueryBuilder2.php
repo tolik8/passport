@@ -1,93 +1,172 @@
 <?php
 
+/*
+ * select($sql, $data)->get();
+ * insert($sql, $data);
+ * update($sql, $data);
+ * delete($sql, $data);
+ * statement($sql, $data);
+ *
+ * Журналирование/прослушка SQL запросов
+ * listen()-select()->get;
+ *
+ * Логирование SQL запросов
+ * enableQueryLog();
+ * disableQueryLog();
+ *
+ * beginTransaction();
+ * commit();
+ * rollback();
+ *
+ * table($tableName)->get();
+ * ->field()
+ * ->where()
+ * ->groupBy()
+ * ->having()
+ * ->orderBy()
+ * ->bind($data)
+ *
+ * ->get();
+ * ->getCell();
+ * ->first();
+ * ->pluck();
+ *
+ * getSQL();
+ * getLastInsertId();
+ * getAffectedRows(); Количество измененных записей после INSERT, UPDATE, DELETE
+ * getTimeExecution();
+ */
+
 namespace App;
 
 class QueryBuilder2
 {
     protected $pdo;
-    protected $tables;
-    protected $fields;
-    protected $wheres;
-    protected $order;
+    protected $bindValues = [];
+    protected $sql;
+    protected $method;
+    protected $tableSQL;
+    protected $fieldSQL;
+    protected $whereSQL;
+    protected $groupBySQL;
+    protected $havingSQL;
+    protected $orderSQL;
 
     public function __construct (\PDO $pdo)
     {
         $this->pdo = $pdo;
-        $this->fields = 'SELECT *';
+        $this->fieldSQL = 'SELECT *';
+    }
+
+    public function select ($sql, $data = [])
+    {
+        $this->sql = $sql;
+        $this->bindValues = $data;
+        $this->method = 'Raw';
+        return $this;
     }
 
     public function table ($string)
     {
-        $this->tables = 'FROM ' . $string;
+        $this->method = 'Constructor';
+        $this->fieldSQL = 'SELECT *';
+        $this->tableSQL = 'FROM ' . $string;
+        $this->whereSQL = null;
+        $this->groupBySQL = null;
+        $this->havingSQL = null;
+        $this->orderSQL = null;
+        $this->bindValues = [];
         return $this;
     }
 
-    public function select ($string = '*')
+    public function field ($string = '*')
     {
-        $this->fields = 'SELECT ' . $string;
+        $this->fieldSQL = 'SELECT ' . $string;
         return $this;
     }
 
     public function where ($string)
     {
-        $this->wheres = 'WHERE ' . $string;
+        $this->whereSQL = 'WHERE ' . $string;
+        return $this;
+    }
+
+    public function groupBy ($string)
+    {
+        $this->groupBySQL = 'GROUP BY ' . $string;
+        return $this;
+    }
+
+    public function having ($string)
+    {
+        $this->havingSQL = 'HAVING ' . $string;
         return $this;
     }
 
     public function orderBy ($string)
     {
-        $this->order = 'ORDER BY ' . $string;
+        $this->orderSQL = 'ORDER BY ' . $string;
         return $this;
     }
 
-    public function getSQL (): string
+    public function bind (array $data = [])
     {
-        $cr = chr(13) . chr(10);
-        $sql = $this->fields . $cr . $this->tables;
-        if ($this->wheres !== null) {$sql .= $cr . $this->wheres;}
-        if ($this->order !== null) {$sql .= $cr . $this->order;}
-
-        return $sql;
+        $this->bindValues = $data;
+        return $this;
     }
 
     /* Получить все записи */
-    public function get ($data = []): array
+    public function get (): array
     {
         $sql = $this->getSQL();
-        $stmt = $this->execute($sql, $data);
+        $stmt = $this->execute($sql, $this->bindValues);
         return $stmt->fetchAll();
     }
 
     /* Получить значение первого столпца первой строки */
-    public function getValue ($field, $data = [])
+    public function getCell ($field = '')
     {
-        $this->fields = 'SELECT ' . $field;
+        $this->fieldSQL = 'SELECT ' . $field;
         $sql = $this->getSQL();
-        $stmt = $this->execute($sql, $data);
+        $stmt = $this->execute($sql, $this->bindValues);
         $row = $stmt->fetch(\PDO::FETCH_NUM);
         return $row[0];
     }
 
     /* Получить первую строку */
-    public function first ($data = []): array
+    public function first (): array
     {
         $sql = $this->getSQL();
-        $stmt = $this->execute($sql, $data);
+        $stmt = $this->execute($sql, $this->bindValues);
         return $stmt->fetch();
     }
 
     /* Получить массив значений одного столбца */
-    public function pluck ($field, $data = []): array
+    public function pluck ($field): array
     {
-        $this->fields = 'SELECT ' . $field;
+        $this->fieldSQL = 'SELECT ' . $field;
         $sql = $this->getSQL();
-        $stmt = $this->execute($sql, $data);
+        $stmt = $this->execute($sql, $this->bindValues);
         $rows = $stmt->fetchAll(\PDO::FETCH_NUM);
         $result = [];
         foreach ($rows as $row) {
             $result[] = $row[0];
         }
         return $result;
+    }
+
+    public function getSQL (): string
+    {
+        if ($this->method === 'Raw') {return $this->sql;}
+
+        $cr = chr(13) . chr(10);
+        $sql = $this->fieldSQL . $cr . $this->tableSQL;
+        if ($this->whereSQL !== null) {$sql .= $cr . $this->whereSQL;}
+        if ($this->groupBySQL !== null) {$sql .= $cr . $this->groupBySQL;}
+        if ($this->havingSQL !== null) {$sql .= $cr . $this->havingSQL;}
+        if ($this->orderSQL !== null) {$sql .= $cr . $this->orderSQL;}
+
+        return $sql;
     }
 
     protected function execute ($sql, array $data = [])

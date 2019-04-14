@@ -312,7 +312,7 @@ class QueryBuilder implements QueryBuilderInterface
         $keys = array_keys($data);
 
         foreach ($keys as $key) {$string .= $key . ' = :' . $key . ' AND ';}
-        $string = rtrim($string, ' AND ');
+        $string = substr($string, 0,-5);
 
         return $string;
     }

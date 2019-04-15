@@ -101,6 +101,13 @@ class PassToExcel extends DBController
             $this->setSheet(8, $this->transform($array));
         }
 
+        /* 1-ДФ */
+        if (isset($task[9])) {
+            $sql = 'SELECT year, ozn_dox, cnt, ROUND(dox, 0) dox FROM DP00.t43_1df_ozn WHERE kod = :kod ORDER BY YEAR, ozn_dox';
+            $array = $this->db->getAllFromSQL($sql, ['kod' => $params['TIN']]);
+            $this->setSheet(9, $this->transform($array));
+        }
+
         /* Запис в pass_log */
         $params['TM'] = 0;
         $this->db->insert('PIKALKA.pass_log', $params);
@@ -177,7 +184,7 @@ class PassToExcel extends DBController
         $sql = 'SELECT ROWNUM n, t.* FROM (SELECT * FROM PIKALKA.pass_kontr_kredit_3 WHERE guid = :guid ORDER BY obs DESC, tin) t';
         $array1 = $this->db->getAllFromSQL($sql, ['guid' => $task[$index]]);
         $t_array = $this->transform($array1, 'T1.');
-        $t_array = $this->addFieldPercent($t_array, 'T1.OBS#', 'T1.PERCENT#');
+        $t_array = $this->addFieldPercent($t_array, '#T1.OBS#', '#T1.PERCENT#');
         $sum1 = $this->getSumFromArray($t_array, 'T1.OBS');
         $sum2 = $this->getSumFromArray($t_array, 'T1.PDV');
         $data_from_oracle1 = array_merge($t_array, $sum1, $sum2);
@@ -185,7 +192,7 @@ class PassToExcel extends DBController
         $sql = 'SELECT ROWNUM n, t.* FROM (SELECT * FROM PIKALKA.pass_kontr_zobov_3 WHERE guid = :guid ORDER BY obs DESC, cp_tin) t';
         $array2 = $this->db->getAllFromSQL($sql, ['guid' => $task[$index]]);
         $t_array = $this->transform($array2, 'T2.');
-        $t_array = $this->addFieldPercent($t_array, 'T2.OBS#', 'T2.PERCENT#');
+        $t_array = $this->addFieldPercent($t_array, '#T2.OBS#', '#T2.PERCENT#');
         $sum1 = $this->getSumFromArray($t_array, 'T2.OBS');
         $sum2 = $this->getSumFromArray($t_array, 'T2.PDV');
         $data_from_oracle2 = array_merge($t_array, $sum1, $sum2);
@@ -195,7 +202,7 @@ class PassToExcel extends DBController
         $this->setSheet($index, $data_from_oracle);
     }
 
-    /* $t_array = $this->addFieldPercent($t_array, 'T2.OBS#', 'T2.PERCENT#'); */
+    /* $t_array = $this->addFieldPercent($t_array, '#T1.OBS#', '#T1.PERCENT#'); */
     protected function addFieldPercent (array $array, $scan, $new_field, $precision = 0): array
     {
         $sum = array_sum($array[$scan]);
@@ -290,7 +297,7 @@ class PassToExcel extends DBController
     protected function getDefaultParams ($params): array
     {
         /* Шаблон для вибору з листа ексель комірок {data} [data] [[data]] */
-        $pattern = '@(\{[0-9a-zA-Z_.]+?\})|(\[\[[0-9a-zA-Z_.]+?#\]\])|(\[[0-9a-zA-Z_.]+?#\])@';
+        $pattern = '@(\{[0-9a-zA-Z_.]+?\})|(\[\[#[0-9a-zA-Z_.]+?#\]\])|(\[#[0-9a-zA-Z_.]+?#\])@';
         $result = $new_array = [];
 
         foreach ($params as $param) {
@@ -313,7 +320,7 @@ class PassToExcel extends DBController
         $prefix = $find_array[0] . '.';
         $field = $find_array[1];
         $sum_name = '{' . $prefix . $field . '_SUM}';
-        $sum = array_sum($array[$prefix . $field . '#']);
+        $sum = array_sum($array['#' . $prefix . $field . '#']);
         return [$sum_name => $sum];
     }
 
@@ -342,7 +349,7 @@ class PassToExcel extends DBController
         foreach ($array as $row) {
             foreach ($columns as $col) {
                 $value_utf8 = mb_convert_encoding($row[$col], 'utf-8', 'windows-1251');
-                $result[$prefix . $col . '#'][] = $value_utf8;
+                $result['#' . $prefix . $col . '#'][] = $value_utf8;
             }
         }
         return $result;

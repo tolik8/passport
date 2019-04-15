@@ -5,33 +5,31 @@ namespace App;
 
 use PHPUnit\Framework\TestCase;
 
-if ($_SERVER['DOCUMENT_ROOT'] === '') {$_SERVER['DOCUMENT_ROOT'] = 'D:/www/alisa2.loc';}
-
-require_once $_SERVER['DOCUMENT_ROOT'] . '/config/main.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/app/functions.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
+include 'begin.php';
 
 /* assertTrue, assertFalse, assertEmpty, assertEquals, assertCount, assertContains */
 
 class QueryBuilderTest extends TestCase
 {
-    private $QB;
+    private $db;
 
     protected function setUp()
     {
-        $dbconfig = require $_SERVER['DOCUMENT_ROOT'] . '/config/config_ora.php';
+        $root = $_SERVER['DOCUMENT_ROOT'];
+        if ($root === '') {$root = 'D:/www/alisa2.loc';}
+        $dbconfig = require $root . '/config/config_ora.php';
         $pdo = new \PDO('oci:dbname='.$dbconfig['oracle_tns'], $dbconfig['username'], $dbconfig['password'], $dbconfig['pdo_options']);
-        $this->QB = new QueryBuilder($pdo);
+        $this->db = new QueryBuilder($pdo);
     }
 
     protected function tearDown()
     {
-        $this->QB = NULL;
+        $this->db = NULL;
     }
 
     public function testGetAll(): void
     {
-        $result = $this->QB->getAll('PIKALKA.people');
+        $result = $this->db->getAll('PIKALKA.people');
         $count = count($result);
         if ($count > 700) {$countRes = true;} else {{$countRes = false;}}
         $this->assertTrue($countRes);
@@ -39,13 +37,13 @@ class QueryBuilderTest extends TestCase
 
     public function testGetCount(): void
     {
-        $result = $this->QB->getCount('PIKALKA.people', ['viddil_id' => '19-00-09-01']);
+        $result = $this->db->getCount('PIKALKA.people', ['viddil_id' => '19-00-09-01']);
         $this->assertEquals(4, $result);
     }
 
     public function testGetOneValue(): void
     {
-        $result = $this->QB->getOneValue('login', 'PIKALKA.people', ['guid' => '06F2EF58972B2E32E050130A64136A5F']);
+        $result = $this->db->getOneValue('login', 'PIKALKA.people', ['guid' => '06F2EF58972B2E32E050130A64136A5F']);
         $this->assertEquals('admin19t', $result);
     }
 

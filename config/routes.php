@@ -10,8 +10,6 @@ $dispatcher = FastRoute\simpleDispatcher(static function(FastRoute\RouteCollecto
     $r->get('/test', ['App\controllers\TestExcel', 'index']);
     $r->get('/test/export', ['App\controllers\TestExcel', 'export']);
 
-    $r->get('/test2', ['App\controllers\TestQB', 'index']);
-    
     $r->get('/passport', ['App\controllers\Passport', 'index']);
     $r->post('/passport/choice', ['App\controllers\Passport', 'choice']);
     $r->post('/passport/prepare', ['App\controllers\Passport', 'prepare']);

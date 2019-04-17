@@ -1,8 +1,12 @@
 <?php
 
-$root = $_SERVER['DOCUMENT_ROOT'];
-if ($root === '') {$root = 'D:/www/alisa2.loc';}
+$pattern = '#^.+(?=\\\\tests\\\\App)#';
+preg_match($pattern, __DIR__, $matches);
+define('CR', chr(13).chr(10));
+define('ROOT', $matches[0]);
 
-include $root . '/config/main.php';
-include $root . '/app/functions.php';
-include $root . '/vendor/autoload.php';
+function vd ($input)
+{
+    /** @noinspection ForgottenDebugOutputInspection */
+    var_dump($input);
+}

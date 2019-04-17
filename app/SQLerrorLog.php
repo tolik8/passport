@@ -2,29 +2,25 @@
 
 namespace App;
 
-class Logger
+class SQLerrorLog
 {
-    protected $Directory;
-    protected $Extension;
-    protected $SaveToFile;
-
-    public function __construct ()
+    public static function save (array $debugs, array $data): void
     {
-        $logger_config = require $_SERVER['DOCUMENT_ROOT'] . '/config/logger.php';
-        $this->Directory  = $logger_config['Directory'];
-        $this->Extension  = $logger_config['Extension'];
-        $this->SaveToFile = $logger_config['SaveToFile'];
-    }
+        /** @noinspection PhpIncludeInspection */
+        $log_config = require ROOT . '/config/logger.php';
+        $directory  = $log_config['Directory'];
+        $extension  = $log_config['Extension'];
+        $SaveToFile = $log_config['SaveToFile'];
 
-    public function save (array $debugs, array $data): void
-    {
-        if (!$this->SaveToFile) {exit;}
+        if (!$SaveToFile) {exit;}
 
         $content = '';
         $line = [];
 
-        $filename = $this->Directory . '/' . date('Y-m-d') . ' ' . date('His') . '.' . $this->Extension;
-        $content .= 'IP: ' . $_SERVER['REMOTE_ADDR'] . CR.CR;
+        $filename = $directory . '/' . date('Y-m-d') . ' ' . date('His') . '.' . $extension;
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $content .= 'IP: ' . $_SERVER['REMOTE_ADDR'] . CR.CR;
+        }
 
         foreach ($debugs as $key => $item) {
             if (!isset($item['class'])) {continue;}
@@ -52,7 +48,7 @@ class Logger
 
         $content .= '====================================================================' . CR;
 
-        $log_filename = $_SERVER['DOCUMENT_ROOT'] . '/' . $filename;
+        $log_filename = ROOT . '/' . $filename;
         $result = @file_put_contents($log_filename, $content, FILE_APPEND);
         if (!$result) {echo 'Error writing file: ' . $log_filename;}
     }

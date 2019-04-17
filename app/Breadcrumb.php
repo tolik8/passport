@@ -19,7 +19,7 @@ class Breadcrumb
             'par' => 'root',
         ];
 
-        $filemenu = $_SERVER['DOCUMENT_ROOT'] . '/config/menu/' . $project . '.php';
+        $filemenu = ROOT . '/config/menu/' . $project . '.php';
         if (file_exists($filemenu)) {
             /** @noinspection PhpIncludeInspection */
             $menu = require $filemenu;

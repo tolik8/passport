@@ -50,6 +50,22 @@ class Helper
         return mb_convert_encoding($input, 'windows-1251', 'utf-8');
     }
 
+    /* Получить из массива из базы другой массив, где ключем будет первое поле, а остальные массив значений */
+    public static function array_combine2 (array $array): array
+    {
+        if (empty($array)) {return [];}
+        $result = [];
+        $first_column = key($array[0]);
+
+        foreach ($array as $row) {
+            $first_value = $row[$first_column];
+            foreach ($row as $key => $item) {
+                if ($key !== $first_column) {$result[$first_value][$key] = $item;}
+            }
+        }
+        return $result;
+    }
+
     public static function ArrayToUtf8 (array $array): array
     {
         array_walk_recursive($array, static function(&$item) {

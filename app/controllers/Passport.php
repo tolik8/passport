@@ -24,7 +24,7 @@ class Passport extends DBController
         $this->x['name'] = $this->tax->getName($params['tin']);
 
         $sql = getSQL('passport\access_tasks.sql');
-        $this->x['info'] = $this->db->getAllFromSQL($sql, $params);
+        $this->x['info'] = $this->db->selectRaw($sql, $params)->get();
 
         $this->x['post'] = $params;
         $this->twig->showTemplate('passport/choice.html', ['x' => $this->x, 'my' => $this->myUser]);
@@ -64,7 +64,8 @@ class Passport extends DBController
         }
 
         $sql = getSQL('passport/selected_tasks.sql');
-        $this->x['tasks'] = $this->db->getAllFromSQL($sql, ['guid' => $this->myUser->guid, 'task' => $task_string]);
+        $data = ['guid' => $this->myUser->guid, 'task' => $task_string];
+        $this->x['tasks'] = $this->db->selectRaw($sql, $data)->get();
 
         if ($this->x['info_is_not_ready']) {
 //            $guid = $this->x['GUID'] = 'test';
@@ -77,7 +78,7 @@ class Passport extends DBController
                 'user_guid' => $this->myUser->guid,
                 'guid'      => $new_guid
             ]);
-            $this->db->runSQL($sql, $params);
+            $this->db->statement($sql, $params);
         }
         $this->x['task'] = $task_string;
 
@@ -87,7 +88,7 @@ class Passport extends DBController
     public function ajax ($guid): void
     {
         $sql = getSQL('passport/get_task_info.sql');
-        $this->x['tasks'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
+        $this->x['tasks'] = $this->db->selectRaw($sql, ['guid' => $guid])->get();
 
         /* Якщо в масиві буде текст, то додатково застосувати функцію ArrayToUtf8 */
         echo json_encode($this->x['tasks']);

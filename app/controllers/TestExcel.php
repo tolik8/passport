@@ -29,12 +29,12 @@ class TestExcel extends DBController
         $data1 = ['{N}' => 123, '{NAME}' => 'HELLO'];
 
         $sql = 'SELECT c_distr, tin, name, c_stan, kved FROM RG02.r21taxpay WHERE c_stan NOT IN (17,27) AND tin IN (300400, 24630349)';
-        $array1 = $this->db->getAllFromSQL($sql);
+        $array1 = $this->db->selectRaw($sql)->get();
         $t_array1 = $this->transform($array1, 'T1.');
         $sum1 = $this->getSumFromArray($t_array1, 'T1.C_STAN');
 
         $sql = 'SELECT * FROM PIKALKA.d_pass_task WHERE ID < 5';
-        $array2 = $this->db->getAllFromSQL($sql);
+        $array2 = $this->db->selectRaw($sql)->get();
         $t_array2 = $this->transform($array2, 'T2.');
         $sum2 = $this->getSumFromArray($t_array2, 'T2.ID');
 
@@ -44,7 +44,7 @@ class TestExcel extends DBController
         $this->setSheet(1, $data_array);
 
         $sql = 'SELECT id as n, name, type_id FROM PIKALKA.d_enter ORDER BY ID';
-        $array = $this->db->getAllFromSQL($sql);
+        $array = $this->db->selectRaw($sql)->get();
         $t_array = $this->transform($array, 'T1.');
         $sum = $this->getSumFromArray($t_array, 'T1.TYPE_ID');
 

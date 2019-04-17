@@ -20,9 +20,9 @@ $containerBuilder->addDefinitions([
     },
 
     PDO::class => static function() {
-        $dbconfig = require '../config/config_ora.php';
+        $db_config = require '../config/config_ora.php';
         try {
-            return new \PDO('oci:dbname='.$dbconfig['oracle_tns'], $dbconfig['username'], $dbconfig['password'], $dbconfig['pdo_options']);
+            return new \PDO('oci:dbname='.$db_config['oracle_tns'], $db_config['username'], $db_config['password'], $db_config['pdo_options']);
         } catch (\PDOException $e) {
             echo '<h3>' . $e->getMessage() . '</h3>';
         }

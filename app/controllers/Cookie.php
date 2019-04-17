@@ -15,7 +15,8 @@ class Cookie
 
     public function index ($cookie): void
     {
-        $row = $this->db->getOneRow('PIKALKA.people', ['cookie' => $cookie]);
+        $row = $this->db->table('PIKALKA.people')->where('cookie = :cookie')
+            ->bind(['cookie' => $cookie])->first();
         if (count($row) > 0) {
             $my['guid'] = $row['GUID'];
             $my['login'] = $row['LOGIN'];
@@ -25,7 +26,7 @@ class Cookie
             $my['viddil'] = $row['VIDDIL_ID'];
 
             $sql = getSQL('myuser/get_roles.sql');
-            $my_roles = $this->db->getOneColFromSQL($sql, ['guid' => $my['guid']]);
+            $my_roles = $this->db->selectRaw($sql, ['guid' => $my['guid']])->pluck();
             $my['roles'] = implode(',', $my_roles);
 
             if (in_array('7', $my_roles, true)) {$my['admin'] = true;} else {$my['admin'] = false;}

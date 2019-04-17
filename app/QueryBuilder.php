@@ -1,259 +1,314 @@
 <?php
 
+/*
+ * Ð—Ð½Ð°Ðº "+" Ð¾Ð·Ð½Ð°Ñ‡Ð°ÐµÑ‚ Ñ‡Ñ‚Ð¾ Ð¼ÐµÑ‚Ð¾Ð´ Ð¿Ð¾ÐºÑ€Ñ‹Ñ‚ Ñ‚ÐµÑÑ‚Ð°Ð¼Ð¸
+
+ + statement(string $sql, array $data);   return '00000' if everything is Ok
+ + selectRaw(string $sql, array $data)->
+
+ + table(string $tableName)->
+ + ->select(string)->
+ + ->where(string)->
+ + ->groupBy(string)->
+ + ->having(string)->
+ + ->orderBy(string)->
+ + ->bind(array $data)->
+ * ->listen()->
+
+    return array
+ + ->get();
+ + ->first();
+ + ->pluck(string $key [string $value] );
+ + ->getCell( [string $fieldName] );
+
+    return affected rows
+ + ->insert(array $data);
+ + ->update(array $dataForUpdate);
+ + ->updateOrInsert(array $dataForUpdate);
+ + ->delete();
+
+ * getAffectedRows();
+ * getErrorsCount();
+ * getLastInsertId();
+ * getNewGUID();
+ + getSQL();
+ * getTimeExecution();
+
+ * beginTransaction();
+ * endTransaction();
+ * commit();
+ * rollback();
+
+ * enableQueryLog(string $logName);
+ * disableQueryLog();
+ * clearQueryLog(string $logName);
+ */
+
 namespace App;
 
-class QueryBuilder implements QueryBuilderInterface
+class QueryBuilder
 {
+    protected $affectedRows;
+    protected $bindData = [];
+    protected $bindDataForUpdate = [];
+    protected $cr;
+    protected $errors_before_transaction = 0;
+    protected $errors_count = 0;
+    protected $fieldSQL;
+    protected $groupBySQL;
+    protected $havingSQL;
+    protected $lastInsertId;
+    protected $listenSQL;
+    protected $logName;
+    protected $logOverwrite;
+    protected $method; // ÐºÐ¾Ð½ÑÑ‚Ñ€ÑƒÐºÑ‚Ð¾Ñ€ table Ð¸Ð»Ð¸ ÑÑ‹Ñ€Ð¾Ð¹ selectRaw
+    protected $orderSQL;
     protected $pdo;
-    protected $errors_before_transaction;
-    public $sql_time = 0;
-    public $sql_times = [];
-    public $sql_count = 0;
-    public $errors_count = 0;
-    public $columns = [];
-    public $resultIsOk;
+    protected $queryLog = false;
+    protected $sql;
+    protected $sql_time;
+    protected $tableSQL;
+    protected $whereSQL;
 
     public function __construct (\PDO $pdo)
     {
         $this->pdo = $pdo;
+        $this->fieldSQL = '*';
+        $this->cr = chr(13) . chr(10);
     }
 
-    public function getAll ($tables, array $data = [], $sort = ''): array
+    public function statement (string $sql, array $data = []): string
     {
-        $sql = 'SELECT * FROM ' . $tables . CR;
-        $string = $this->ParametersString($data);
-        if (!empty($data)) {$sql .= 'WHERE ' . $string . CR;}
-        if ($sort !== '') {$sql .= 'ORDER BY ' . $sort;}
-
-        return $this->getAllFromSQL($sql, $data);
+        $stmt = $this->executeSQL($sql, $data);
+        return $stmt->errorCode();
     }
 
-    public function getAllFromSQL ($sql, array $data = []): array
+    public function selectRaw (string $sql, array $data = [])
     {
-        $start_time = $this->beforeExecute();
-
-        $stmt = $this->execute($sql, $data);
-        if ($stmt->errorCode() !== '00000') {return [];}
-
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if (!empty($rows)) {$this->columns = array_keys($rows[0]);}
-        else {$this->columns = []; return [];}
-
-        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
-
-        return $rows;
+        $this->sql = $sql;
+        $this->bindData = $data;
+        $this->method = 'Raw';
+        $this->listenSQL = false;
+        return $this;
     }
 
-    public function getOneValue ($field, $table, array $data = [])
+    public function table (string $tableName)
     {
-        $sql = 'SELECT ' . $field . CR . 'FROM ' . $table . CR;
-        $string = $this->ParametersString($data);
-        if (!empty($data)) {$sql .= 'WHERE ' . $string;}
-
-        return $this->getOneValueFromSQL($sql, $data);
+        $this->method = 'Constructor';
+        $this->listenSQL = false;
+        $this->fieldSQL = '*';
+        $this->tableSQL = $tableName;
+        $this->whereSQL = null;
+        $this->groupBySQL = null;
+        $this->havingSQL = null;
+        $this->orderSQL = null;
+        $this->bindData = [];
+        $this->affectedRows = 0;
+        return $this;
     }
 
-    public function getOneValueFromSQL ($sql, array $data = [])
+    public function select (string $fields = '*')
     {
-        $start_time = $this->beforeExecute();
-
-        $stmt = $this->execute($sql, $data);
-        if ($stmt->errorCode() !== '00000') {return null;}
-
-        $row = $stmt->fetch(\PDO::FETCH_NUM);
-        if (empty($row)) {return null;}
-
-        $result = $row[0];
-
-        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
-
-        return $result;
+        $this->fieldSQL = $fields;
+        return $this;
     }
 
-    public function getOneRow ($table, array $data = [], $fields = '*'): array
+    public function where (string $where)
     {
-        $sql = 'SELECT ' . $fields . ' FROM ' . $table . CR;
-        $string = $this->ParametersString($data);
-        if (!empty($data)) {$sql .= 'WHERE ' . $string;}
-
-        return $this->getOneRowFromSQL($sql, $data);
+        $this->whereSQL = $where;
+        return $this;
     }
 
-    public function getOneRowFromSQL ($sql, array $data = []): array
+    public function groupBy (string $groupBy)
     {
-        $start_time = $this->beforeExecute();
-
-        $stmt = $this->execute($sql, $data);
-        if ($stmt->errorCode() !== '00000') {return [];}
-
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        if (empty($row)) {return [];}
-
-        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
-
-        return $row;
+        $this->groupBySQL = $groupBy;
+        return $this;
     }
 
-    public function getOneCol ($fields, $tables, array $data = []): array
+    public function having (string $having)
     {
-        $sql = 'SELECT ' . $fields . CR . 'FROM ' . $tables . CR;
-        $string = $this->ParametersString($data);
-        if (!empty($data)) {$sql .= 'WHERE ' . $string;}
-
-        return $this->getOneColFromSQL($sql, $data);
+        $this->havingSQL = $having;
+        return $this;
     }
 
-    public function getOneColFromSQL ($sql, array $data = []): array
+    public function orderBy (string $orderBy)
     {
-        $start_time = $this->beforeExecute();
-
-        $stmt = $this->execute($sql, $data);
-        if ($stmt->errorCode() !== '00000') {return [];}
-
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if (empty($rows)) {return [];}
-
-        $result = [];
-        foreach ($rows as $row) {foreach ($row as $value) {$result[] = $value;}}
-
-        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
-
-        return $result;
+        $this->orderSQL = $orderBy;
+        return $this;
     }
 
-    // Ðåçóëüòàò ìàññèâ â êîòîðîì ïåðâûé ñòîëáåö ýòî êëþ÷, à âòîðîé çíà÷åíèå
-    public function getKeyValue ($fields, $tables, array $data = [], $sort = ''): array
+    public function bind (array $data)
     {
-        $sql = 'SELECT ' . $fields . ' FROM ' . $tables . CR;
-        if ($sort !== '') {$sql .= 'ORDER BY ' . $sort;}
-        $string = $this->ParametersString($data);
-        if (!empty($data)) {$sql .= ' WHERE ' . $string;}
-
-        return $this->getKeyValueFromSQL($sql, $data);
+        $this->bindData = $data;
+        return $this;
     }
 
-    public function getKeyValueFromSQL ($sql, array $data = []): array
+    /* Ð–ÑƒÑ€Ð½Ð°Ð»Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ/Ð¿Ñ€Ð¾ÑÐ»ÑƒÑˆÐºÐ° SQL Ð·Ð°Ð¿Ñ€Ð¾ÑÐ¾Ð² */
+    public function listen ()
     {
-        $start_time = $this->beforeExecute();
-
-        $stmt = $this->execute($sql, $data);
-        if ($stmt->errorCode() !== '00000') {return [];}
-
-        $rows = $stmt->fetchAll(\PDO::FETCH_NUM);
-        if (empty($rows)) {return [];}
-
-        $result = [];
-        foreach ($rows as $row) {$result[$row[0]] = $row[1];}
-
-        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
-
-        return $result;
+        $this->listenSQL = true;
+        return $this;
     }
 
-    // Ðåçóëüòàò ìàññèâ â êîòîðîì ïåðâûé ñòîëáåö ýòî êëþ÷, à ñòàëüíûå àññîöèàòèâíûé ìàññèâ
-    public function getKeyValues ($fields, $tables, array $data = []): array
+    /* ÐŸÐ¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð²ÑÐµ Ð·Ð°Ð¿Ð¸ÑÐ¸ */
+    public function get (): array
     {
-        $sql = "SELECT {$fields} FROM {$tables}";
-        $string = $this->ParametersString($data);
-        if (!empty($data)) {$sql .= ' WHERE ' . $string;}
-
-        return $this->getKeyValuesFromSQL($sql, $data);
+        $sql = $this->getSQL();
+        $stmt = $this->executeSQL($sql, $this->bindData);
+        if ($stmt === null) {return [];}
+        return $stmt->fetchAll();
     }
 
-    public function getKeyValuesFromSQL ($sql, array $data = []): array
+    /* ÐŸÐ¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð¿ÐµÑ€Ð²ÑƒÑŽ ÑÑ‚Ñ€Ð¾ÐºÑƒ */
+    public function first (): array
     {
-        $start_time = $this->beforeExecute();
+        $sql = $this->getSQL();
+        $stmt = $this->executeSQL($sql, $this->bindData);
+        if ($stmt === null) {return [];}
+        return $stmt->fetch();
+    }
 
-        $stmt = $this->execute($sql, $data);
-        if ($stmt->errorCode() !== '00000') {return [];}
-
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if (empty($rows)) {return [];}
-
-        $result = $rows2 = $fields = [];
-        foreach ($rows[0] as $key => $value) {$fields[] = $key;}
-        foreach ($rows as $row) {$rows2[] = array_values($row);}
-        $col_count = $stmt->columnCount();
-        foreach ($rows2 as $row) {
-            for ($i = 2; $i <= $col_count; $i++) {
-                $column_name = $fields[$i-1];
-                $result[$row[0]][$column_name] = $row[$i-1];
+    /* ÐŸÐ¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð¼Ð°ÑÑÐ¸Ð² Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ð¹ Ð¾Ð´Ð½Ð¾Ð³Ð¾ ÑÑ‚Ð¾Ð»Ð±Ñ†Ð° (ÐµÑÐ»Ð¸ Ð´Ð²Ð° ÑÑ‚Ð¾Ð»Ð±Ñ†Ð° Ñ‚Ð¾ Ð¿Ð°Ñ€Ð° ÐºÐ»ÑŽÑ‡-Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ) */
+    public function pluck (string $key = null, string $value = null): array
+    {
+        if ($key !== null) {
+            if ($value === null) {
+                $this->fieldSQL = $key;
+            } else {
+                $this->fieldSQL = $key . ', ' . $value;
             }
         }
-
-        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
-
+        $sql = $this->getSQL();
+        $stmt = $this->executeSQL($sql, $this->bindData);
+        if ($stmt === null) {return [];}
+        if ($key === null) {
+            $rows = $stmt->fetchAll(\PDO::FETCH_NUM);
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+            $key = 0;
+        } else {
+            $rows = $stmt->fetchAll();
+        }
+        $result = [];
+        if ($value === null) {
+            foreach ($rows as $row) {$result[] = $row[$key];}
+        } else {
+            foreach ($rows as $row) {$result[$row[$key]] = $row[$value];}
+        }
         return $result;
     }
 
-    public function insert ($table, array $data): int
+    /* ÐŸÐ¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ Ð¿ÐµÑ€Ð²Ð¾Ð³Ð¾ ÑÑ‚Ð¾Ð»Ð¿Ñ†Ð° Ð¿ÐµÑ€Ð²Ð¾Ð¹ ÑÑ‚Ñ€Ð¾ÐºÐ¸ */
+    public function getCell (string $fieldName = '')
     {
-        $keys = implode(', ', array_keys($data));
-        $tags = ':' . implode(', :', array_keys($data));
-        $sql = "INSERT INTO {$table} ({$keys}) VALUES ({$tags})";
-
-        return $this->runSQL($sql, $data);
+        if ($fieldName !== '') {$this->fieldSQL = $fieldName;}
+        $sql = $this->getSQL();
+        $stmt = $this->executeSQL($sql, $this->bindData);
+        if ($stmt === null) {return null;}
+        $row = $stmt->fetch(\PDO::FETCH_NUM);
+        return $row[0];
     }
 
-    public function update ($table, array $update, array $where): int
+    public function insert (array $data): int
     {
-        $keys = array_keys($update);
+        $this->lastInsertId = 0;
+
+        if (isset($data[0]) && is_array($data[0])) {
+            $this->affectedRows = 0;
+            foreach ($data as $item) {
+                $this->affectedRows += $this->insertData($item);
+            }
+            return $this->affectedRows;
+        }
+
+        $this->affectedRows = $this->insertData($data);
+        return $this->affectedRows;
+    }
+
+    /*
+        ÐŸÑ€Ð¸Ð¼ÐµÑ€ Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ð½Ð¸Ñ:
+    $data = ['id' => '22'];
+    $update = ['name' => 'qqqq'];
+    $affectedRows = $db->table('test')->where('id = :id')->bind($data)->update($update);
+    */
+    public function update (array $dataForUpdate): int
+    {
+        $cr = $this->cr;
+        $keys = array_keys($dataForUpdate);
         $string = '';
         foreach ($keys as $key) {$string .= $key . ' = :' . $key . ', ';}
-        $keys = rtrim($string, ', ');
-        $data = array_merge($update, $where);
-        $where_string = $this->ParametersString($where);
-        $sql = "UPDATE {$table} SET {$keys} WHERE {$where_string}";
-
-        return $this->runSQL($sql, $data);
+        $update_string = rtrim($string, ', ');
+        $sql = 'UPDATE ' . $this->tableSQL . $cr . 'SET ' . $update_string . $cr . 'WHERE ' . $this->whereSQL;
+        $stmt = $this->executeSQL($sql, array_merge($this->bindData, $dataForUpdate));
+        if ($stmt === null) {return 0;}
+        $this->affectedRows = $stmt->rowCount();
+        return $this->affectedRows;
     }
 
-    public function delete ($table, array $data): int
+    public function updateOrInsert (array $dataForUpdate): int
     {
-        $string = $this->ParametersString($data);
+        $sql = 'SELECT COUNT(*) FROM ' . $this->tableSQL . ' WHERE ' . $this->whereSQL;
+        $stmt = $this->executeSQL($sql, $this->bindData);
+        $rows = $stmt->fetch(\PDO::FETCH_NUM);
+        $count = $rows[0];
+
+        if ($count === '0') {
+            $this->affectedRows = $this->insert(array_merge($this->bindData, $dataForUpdate));
+        } else {
+            $this->affectedRows = $this->update($dataForUpdate);
+        }
+        return $this->affectedRows;
+    }
+
+    public function delete (): int
+    {
+        $cr = $this->cr;
+        $string = $this->parametersString($this->bindData);
         /** @noinspection SqlWithoutWhere */
-        $sql = "DELETE FROM {$table} WHERE {$string}";
-
-        return $this->runSQL($sql, $data);
+        $sql = 'DELETE FROM ' . $this->tableSQL . $cr . 'WHERE ' . $string;
+        $stmt = $this->executeSQL($sql, $this->bindData);
+        if ($stmt === null) {return '0';}
+        $this->affectedRows = $stmt->rowCount();
+        return $this->affectedRows;
     }
 
-    public function getCount ($table, array $data = []): int
+    public function getAffectedRows ()
     {
-        $sql = 'SELECT COUNT(*) cnt FROM ' . $table . CR;
-        $string = $this->ParametersString($data);
-        if (!empty($data)) {$sql .= 'WHERE ' . $string;}
-
-        return $this->getOneValueFromSQL($sql, $data);
+        return $this->affectedRows;
     }
 
-    public function runSQL ($sql, array $data = []): int
+    public function getErrorsCount (): int
     {
-        $start_time = $this->beforeExecute();
+        return $this->errors_count;
+    }
 
-        $stmt = $this->execute($sql, $data);
-        if ($stmt->errorCode() !== '00000') {return 0;}
-
-        $result = (int) $stmt->rowCount();
-
-        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
-
-        return $result;
+    public function getLastInsertId ()
+    {
+        return $this->lastInsertId;
     }
 
     public function getNewGUID (): string
     {
-        $start_time = $this->beforeExecute();
+        $sql = 'SELECT sys_guid() FROM DUAL';
+        return $this->selectRaw($sql)->getCell();
+    }
 
-        $sql = 'SELECT sys_guid() FROM dual';
-        $stmt = $this->execute($sql);
-        if ($stmt->errorCode() !== '00000') {return '';}
+    public function getSQL (): string
+    {
+        if ($this->method === 'Raw') {return $this->sql;}
+        $cr = $this->cr;
 
-        $row = $stmt->fetch(\PDO::FETCH_NUM);
-        $result = $row[0];
+        $sql = 'SELECT ' . $this->fieldSQL . $cr . 'FROM ' . $this->tableSQL;
+        if ($this->whereSQL !== null) {$sql .= $cr . 'WHERE ' . $this->whereSQL;}
+        if ($this->groupBySQL !== null) {$sql .= $cr . 'GROUP BY ' . $this->groupBySQL;}
+        if ($this->havingSQL !== null) {$sql .= $cr . 'HAVING ' . $this->havingSQL;}
+        if ($this->orderSQL !== null) {$sql .= $cr . 'ORDER BY ' . $this->orderSQL;}
 
-        if ($this->resultIsOk) {$this->sql_time = round(microtime(true) - $start_time, 4);}
+        return $sql;
+    }
 
-        return $result;
+    public function getTimeExecution ()
+    {
+        return $this->sql_time;
     }
 
     public function beginTransaction (): void
@@ -265,7 +320,7 @@ class QueryBuilder implements QueryBuilderInterface
     public function endTransaction (): void
     {
         if ($this->errors_before_transaction === $this->errors_count)
-            {$this->pdo->commit();} else {$this->pdo->rollBack();}
+        {$this->pdo->commit();} else {$this->pdo->rollBack();}
     }
 
     public function commit (): void
@@ -278,35 +333,70 @@ class QueryBuilder implements QueryBuilderInterface
         $this->pdo->rollBack();
     }
 
-    protected function beforeExecute ()
+    public function enableQueryLog (string $logName, bool $overwrite = false): void
     {
-        $this->sql_time = 0;
-        $this->sql_count++;
-        $this->resultIsOk = true;
-
-        return microtime(true);
+        $this->logName = $logName;
+        $this->logOverwrite = $overwrite;
+        $this->queryLog = true;
     }
 
-    protected function execute ($sql, array $data = [])
+    public function disableQueryLog (): void
+    {
+        $this->queryLog = false;
+    }
+
+    public function clearQueryLog (string $logName): void
+    {
+        file_put_contents(ROOT . '/logs/' . $logName . '.log', '');
+    }
+
+    protected function executeSQL (string $sql, array $data = [])
     {
         $stmt = null;
         $start_time = microtime(true);
+        $this->sql_time = null;
+        $this->lastInsertId = 0;
+        $error_message = null;
+
+        if ($this->listenSQL) {vd($sql, $data);}
 
         try {
             $stmt = $this->pdo->prepare($sql);
-            foreach ($data as $key => $value) {$stmt->bindValue(':' . $key, $value);}
+            foreach ($data as $key => $value) {$stmt->bindValue($key, $value);}
             $stmt->execute();
-            $this->sql_times[] = round(microtime(true) - $start_time, 4);
+            $this->sql_time = round(microtime(true) - $start_time, 4);
+            if ($this->listenSQL) {vd('SQL time: ' . $this->sql_time);}
         } catch (\Exception $e) {
-            $this->resultIsOk = false;
             $this->errors_count++;
-            Log::save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
+            $error_message = $e->getMessage();
+            if ($this->listenSQL) {echo $e->getMessage();}
+            SQLerrorLog::save(debug_backtrace(), [$e->getMessage(), $sql, $data]);
+        }
+
+        if ($this->queryLog) {
+            $log_params = ['sql' => $sql, 'data' => $data];
+            if ($this->sql_time !== null) {$log_params['time'] = $this->sql_time;}
+            if ($error_message !== null) {$log_params['message'] = $error_message;}
+
+            SQLqueryLog::save($this->logName, $log_params);
         }
 
         return $stmt;
     }
 
-    protected function ParametersString (array $data): string
+    protected function insertData (array $data): int
+    {
+        $cr = $this->cr;
+        $keys = implode(', ', array_keys($data));
+        $values = ':' . implode(', :', array_keys($data));
+        $sql = 'INSERT INTO ' . $this->tableSQL . ' (' .$keys . ')' . $cr . 'VALUES (' . $values . ')';
+        $stmt = $this->executeSQL($sql, $data);
+        if ($stmt === null) {return 0;}
+        //$this->lastInsertId = $this->pdo->lastInsertId();
+        return $stmt->rowCount();
+    }
+
+    protected function parametersString (array $data): string
     {
         $string = '';
         $keys = array_keys($data);

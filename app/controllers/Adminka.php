@@ -26,7 +26,7 @@ class Adminka extends DBController
         //$find = $_POST['query'];
         $find = filter_input(INPUT_POST, 'query', FILTER_SANITIZE_SPECIAL_CHARS);
         $sql = getSQL('adminka/user_find.sql');
-        $res = $this->db->getAllFromSQL($sql, ['find' => Helper::cp1251($find)]);
+        $res = $this->db->selectRaw($sql, ['find' => Helper::cp1251($find)])->get();
         $users = ['suggestions' => $res];
         /** @noinspection PhpComposerExtensionStubsInspection */
         echo json_encode(Helper::ArrayToUtf8($users));
@@ -38,7 +38,7 @@ class Adminka extends DBController
 
         $this->x['find'] = $find = filter_input(INPUT_POST, 'find', FILTER_SANITIZE_SPECIAL_CHARS);
         $sql = getSQL('adminka/user_find.sql');
-        $this->x['users'] = $this->db->getAllFromSQL($sql, ['find' => $find]);
+        $this->x['users'] = $this->db->selectRaw($sql, ['find' => $find])->get();
 
         $this->twig->showTemplate('adminka/users.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
@@ -48,9 +48,9 @@ class Adminka extends DBController
         $this->x['menu'] = $this->bc->getMenu('user');
         $this->x['guid'] = $guid;
         $sql = getSQL('adminka/get_user.sql');
-        $this->x['user'] = $this->db->getOneRowFromSQL($sql, ['guid' => $guid]);
+        $this->x['user'] = $this->db->selectRaw($sql, ['guid' => $guid])->first();
         $sql = getSQL('adminka/get_passport_access.sql');
-        $this->x['tasks'] = $this->db->getAllFromSQL($sql, ['guid' => $guid]);
+        $this->x['tasks'] = $this->db->selectRaw($sql, ['guid' => $guid])->get();
         if (isset($_SESSION['update']) && $_SESSION['update']) {
             $this->x['update'] = true;
             unset($_SESSION['update']);
@@ -66,7 +66,8 @@ class Adminka extends DBController
 
         $this->db->beginTransaction();
 
-        $this->db->delete('PIKALKA.pass_access', ['guid' => $guid]);
+        $this->db->table('PIKALKA.pass_access')->where('guid = :guid')
+            ->bind(['guid' => $guid])->delete();
 
         if (count($tasks_id) > 0) {
             $sql = 'INSERT ALL' . CR;
@@ -74,8 +75,8 @@ class Adminka extends DBController
                 $sql .= 'INTO PIKALKA.pass_access (guid, task_id) VALUES (\'' . $guid . '\', ' . $item . ')' . CR;
             }
             $sql .= 'SELECT * FROM dual';
-            $res = $this->db->runSQL($sql);
-            if ($res > 0) {$_SESSION['update'] = true;}
+            $res = $this->db->statement($sql);
+            if ($res === '00000') {$_SESSION['update'] = true;}
         } else {
             $_SESSION['update'] = true;
         }

@@ -70,9 +70,9 @@ class Adminka extends DBController
             ->bind(['guid' => $guid])->delete();
 
         if (count($tasks_id) > 0) {
-            $sql = 'INSERT ALL' . CR;
+            $sql = 'INSERT ALL' . PHP_EOL;
             foreach ($tasks_id as $item) {
-                $sql .= 'INTO PIKALKA.pass_access (guid, task_id) VALUES (\'' . $guid . '\', ' . $item . ')' . CR;
+                $sql .= 'INTO PIKALKA.pass_access (guid, task_id) VALUES (\'' . $guid . '\', ' . $item . ')' . PHP_EOL;
             }
             $sql .= 'SELECT * FROM dual';
             $res = $this->db->statement($sql);

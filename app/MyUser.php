@@ -46,7 +46,7 @@ class MyUser
             ini_set('display_errors', 1);
             ini_set('display_startup_errors', 1);
             ini_set('error_reporting', E_ALL);
-            $this->log_files_count = count(scandir('../logs/err', SCANDIR_SORT_NONE)) - 2;
+            $this->log_files_count = count(scandir(ROOT . '/logs/err', SCANDIR_SORT_NONE)) - 2;
             $this->table_error_count = $db->table('PIKALKA.pass_errors')
                 ->select('COUNT(*)')->getCell();
         }

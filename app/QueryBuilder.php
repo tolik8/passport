@@ -59,7 +59,6 @@ class QueryBuilder
     protected $lastInsertId;
     protected $listenSQL;
     protected $logName;
-    protected $logOverwrite;
     protected $method; // конструктор table или сырой selectRaw
     protected $orderSQL;
     protected $pdo;
@@ -328,10 +327,9 @@ class QueryBuilder
         $this->pdo->rollBack();
     }
 
-    public function enableQueryLog (string $logName, bool $overwrite = false): void
+    public function enableQueryLog (string $logName): void
     {
         $this->logName = $logName;
-        $this->logOverwrite = $overwrite;
         $this->queryLog = true;
     }
 

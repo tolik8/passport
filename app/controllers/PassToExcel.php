@@ -118,6 +118,7 @@ class PassToExcel extends DBController
 
         /* Запис в pass_log */
         $params['TM'] = 0;
+        unset($params['DT0']);
         $this->db->table('PIKALKA.pass_log')->insert($params);
 
         /* Видалення лишніх листів */

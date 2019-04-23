@@ -8,12 +8,12 @@ class Cookie
 {
     protected $db;
 
-    public function __construct (QueryBuilder $db)
+    public function __construct(QueryBuilder $db)
     {
         $this->db = $db;
     }
 
-    public function index ($cookie): void
+    public function index($cookie): void
     {
         $row = $this->db->table('PIKALKA.people')->where('cookie = :cookie')
             ->bind(['cookie' => $cookie])->first();
@@ -44,10 +44,11 @@ class Cookie
         }
     }
 
-    public function noCookie (): void
+    public function noCookie(): void
     {
         $server = ['alisa2.loc' => 'alisa.loc', 'start2.tr.sta' => 'start.tr.sta', '10.19.19.122' => '10.19.191.121'];
         header('Location: http://' . $server[$_SERVER['SERVER_NAME']] . '/login.php');
         exit;
     }
+
 }

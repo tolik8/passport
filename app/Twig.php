@@ -9,7 +9,7 @@ class Twig
 {
     protected $twig;
 
-    public function __construct (Environment $twig)
+    public function __construct(Environment $twig)
     {
         $this->twig = $twig;
         $functions = [
@@ -18,7 +18,7 @@ class Twig
         $this->twig->addExtension(new PhpFunctionExtension($functions));
     }
 
-    public function showTemplate ($template, $params = []): void
+    public function showTemplate($template, $params = []): void
     {
         try {
             echo $this->twig->render($template, $params);
@@ -26,4 +26,5 @@ class Twig
             echo $e->getMessage();
         }
     }
+
 }

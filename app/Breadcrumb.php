@@ -7,7 +7,7 @@ class Breadcrumb
     protected $menu1;
     public $isUnderConstruct = false;
 
-    public function __construct ()
+    public function __construct()
     {
         $pattern = '#(?<=^/).+?(?=/|$)#';
         preg_match($pattern, $_SERVER['REQUEST_URI'], $matches);
@@ -33,7 +33,7 @@ class Breadcrumb
         $this->menu1 = array_merge($first_menu, $menu);
     }
 
-    public function getMenu ($page_id): array
+    public function getMenu($page_id): array
     {
         $menu2 = [];
         $n = 0;

@@ -4,13 +4,13 @@ namespace App;
 
 class Helper
 {
-    public static function in_string ($string, $find): bool
+    public static function in_string($string, $find): bool
     {
         $array = explode(',', $string);
         return in_array($find, $array, true);
     }
 
-    public static function getPattern ($pattern)
+    public static function getPattern($pattern)
     {
         $patterns = [
             'guid' => '#^[0-9a-zA-Z]{32}$#',
@@ -21,7 +21,7 @@ class Helper
         return $patterns[$pattern] ?? null;
     }
 
-    public static function RegEx ($pattern, $post, $default = null)
+    public static function regEx($pattern, $post, $default = null)
     {
         if (preg_match($pattern, $post)) {
             return $post;
@@ -30,7 +30,7 @@ class Helper
     }
 
     /** @noinspection ReturnTypeCanBeDeclaredInspection */
-    public static function CheckRegEx ($pattern_name, $post, $default = null)
+    public static function checkRegEx($pattern_name, $post, $default = null)
     {
         $pattern = self::getPattern($pattern_name);
 
@@ -40,18 +40,18 @@ class Helper
         return self::RegEx($pattern, $post, $default);
     }
 
-    public static function utf8 ($input)
+    public static function utf8($input)
     {
         return mb_convert_encoding($input, 'utf-8', 'windows-1251');
     }
 
-    public static function cp1251 ($input)
+    public static function cp1251($input)
     {
         return mb_convert_encoding($input, 'windows-1251', 'utf-8');
     }
 
     /* Получить из массива из базы другой массив, где ключем будет первое поле, а остальные массив значений */
-    public static function array_combine2 (array $array): array
+    public static function array_combine2(array $array): array
     {
         if (empty($array)) {return [];}
         $result = [];
@@ -66,7 +66,7 @@ class Helper
         return $result;
     }
 
-    public static function ArrayToUtf8 (array $array): array
+    public static function arrayToUtf8(array $array): array
     {
         array_walk_recursive($array, static function(&$item) {
             if(!mb_detect_encoding($item, 'utf-8', true)){
@@ -86,4 +86,5 @@ class Helper
         }
         return $result;
     }
+
 }

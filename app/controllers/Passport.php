@@ -9,13 +9,13 @@ class Passport extends DBController
     protected $role = '22'; // Роль 22 - Паспорт платника
     protected $title = 'Паспорт';
 
-    public function index (): void
+    public function index(): void
     {
         $this->x['menu'] = $this->bc->getMenu('passport');
         $this->twig->showTemplate('passport/index.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
-    public function choice (): void
+    public function choice(): void
     {
         $this->x['menu'] = $this->bc->getMenu('choice');
         $params = $this->getPost();
@@ -30,7 +30,7 @@ class Passport extends DBController
         $this->twig->showTemplate('passport/choice.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
-    public function prepare (): void
+    public function prepare(): void
     {
         $this->x['menu'] = $this->bc->getMenu('prepare');
         $params = $this->x['post'] = $this->getPost();
@@ -85,7 +85,7 @@ class Passport extends DBController
         $this->twig->showTemplate('passport/prepare.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
-    public function ajax ($guid): void
+    public function ajax($guid): void
     {
         $sql = getSQL('passport/get_task_info.sql');
         $this->x['tasks'] = $this->db->selectRaw($sql, ['guid' => $guid])->get();
@@ -94,17 +94,17 @@ class Passport extends DBController
         echo json_encode($this->x['tasks']);
     }
 
-    public function taxpayer_not_found (): void
+    public function taxpayer_not_found(): void
     {
         $this->x['errors'][] = 'Вказаний платник не знайдений в базі даних';
         $this->twig->showTemplate('error.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
-    protected function getPost (): array
+    protected function getPost(): array
     {
-        $post['tin'] = Helper::CheckRegEx('tin', $_POST['tin'], 0);
-        $post['dt1'] = Helper::CheckRegEx('date', $_POST['dt1'], '01.01.2017');
-        $post['dt2'] = Helper::CheckRegEx('date', $_POST['dt2'], '31.12.2018');
+        $post['tin'] = Helper::checkRegEx('tin', $_POST['tin'], 0);
+        $post['dt1'] = Helper::checkRegEx('date', $_POST['dt1'], '01.01.2017');
+        $post['dt2'] = Helper::checkRegEx('date', $_POST['dt2'], '31.12.2018');
 
         return $post;
     }

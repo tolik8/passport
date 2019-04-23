@@ -9,19 +9,19 @@ class Adminka extends DBController
     protected $role = '7'; // Ðîëü 7 - Àäì³íêà
     protected $title = 'Àäì³íêà';
 
-    public function index (): void
+    public function index(): void
     {
         $this->x['menu'] = $this->bc->getMenu('adminka');
         $this->twig->showTemplate('adminka/index.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
-    public function passport (): void
+    public function passport(): void
     {
         $this->x['menu'] = $this->bc->getMenu('passport');
         $this->twig->showTemplate('adminka/passport.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
-    public function user_find (): void
+    public function user_find(): void
     {
         //$find = $_POST['query'];
         $find = filter_input(INPUT_POST, 'query', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -29,10 +29,10 @@ class Adminka extends DBController
         $res = $this->db->selectRaw($sql, ['find' => Helper::cp1251($find)])->get();
         $users = ['suggestions' => $res];
         /** @noinspection PhpComposerExtensionStubsInspection */
-        echo json_encode(Helper::ArrayToUtf8($users));
+        echo json_encode(Helper::arrayToUtf8($users));
     }
 
-    public function users (): void
+    public function users(): void
     {
         $this->x['menu'] = $this->bc->getMenu('users');
 
@@ -43,7 +43,7 @@ class Adminka extends DBController
         $this->twig->showTemplate('adminka/users.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
-    public function user ($guid): void
+    public function user($guid): void
     {
         $this->x['menu'] = $this->bc->getMenu('user');
         $this->x['guid'] = $guid;
@@ -59,9 +59,9 @@ class Adminka extends DBController
         $this->twig->showTemplate('adminka/user.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 
-    public function passport_access_update (): void
+    public function passport_access_update(): void
     {
-        $guid = Helper::CheckRegEx('guid', $_POST['guid'], '');
+        $guid = Helper::checkRegEx('guid', $_POST['guid'], '');
         $tasks_id = Helper::getArrayIdFromPost($_POST, 'id');
 
         $this->db->beginTransaction();
@@ -84,4 +84,5 @@ class Adminka extends DBController
 
         header('Location: /adminka/passport/user/' . $guid);
     }
+
 }

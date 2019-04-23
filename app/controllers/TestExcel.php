@@ -11,12 +11,12 @@ class TestExcel extends DBController
     protected $need_access = false;
     protected $ss;
 
-    public function index (): void
+    public function index(): void
     {
         echo '<a href="/test/export">Export to Excel</a>';
     }
 
-    public function export (): void
+    public function export(): void
     {
         $templateFile = $this->root . '/xls/test.xlsx';
         $outputFile = './test.xlsx';
@@ -56,7 +56,7 @@ class TestExcel extends DBController
         PhpExcelTemplator::outputSpreadsheetToFile($this->ss, $outputFile);
     }
 
-    protected function getDefaultParams ($params): array
+    protected function getDefaultParams($params): array
     {
         /* Шаблон для вибору з листа ексель комірок {data} [data] [[data]] */
         $pattern = '#(\{[0-9a-zA-Z_.]+?\})|(\[\[[0-9a-zA-Z_.]+?\]\])|(\[[0-9a-zA-Z_.]+?\])#';
@@ -75,7 +75,7 @@ class TestExcel extends DBController
         return $result;
     }
 
-    protected function getSumFromArray (array $array, $find): array
+    protected function getSumFromArray(array $array, $find): array
     {
         $find_array = explode('.', $find);
         $prefix = $find_array[0] . '.';
@@ -85,7 +85,7 @@ class TestExcel extends DBController
         return [$sum_name => $sum];
     }
 
-    protected function setSheet ($index, $array): void
+    protected function setSheet($index, $array): void
     {
         try {
             /** @noinspection PhpUndefinedMethodInspection */
@@ -100,7 +100,7 @@ class TestExcel extends DBController
         }
     }
 
-    protected function transform (array $array, $prefix = ''): array
+    protected function transform(array $array, $prefix = ''): array
     {
         $result = [];
         if (empty($array)) {return $result;}

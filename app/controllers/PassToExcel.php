@@ -16,23 +16,23 @@ class PassToExcel extends DBController
     protected $templateVars;
     protected $task;
 
-    public function index (): void
+    public function index(): void
     {
         /* Отримати всі POST параметри */
-        $this->guid = Helper::CheckRegEx('guid', $_POST['guid']);
+        $this->guid = Helper::checkRegEx('guid', $_POST['guid']);
 
         if ($this->guid === null) {
             $params = [
-                'TIN' => Helper::CheckRegEx('tin', $_POST['tin']),
-                'DT1' => Helper::CheckRegEx('date', $_POST['dt1']),
-                'DT2' => Helper::CheckRegEx('date', $_POST['dt2']),
-                'TASKS' => Helper::CheckRegEx('list', $_POST['task']),
+                'TIN' => Helper::checkRegEx('tin', $_POST['tin']),
+                'DT1' => Helper::checkRegEx('date', $_POST['dt1']),
+                'DT2' => Helper::checkRegEx('date', $_POST['dt2']),
+                'TASKS' => Helper::checkRegEx('list', $_POST['task']),
                 'GUID_USER' => $this->myUser->guid,
             ];
             $sql = getSQL('passport\get_task_ready_guid.sql');
             $task = $this->db->selectRaw($sql, $params)->pluck('TASK_ID', 'GUID');
         } else {
-            $this->guid = Helper::CheckRegEx('guid', $_POST['guid']);
+            $this->guid = Helper::checkRegEx('guid', $_POST['guid']);
             //$params = $this->db->getOneRow('PIKALKA.pass_jrn', ['guid' => $this->guid]);
             $params = $this->db->table('PIKALKA.pass_jrn')
                 ->where('guid = :guid')->bind(['guid' => $this->guid])->first();
@@ -140,7 +140,7 @@ class PassToExcel extends DBController
 
     }
 
-    protected function toExcel_RegData ($index, $params): void
+    protected function toExcel_RegData($index, $params): void
     {
         try {
             /** @noinspection PhpUndefinedMethodInspection */
@@ -160,7 +160,7 @@ class PassToExcel extends DBController
         PhpExcelTemplator::renderWorksheet($sheet, $templateCells, $templateParams);
     }
 
-    protected function toExcel_Related ($index, $task): void
+    protected function toExcel_Related($index, $task): void
     {
         if (!isset($task[$index])) {return;}
 
@@ -189,7 +189,7 @@ class PassToExcel extends DBController
         $this->setSheet($index, $data_from_oracle);
     }
 
-    protected function toExcel_Kontr ($index, $task): void
+    protected function toExcel_Kontr($index, $task): void
     {
         if (!isset($task[$index])) {return;}
 
@@ -215,7 +215,7 @@ class PassToExcel extends DBController
     }
 
     /* $t_array = $this->addFieldPercent($t_array, '#T1.OBS#', '#T1.PERCENT#'); */
-    protected function addFieldPercent (array $array, $scan, $new_field, $precision = 0): array
+    protected function addFieldPercent(array $array, $scan, $new_field, $precision = 0): array
     {
         $sum = array_sum($array[$scan]);
         $new_array[$new_field] = [];
@@ -225,7 +225,7 @@ class PassToExcel extends DBController
         return array_merge($array, $new_array);
     }
 
-    protected function addPrefix (array $array, $prefix): array
+    protected function addPrefix(array $array, $prefix): array
     {
         $result = [];
         foreach ($array as $row) {
@@ -238,7 +238,7 @@ class PassToExcel extends DBController
         return $result;
     }
 
-    protected function excelRegData ($input_params): array
+    protected function excelRegData($input_params): array
     {
         $tin = $params['TIN'] = $input_params['TIN'];
 
@@ -316,7 +316,7 @@ class PassToExcel extends DBController
         return array_merge($reg_params, $reg_params_ur, $stan_h, $kvedy, $founders, $rro);
     }
 
-    protected function getDefaultParams ($params): array
+    protected function getDefaultParams($params): array
     {
         /* Шаблон для вибору з листа ексель комірок {data} [data] [[data]] */
         $pattern = '@(\{[0-9a-zA-Z_.]+?\})|(\[\[#[0-9a-zA-Z_.]+?#\]\])|(\[#[0-9a-zA-Z_.]+?#\])@';
@@ -336,7 +336,7 @@ class PassToExcel extends DBController
     }
 
     /* $sum = $this->getSumFromArray($t_array, 'T1.PDV'); */
-    protected function getSumFromArray (array $array, $find): array
+    protected function getSumFromArray(array $array, $find): array
     {
         $find_array = explode('.', $find);
         $prefix = $find_array[0] . '.';
@@ -346,7 +346,7 @@ class PassToExcel extends DBController
         return [$sum_name => $sum];
     }
 
-    protected function setSheet ($index, $array): void
+    protected function setSheet($index, $array): void
     {
         try {
             /** @noinspection PhpUndefinedMethodInspection */
@@ -361,7 +361,7 @@ class PassToExcel extends DBController
         }
     }
 
-    protected function transform (array $array, $prefix = ''): array
+    protected function transform(array $array, $prefix = ''): array
     {
         $result = [];
         if (empty($array)) {return $result;}

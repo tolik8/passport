@@ -17,7 +17,7 @@ class MyUser
     public $log_files_count = 0;
     public $table_error_count = 0;
 
-    public function __construct (QueryBuilder $db)
+    public function __construct(QueryBuilder $db)
     {
         $this->db = $db;
 
@@ -53,18 +53,19 @@ class MyUser
 
     }
 
-    public function refresh (): void
+    public function refresh(): void
     {
         session_destroy();
         header('Location: /');
         exit;
     }
 
-    public function logout (): void
+    public function logout(): void
     {
         session_destroy();
         setcookie('alisa2', '', time() );
         header('Location: /');
         exit;
     }
+
 }

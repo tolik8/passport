@@ -16,7 +16,7 @@ class Controller
     protected $need_access = true;
     protected $title;
 
-    public function __construct (Twig $twig, Breadcrumb $bc)
+    public function __construct(Twig $twig, Breadcrumb $bc)
     {
         $this->root = $_SERVER['DOCUMENT_ROOT'];
         $this->twig = $twig;
@@ -24,4 +24,5 @@ class Controller
 
         $this->x['title'] = $this->title;
     }
+
 }

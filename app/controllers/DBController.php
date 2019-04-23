@@ -15,7 +15,7 @@ class DBController extends Controller
     protected $myUser;
     protected $tax;
 
-    public function __construct (Twig $twig, Breadcrumb $bc, QueryBuilder $db, MyUser $myUser, Tax $tax)
+    public function __construct(Twig $twig, Breadcrumb $bc, QueryBuilder $db, MyUser $myUser, Tax $tax)
     {
         parent::__construct($twig, $bc);
         $this->db = $db;
@@ -36,4 +36,5 @@ class DBController extends Controller
             Exit;
         }
     }
+
 }

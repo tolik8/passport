@@ -33,7 +33,6 @@ class PassToExcel extends DBController
             $task = $this->db->selectRaw($sql, $params)->pluck('TASK_ID', 'GUID');
         } else {
             $this->guid = Helper::checkRegEx('guid', $_POST['guid']);
-            //$params = $this->db->getOneRow('PIKALKA.pass_jrn', ['guid' => $this->guid]);
             $params = $this->db->table('PIKALKA.pass_jrn')
                 ->where('guid = :guid')->bind(['guid' => $this->guid])->first();
 
@@ -114,6 +113,21 @@ class PassToExcel extends DBController
             $sql = 'SELECT year, ozn_dox, cnt, ROUND(dox, 0) dox FROM DP00.t43_1df_ozn WHERE kod = :kod ORDER BY YEAR, ozn_dox';
             $array = $this->db->selectRaw($sql, ['kod' => $params['TIN']])->get();
             $this->setSheet(9, $this->transform($array));
+        }
+
+        /* Площа */
+        if (isset($task[10])) {
+            $array1 = $this->db->table('PIKALKA.pass_area')->where('guid = :guid')
+                ->orderBy('period_year, c_sti, koatuu, d_get')->bind(['guid' => $task[10]])->get();
+            $array1 = $this->addPrefix($array1, 'T1.');
+            $t_array1 = $this->transform($array1);
+
+            $sql = getSQL('passport/area_group_year_dpi.sql');
+            $array2 = $this->db->selectRaw($sql, ['guid' => $task[10]])->get();
+            $array2 = $this->addPrefix($array2, 'T2.');
+            $t_array2 = $this->transform($array2);
+
+            $this->setSheet(10, array_merge($t_array1, $t_array2));
         }
 
         /* Запис в pass_log */

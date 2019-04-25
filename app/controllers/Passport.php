@@ -102,7 +102,7 @@ class Passport extends DBController
 
     protected function getPost(): array
     {
-        $post['tin'] = Helper::checkRegEx('tin', $_POST['tin'], 0);
+        $post['tin'] = Helper::checkRegEx('tin', trim($_POST['tin']), 0);
         $post['dt1'] = Helper::checkRegEx('date', $_POST['dt1'], '01.01.2017');
         $post['dt2'] = Helper::checkRegEx('date', $_POST['dt2'], '31.12.2018');
 

@@ -117,17 +117,28 @@ class PassToExcel extends DBController
 
         /* Площа */
         if (isset($task[10])) {
-            $array1 = $this->db->table('PIKALKA.pass_area')->where('guid = :guid')
+
+            $array1 = $this->db->table('PIKALKA.pass_area_zag')->where('guid = :guid')
                 ->orderBy('period_year, c_sti, koatuu, d_get')->bind(['guid' => $task[10]])->get();
             $array1 = $this->addPrefix($array1, 'T1.');
             $t_array1 = $this->transform($array1);
 
-            $sql = getSQL('passport/area_group_year_dpi.sql');
+            $sql = getSQL('passport/area_group_year.sql');
             $array2 = $this->db->selectRaw($sql, ['guid' => $task[10]])->get();
             $array2 = $this->addPrefix($array2, 'T2.');
             $t_array2 = $this->transform($array2);
 
-            $this->setSheet(10, array_merge($t_array1, $t_array2));
+            $sql = getSQL('passport/area_group_year_dpi.sql');
+            $array3 = $this->db->selectRaw($sql, ['guid' => $task[10]])->get();
+            $array3 = $this->addPrefix($array3, 'T3.');
+            $t_array3 = $this->transform($array3);
+
+            $array4 = $this->db->table('PIKALKA.pass_area')->where('guid = :guid')
+                ->orderBy('period_year, c_sti, koatuu, d_get')->bind(['guid' => $task[10]])->get();
+            $array4 = $this->addPrefix($array4, 'T4.');
+            $t_array4 = $this->transform($array4);
+
+            $this->setSheet(10, array_merge($t_array1, $t_array2, $t_array3, $t_array4));
         }
 
         /* Запис в pass_log */

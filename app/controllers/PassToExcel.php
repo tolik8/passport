@@ -18,6 +18,8 @@ class PassToExcel extends DBController
 
     public function index(): void
     {
+        $db =$this->db;
+        
         /* Отримати всі POST параметри */
         $this->guid = Helper::checkRegEx('guid', $_POST['guid']);
 
@@ -30,14 +32,14 @@ class PassToExcel extends DBController
                 'GUID_USER' => $this->myUser->guid,
             ];
             $sql = getSQL('passport\get_task_ready_guid.sql');
-            $task = $this->db->selectRaw($sql, $params)->pluck('TASK_ID', 'GUID');
+            $task = $db->selectRaw($sql, $params)->pluck('TASK_ID', 'GUID');
         } else {
             $this->guid = Helper::checkRegEx('guid', $_POST['guid']);
-            $params = $this->db->table('PIKALKA.pass_jrn')
+            $params = $db->table('PIKALKA.pass_jrn')
                 ->where('guid = :guid')->bind(['guid' => $this->guid])->first();
 
             $sql = getSQL('passport/get_tasks_guid.sql');
-            $task = $this->db->selectRaw($sql, ['guid' => $this->guid])->pluck('TASK_ID', 'GUID');
+            $task = $db->selectRaw($sql, ['guid' => $this->guid])->pluck('TASK_ID', 'GUID');
         }
 
         /* Параметри Excel */
@@ -66,20 +68,20 @@ class PassToExcel extends DBController
 
         /* Баланс */
         if (isset($task[4])) {
-            $array = $this->db->table('PIKALKA.pass_balance')->where('guid = :guid')
+            $array = $db->table('PIKALKA.pass_balance')->where('guid = :guid')
                 ->orderBy('period_year, period_month')->bind(['guid' => $task[4]])->get();
             $this->setSheet(4, $this->transform($array));
         }
 
         if (isset($task[5])) {
             /* ПДВ */
-            $array1 = $this->db->table('PIKALKA.pass_pdv')->where('guid = :guid')
+            $array1 = $db->table('PIKALKA.pass_pdv')->where('guid = :guid')
                 ->orderBy('period')->bind(['guid' => $task[5]])->get();
             $array1 = $this->addPrefix($array1, 'T1.');
             $t_array1 = $this->transform($array1);
 
             /* ПДВ РІК */
-            $array2 = $this->db->table('PIKALKA.pass_pdv_rik')->where('guid = :guid')
+            $array2 = $db->table('PIKALKA.pass_pdv_rik')->where('guid = :guid')
                 ->orderBy('period_year')->bind(['guid' => $task[5]])->get();
             $array2 = $this->addPrefix($array2, 'T2.');
             $t_array2 = $this->transform($array2);
@@ -89,21 +91,21 @@ class PassToExcel extends DBController
 
         /* Прибуток */
         if (isset($task[6])) {
-            $array = $this->db->table('PIKALKA.pass_pributok')->where('guid = :guid')
+            $array = $db->table('PIKALKA.pass_pributok')->where('guid = :guid')
                 ->orderBy('period_year, period_month')->bind(['guid' => $task[6]])->get();
             $this->setSheet(6, $this->transform($array));
         }
 
         /* ЄСВ */
         if (isset($task[7])) {
-            $array = $this->db->table('PIKALKA.pass_esv')->where('guid = :guid')
+            $array = $db->table('PIKALKA.pass_esv')->where('guid = :guid')
                 ->orderBy('period')->bind(['guid' => $task[7]])->get();
             $this->setSheet(7, $this->transform($array));
         }
 
         /* Повідомлення */
         if (isset($task[8])) {
-            $array = $this->db->table('PIKALKA.pass_povidom')->where('guid = :guid')
+            $array = $db->table('PIKALKA.pass_povidom')->where('guid = :guid')
                 ->orderBy('period_year')->bind(['guid' => $task[8]])->get();
             $this->setSheet(8, $this->transform($array));
         }
@@ -111,29 +113,29 @@ class PassToExcel extends DBController
         /* 1-ДФ */
         if (isset($task[9])) {
             $sql = 'SELECT year, ozn_dox, cnt, ROUND(dox, 0) dox FROM DP00.t43_1df_ozn WHERE kod = :kod ORDER BY YEAR, ozn_dox';
-            $array = $this->db->selectRaw($sql, ['kod' => $params['TIN']])->get();
+            $array = $db->selectRaw($sql, ['kod' => $params['TIN']])->get();
             $this->setSheet(9, $this->transform($array));
         }
 
         /* Площа */
         if (isset($task[10])) {
 
-            $array1 = $this->db->table('PIKALKA.pass_area_zag')->where('guid = :guid')
+            $array1 = $db->table('PIKALKA.pass_area_zag')->where('guid = :guid')
                 ->orderBy('period_year, c_sti, koatuu, d_get')->bind(['guid' => $task[10]])->get();
             $array1 = $this->addPrefix($array1, 'T1.');
             $t_array1 = $this->transform($array1);
 
             $sql = getSQL('passport/area_group_year.sql');
-            $array2 = $this->db->selectRaw($sql, ['guid' => $task[10]])->get();
+            $array2 = $db->selectRaw($sql, ['guid' => $task[10]])->get();
             $array2 = $this->addPrefix($array2, 'T2.');
             $t_array2 = $this->transform($array2);
 
             $sql = getSQL('passport/area_group_year_dpi.sql');
-            $array3 = $this->db->selectRaw($sql, ['guid' => $task[10]])->get();
+            $array3 = $db->selectRaw($sql, ['guid' => $task[10]])->get();
             $array3 = $this->addPrefix($array3, 'T3.');
             $t_array3 = $this->transform($array3);
 
-            $array4 = $this->db->table('PIKALKA.pass_area')->where('guid = :guid')
+            $array4 = $db->table('PIKALKA.pass_area')->where('guid = :guid')
                 ->orderBy('period_year, c_sti, koatuu, d_get')->bind(['guid' => $task[10]])->get();
             $array4 = $this->addPrefix($array4, 'T4.');
             $t_array4 = $this->transform($array4);
@@ -141,10 +143,38 @@ class PassToExcel extends DBController
             $this->setSheet(10, array_merge($t_array1, $t_array2, $t_array3, $t_array4));
         }
 
+        /* Сплата і борг */
+        if (isset($task[11])) {
+            $array1 = $db->table('PIKALKA.vw_pass_splata_dates')->pluck('N', 'DT');
+            $t_array1 = $t_array2 = $t_array3 = [];
+            foreach ($array1 as $key => $item) {
+                $t_array1['{DT'.$key.'}'] = $item;
+            }
+            $array2 = $db->table('PIKALKA.pass_splata2')
+                ->where('guid = :guid')->orderBy('n')->bind(['guid' => $task[11]])->get();
+            $exclude = ['GUID', 'N', 'RDATA', 'KOD'];
+            foreach ($array2 as $record) {
+                foreach ($record as $key => $value) {
+                    if (!in_array($key, $exclude, true)) {
+                        $t_array2['{' . $key . $record['N'] . '}'] = $value;
+                    }
+                }
+            }
+            $array3 = $db->table('PIKALKA.pass_splata_esv')
+                ->where('guid = :guid')->orderBy('n')->bind(['guid' => $task[11]])->get();
+            foreach ($array3 as $record) {
+                foreach ($record as $key => $value) {
+                    $t_array3['{' . $key . $record['N'] . '}'] = $value;
+                }
+            }
+
+            $this->setSheet(11, array_merge($t_array1, $t_array2, $t_array3));
+        }
+
         /* Запис в pass_log */
         $params['TM'] = 0;
         unset($params['DT0']);
-        $this->db->table('PIKALKA.pass_log')->insert($params);
+        $db->table('PIKALKA.pass_log')->insert($params);
 
         /* Видалення лишніх листів */
         for ($i = $this->ss->getSheetCount(); $i > 0; $i--) {

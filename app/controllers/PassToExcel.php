@@ -368,7 +368,12 @@ class PassToExcel extends DBController
         $array = $this->db->selectRaw($sql, ['tin' => $params['TIN']])->get();
         $rro = $this->transform($array, 'RRO.');
 
-        return array_merge($reg_params, $reg_params_ur, $stan_h, $kvedy, $founders, $rro);
+        /* Îá’ºêòè */
+        $sql = getSQL('passport/get_taxobjects.sql');
+        $array = $this->db->selectRaw($sql, ['tin' => $params['TIN']])->get();
+        $objects = $this->transform($array, 'OBJ.');
+
+        return array_merge($reg_params, $reg_params_ur, $stan_h, $kvedy, $founders, $rro, $objects);
     }
 
     protected function getDefaultParams($params): array

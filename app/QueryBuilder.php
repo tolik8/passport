@@ -162,7 +162,9 @@ class QueryBuilder
         $sql = $this->getSQL();
         $stmt = $this->executeSQL($sql, $this->bindData);
         if ($stmt === null) {return [];}
-        return $stmt->fetch();
+        $row = $stmt->fetch();
+        if (empty($row)) {return [];}
+        return $row;
     }
 
     /* Получить массив значений одного столбца (если два столбца то пара ключ-значение) */

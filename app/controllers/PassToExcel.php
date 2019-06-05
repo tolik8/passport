@@ -112,9 +112,17 @@ class PassToExcel extends DBController
 
         /* 1-ДФ */
         if (isset($task[9])) {
-            $sql = 'SELECT year, ozn_dox, cnt, ROUND(dox, 0) dox FROM DP00.t43_1df_ozn WHERE kod = :kod ORDER BY YEAR, ozn_dox';
-            $array = $db->selectRaw($sql, ['kod' => $params['TIN']])->get();
-            $this->setSheet(9, $this->transform($array));
+            $sql = getSQL('passport/get_1df.sql');
+            $array1 = $db->selectRaw($sql, ['kod' => $params['TIN']])->get();
+            $array1 = $this->addPrefix($array1, 'T1.');
+            $t_array1 = $this->transform($array1);
+
+            $sql = getSQL('passport/get_1df_detail.sql');
+            $array2 = $db->selectRaw($sql, ['tin' => $params['TIN']])->get();
+            $array2 = $this->addPrefix($array2, 'T2.');
+            $t_array2 = $this->transform($array2);
+
+            $this->setSheet(9, array_merge($t_array1, $t_array2));
         }
 
         /* Площа */
@@ -272,6 +280,7 @@ class PassToExcel extends DBController
     /* $t_array = $this->addFieldPercent($t_array, '#T1.OBS#', '#T1.PERCENT#'); */
     protected function addFieldPercent(array $array, $scan, $new_field, $precision = 0): array
     {
+        if (empty($array)) {return [];}
         $sum = array_sum($array[$scan]);
         $new_array[$new_field] = [];
         foreach ($array[$scan] as $item) {
@@ -322,14 +331,22 @@ class PassToExcel extends DBController
             $sql = 'SELECT c_post, pin, name, n_tel FROM RG02.r21manager WHERE tin = :tin';
             $array = $this->db->selectRaw($sql, $params)->get();
             $r21manager = Helper::array_combine2($array);
-            $reg_params_ur = [
-                '{r21manager.dir_pin}' => Helper::utf8($r21manager[1]['PIN']),
-                '{r21manager.buh_pin}' => Helper::utf8($r21manager[2]['PIN']),
-                '{r21manager.dir}' => Helper::utf8($r21manager[1]['NAME']),
-                '{r21manager.buh}' => Helper::utf8($r21manager[2]['NAME']),
-                '{r21manager.dir_tel}' => Helper::utf8($r21manager[1]['N_TEL']),
-                '{r21manager.buh_tel}' => Helper::utf8($r21manager[2]['N_TEL']),
-            ];
+            if (isset($r21manager[2])) {
+                $reg_params_ur = [
+                    '{r21manager.dir_pin}' => Helper::utf8($r21manager[1]['PIN']),
+                    '{r21manager.buh_pin}' => Helper::utf8($r21manager[2]['PIN']),
+                    '{r21manager.dir}' => Helper::utf8($r21manager[1]['NAME']),
+                    '{r21manager.buh}' => Helper::utf8($r21manager[2]['NAME']),
+                    '{r21manager.dir_tel}' => Helper::utf8($r21manager[1]['N_TEL']),
+                    '{r21manager.buh_tel}' => Helper::utf8($r21manager[2]['N_TEL']),
+                ];
+            } else {
+                $reg_params_ur = [
+                    '{r21manager.dir_pin}' => Helper::utf8($r21manager[1]['PIN']),
+                    '{r21manager.dir}' => Helper::utf8($r21manager[1]['NAME']),
+                    '{r21manager.dir_tel}' => Helper::utf8($r21manager[1]['N_TEL']),
+                ];
+            }
         } else {
             $reg_params_ur = [];
         }
@@ -398,6 +415,7 @@ class PassToExcel extends DBController
     /* $sum = $this->getSumFromArray($t_array, 'T1.PDV'); */
     protected function getSumFromArray(array $array, $find): array
     {
+        if (empty($array)) {return [];}
         $find_array = explode('.', $find);
         $prefix = $find_array[0] . '.';
         $field = $find_array[1];

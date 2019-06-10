@@ -5,6 +5,7 @@ namespace App\controllers;
 use alhimik1986\PhpExcelTemplator\PhpExcelTemplator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Helper;
+use App\Config;
 
 class PassToExcel extends DBController
 {
@@ -23,6 +24,8 @@ class PassToExcel extends DBController
         /* Отримати всі POST параметри */
         $this->guid = Helper::checkRegEx('guid', $_POST['guid']);
 
+        $portable_mode = Config::get('settings.PORTABLE_MODE');
+
         if ($this->guid === null) {
             $params = [
                 'TIN' => Helper::checkRegEx('tin', $_POST['tin']),
@@ -31,7 +34,11 @@ class PassToExcel extends DBController
                 'TASKS' => Helper::checkRegEx('list', $_POST['task']),
                 'GUID_USER' => $this->myUser->guid,
             ];
-            $sql = getSQL('passport\get_task_ready_guid.sql');
+            if ($portable_mode) {
+                $sql = getSQL('passport\get_task_ready_guid_portable.sql');
+            } else {
+                $sql = getSQL('passport\get_task_ready_guid.sql');
+            }
             $task = $db->selectRaw($sql, $params)->pluck('TASK_ID', 'GUID');
         } else {
             $this->guid = Helper::checkRegEx('guid', $_POST['guid']);

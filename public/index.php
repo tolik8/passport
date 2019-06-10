@@ -20,7 +20,7 @@ $containerBuilder->addDefinitions([
     },
 
     PDO::class => static function() {
-        $db_config = require '../config/config_ora.php';
+        $db_config = require '../app/other/oracle_connect.php';
         try {
             return new \PDO('oci:dbname='.$db_config['oracle_tns'], $db_config['username'], $db_config['password'], $db_config['pdo_options']);
         } catch (\PDOException $e) {

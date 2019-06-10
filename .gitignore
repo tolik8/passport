@@ -3,4 +3,5 @@
 /vendor/*
 /config/config_ora.php
 /config/main.php
+/config/settings.php
 /xls/**/~$*.*

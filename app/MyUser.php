@@ -21,6 +21,25 @@ class MyUser
     {
         $this->db = $db;
 
+        $admin_ip = Config::get('settings.ADMIN_IP');
+        $admin_login = Config::get('settings.ADMIN_LOGIN');
+        $portable_mode = Config::get('settings.PORTABLE_MODE');
+
+        if ($portable_mode) {
+            if ($_SERVER['REMOTE_ADDR'] === $admin_ip || $_SERVER['REMOTE_ADDR'] === '127.0.0.1') {
+                $this->login = $admin_login;
+                $this->roles = '7,22';
+                $this->admin = true;
+                $this->debug = true;
+            } else {
+                $this->login = 'user';
+                $this->roles = '22';
+            }
+            $this->guid = str_pad($_SERVER['REMOTE_ADDR'], 32, '0', STR_PAD_LEFT);
+
+            return;
+        }
+
         if (!isset($_SESSION['my']['guid'])) {
             $_SESSION['cookie_uri'] = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
             $server = ['alisa2.loc' => 'alisa.loc', 'start2.tr.sta' => 'start.tr.sta', '10.19.19.122' => '10.19.191.121'];
@@ -38,7 +57,7 @@ class MyUser
         $this->admin = $_SESSION['my']['admin'];
         $this->debug = DEBUG;
 
-        if ($_SERVER['REMOTE_ADDR'] === '10.19.190.164' || $_SERVER['REMOTE_ADDR'] === '127.0.0.1' || $this->login === 'admin19t') {
+        if ($_SERVER['REMOTE_ADDR'] === $admin_ip || $_SERVER['REMOTE_ADDR'] === '127.0.0.1' || $this->login === $admin_login) {
             $this->debug = true;
         }
 

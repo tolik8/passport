@@ -28,11 +28,11 @@ $(document).ready(function() {
             let tm = item['TM'];
 
             let el = '#id' + task_id;
-            if (debug === '1' && task_id !== 0) {
+            // if (debug === '1' && task_id !== 0) {
                 $(el).text(tm);
-            } else {
-                $(el).text('+');
-            }
+            // } else {
+            //     $(el).text('+');
+            // }
 
             if (task_id === '0' && tm !== null) {
                 $('#loading').fadeOut();

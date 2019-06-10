@@ -3,6 +3,7 @@
 namespace App\controllers;
 
 use App\Helper;
+use App\Config;
 
 class Passport extends DBController
 {
@@ -23,7 +24,12 @@ class Passport extends DBController
 
         $this->x['name'] = $this->tax->getName($params['tin']);
 
-        $sql = getSQL('passport\access_tasks.sql');
+        $portable_mode = Config::get('settings.PORTABLE_MODE');
+        if ($portable_mode) {
+            $sql = getSQL('passport\tasks.sql');
+        } else {
+            $sql = getSQL('passport\access_tasks.sql');
+        }
         $this->x['info'] = $this->db->selectRaw($sql, $params)->get();
 
         $this->x['post'] = $params;
@@ -63,7 +69,12 @@ class Passport extends DBController
             $this->x['info_is_not_ready'] = false;
         }
 
-        $sql = getSQL('passport/selected_tasks.sql');
+        $portable_mode = Config::get('settings.PORTABLE_MODE');
+        if ($portable_mode) {
+            $sql = getSQL('passport/tasks_portable.sql');
+        } else {
+            $sql = getSQL('passport/selected_tasks.sql');
+        }
         $data = ['guid' => $this->myUser->guid, 'task' => $task_string];
         $this->x['tasks'] = $this->db->selectRaw($sql, $data)->get();
 

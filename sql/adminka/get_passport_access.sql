@@ -1,4 +1,4 @@
--- get_passport_acceess
+-- adminka/get_passport_access
 SELECT t.id, t.name, DECODE(a.task_id, NULL, '', 'checked') checked
 FROM PIKALKA.d_pass_task t,
      (SELECT * FROM PIKALKA.pass_access WHERE guid = :guid) a

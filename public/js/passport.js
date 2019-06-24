@@ -10,7 +10,7 @@ $(document).ready(function() {
     // let result = $url.match(/\/[0-9A-Z]{1,32}$/gi);
     // let $guid = result[0].substr(1);
     let $guid = $('#guid').text();
-    let $domen = $url.match(/http:\/\/[0-9A-Z.]+\//gi);
+    let $domen = $url.match(/http:\/\/[0-9A-Z.:]+\//gi);
     let $ajax_url = $domen + 'passport/ajax/' + $guid;
 
     function updateClock () {

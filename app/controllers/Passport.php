@@ -22,7 +22,11 @@ class Passport extends DBController
         $params = $this->getPost();
         $params['user_guid'] = $this->myUser->guid;
 
-        $this->x['name'] = $this->tax->getName($params['tin']);
+        $taxpay_name = $this->tax->getName($params['tin']);
+        if ($taxpay_name === null) {
+            exit('Error! Taxpay not fount! - Помилка! платник не знайдений!');
+        }
+        $this->x['name'] = $taxpay_name;
 
         $portable_mode = Config::get('settings.PORTABLE_MODE');
         if ($portable_mode) {

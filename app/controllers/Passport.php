@@ -8,11 +8,11 @@ use App\Config;
 class Passport extends DBController
 {
     protected $role = '22'; // Роль 22 - Паспорт платника
-    protected $title = 'Паспорт';
+    protected $title = 'Паспорт платника';
 
     public function index(): void
     {
-        $this->x['menu'] = $this->bc->getMenu('passport');
+        $this->x['menu'] = $this->bc->getMenu('index');
         $this->twig->showTemplate('passport/index.html', ['x' => $this->x, 'my' => $this->myUser]);
     }
 

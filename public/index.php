@@ -5,9 +5,11 @@ if (!session_id()) {@session_start();}
 header('Content-Type: text/html; charset=windows-1251');
 date_default_timezone_set('Europe/Kiev');
 
-require_once '../config/main.php';
-require_once '../app/functions.php';
-require_once '../vendor/autoload.php';
+define('ROOT', $_SERVER['DOCUMENT_ROOT']);
+
+require_once ROOT . '/config/main.php';
+require_once ROOT . '/app/functions.php';
+require_once ROOT . '/vendor/autoload.php';
 
 use DI\ContainerBuilder;
 $containerBuilder = new ContainerBuilder;
@@ -20,7 +22,7 @@ $containerBuilder->addDefinitions([
     },
 
     PDO::class => static function() {
-        $db_config = require '../app/other/oracle_connect.php';
+        $db_config = require ROOT . '/app/other/oracle_connect.php';
         try {
             return new \PDO('oci:dbname='.$db_config['oracle_tns'], $db_config['username'], $db_config['password'], $db_config['pdo_options']);
         } catch (\PDOException $e) {
@@ -36,7 +38,7 @@ try {
     echo $e->getMessage();
 }
 
-require '../config/routes.php';
+require ROOT . '/config/routes.php';
 
 $httpMethod = $_SERVER['REQUEST_METHOD'];
 $uri = $_SERVER['REQUEST_URI'];

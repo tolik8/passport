@@ -17,7 +17,7 @@ class QueryBuilderTest extends TestCase
     protected function setUp()
     {
         /** @noinspection PhpIncludeInspection */
-        $db_config = include ROOT . '/config/config_ora.php';
+        $db_config = require ROOT . '/app/other/oracle_connect.php';
         $pdo = new \PDO('oci:dbname='.$db_config['oracle_tns'], $db_config['username'], $db_config['password'], $db_config['pdo_options']);
         $this->db = new QueryBuilder($pdo);
         $this->testTable = 'TMP_18F987F1';

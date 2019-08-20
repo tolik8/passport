@@ -11,6 +11,7 @@ $(document).ready(function() {
                 //console.log('You selected: ' + suggestion.value + ', ' + suggestion.data);
                 //$('#guid').val(suggestion.data);
                 let url = 'http://' + location.hostname + '/adminka/passport/user/' + suggestion.data;
+                console.log(url);
                 $(location).attr('href', url);
             }
         });

@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-md navbar-light">
-    <a class="navbar-brand" href="/"><i class="fas fa-home"></i> Стартова 2</a>
+    <a class="navbar-brand" href="/"><i class="fas fa-home"></i> Паспорт платника</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -7,7 +7,7 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
-                <a class="nav-link" href="/passport">Паспорт</a>
+                {# <a class="nav-link" href="/passport">Паспорт</a> #}
             </li>
         </ul>
 {#
@@ -21,8 +21,12 @@
             <li class="nav-item">
                 <a class="nav-link" href="/adminka"><i class="fas fa-unlock"></i> Адмінка</a>
             </li>
+
+            <li class="nav-item">
+                <span class="nav-link"><i class="fas fa-user"></i> {{my.login}}</span>
+            </li>
 {% endif %}
-            <li class="nav-item dropdown">
+            {# <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     {{my.login}}
                 </a>
@@ -34,7 +38,7 @@
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt mr-2"></i>Вихід</a>
                 </div>
-            </li>
+            </li> #}
         </ul>
     </div>
 </nav>

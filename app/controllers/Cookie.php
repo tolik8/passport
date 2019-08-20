@@ -46,7 +46,11 @@ class Cookie
 
     public function noCookie(): void
     {
-        $server = ['alisa2.loc' => 'alisa.loc', 'start2.tr.sta' => 'start.tr.sta', '10.19.19.122' => '10.19.19.121'];
+        $server = [
+            'passport.loc' => 'alisa.loc',
+            'start2.tr.sta' => 'start.tr.sta',
+            '10.19.19.122:88' => '10.19.19.121'
+        ];
         header('Location: http://' . $server[$_SERVER['SERVER_NAME']] . '/login.php');
         exit;
     }

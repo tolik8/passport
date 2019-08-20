@@ -1,6 +1,6 @@
 <?php
 
-$db_config = require '../config/config_ora.php';
+$db_config = require ROOT . '/config/config_ora.php';
 
 $oracle_tns = '
 (DESCRIPTION =

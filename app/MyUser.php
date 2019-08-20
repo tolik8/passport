@@ -42,7 +42,11 @@ class MyUser
 
         if (!isset($_SESSION['my']['guid'])) {
             $_SESSION['cookie_uri'] = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
-            $server = ['alisa2.loc' => 'alisa.loc', 'start2.tr.sta' => 'start.tr.sta', '10.19.19.122' => '10.19.19.121'];
+            $server = [
+                'passport.loc' => 'alisa.loc',
+                'start2.tr.sta' => 'start.tr.sta',
+                '10.19.19.122' => '10.19.19.121'
+            ];
             header('Location: http://' . $server[$_SERVER['SERVER_NAME']] . '/cookie.php');
             exit;
         }
@@ -82,7 +86,7 @@ class MyUser
     public function logout(): void
     {
         session_destroy();
-        setcookie('alisa2', '', time() );
+        setcookie('passport', '', time() );
         header('Location: /');
         exit;
     }

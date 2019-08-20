@@ -4,39 +4,38 @@
 
 return [
     'passport' => [
-        'link' => '/passport',
-        'name' => 'Паспорт',
-        'full' => 'Паспорт платника',
+        'link' => '/',
+        'name' => 'Паспорт платника',
         'par' => 'index',
     ],
     'choice' => [
         'link' => '/passport/choice',
         'name' => 'Вибір даних',
-        'par' => 'passport',
+        'par' => 'index',
     ],
     'check' => [
         'link' => '/passport/check',
         'name' => 'Перевірка',
-        'par' => 'passport',
+        'par' => 'index',
     ],
     'prepare' => [
         'link' => '/passport/prepare',
         'name' => 'Підготовка',
-        'par' => 'passport',
+        'par' => 'index',
     ],
     'loading' => [
         'link' => '/passport/loading',
         'name' => 'Підготовка',
-        'par' => 'passport',
+        'par' => 'index',
     ],
     'work' => [
         'link' => '/passport/work',
         'name' => 'Підготовка',
-        'par' => 'passport',
+        'par' => 'index',
     ],
     'job' => [
         'link' => '/passport/job',
         'name' => 'Job',
-        'par' => 'passport',
+        'par' => 'index',
     ],
 ];

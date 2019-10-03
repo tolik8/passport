@@ -10,7 +10,13 @@ $(document).ready(function() {
             onSelect: function (suggestion) {
                 //console.log('You selected: ' + suggestion.value + ', ' + suggestion.data);
                 //$('#guid').val(suggestion.data);
-                let url = 'http://' + location.hostname + '/adminka/passport/user/' + suggestion.data;
+                let host;
+                if (location.port === '') {
+                    host = location.hostname;
+                } else {
+                    host = location.hostname + ':' + location.port;
+                }
+                let url = 'http://' + host + '/adminka/passport/user/' + suggestion.data;
                 console.log(url);
                 $(location).attr('href', url);
             }

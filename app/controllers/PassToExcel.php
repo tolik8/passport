@@ -347,12 +347,14 @@ class PassToExcel extends DBController
                     '{r21manager.dir_tel}' => Helper::utf8($r21manager[1]['N_TEL']),
                     '{r21manager.buh_tel}' => Helper::utf8($r21manager[2]['N_TEL']),
                 ];
-            } else {
+            } else if (isset($r21manager[1])) {
                 $reg_params_ur = [
                     '{r21manager.dir_pin}' => Helper::utf8($r21manager[1]['PIN']),
                     '{r21manager.dir}' => Helper::utf8($r21manager[1]['NAME']),
                     '{r21manager.dir_tel}' => Helper::utf8($r21manager[1]['N_TEL']),
                 ];
+            } else {
+                $reg_params_ur = [];
             }
         } else {
             $reg_params_ur = [];
@@ -371,7 +373,23 @@ class PassToExcel extends DBController
             '{r21taxpay.kved_name}' => Helper::utf8($kved_name),
             '{r21taxpay.d_reg_sti}' => $r21taxpay['D_REG_STI'],
             '{r21paddr.address}' => Helper::utf8($address),
+            '{r21taxpay.d_old_dpi}' => $r21taxpay['D_OLD_DPI'],
+            '{r21taxpay.d_new_dpi}' => $r21taxpay['D_NEW_DPI'],
+            '{r21taxpay.old_dpi}' => $r21taxpay['OLD_DPI'],
+            '{r21taxpay.new_dpi}' => $r21taxpay['NEW_DPI'],
         ];
+        if ($r21taxpay['OLD_DPI']) {
+            $old_dpi_name = $this->db->table('AISR.ais_spr_bd')
+                ->where('kod_bdp = :kod_bdp')
+                ->bind(['kod_bdp' => $r21taxpay['OLD_DPI']])->getCell('NAME');
+            $reg_params['{r21taxpay.old_dpi_name}'] = Helper::utf8($old_dpi_name);
+        }
+        if ($r21taxpay['NEW_DPI']) {
+            $new_dpi_name = $this->db->table('AISR.ais_spr_bd')
+                ->where('kod_bdp = :kod_bdp')
+                ->bind(['kod_bdp' => $r21taxpay['NEW_DPI']])->getCell('NAME');
+            $reg_params['{r21taxpay.new_dpi_name}'] = Helper::utf8($new_dpi_name);
+        }
 
         $sql = 'SELECT * FROM AISR.pdv_act_r WHERE tin = :tin AND dat_anul IS NULL AND ROWNUM = 1';
         $pdv_act_r = $this->db->selectRaw($sql, $params)->first();

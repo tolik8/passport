@@ -182,8 +182,14 @@ class PassToExcel extends DBController
                     $t_array3['{' . $key . $record['N'] . '}'] = $value;
                 }
             }
-
             $this->setSheet(11, array_merge($t_array1, $t_array2, $t_array3));
+        }
+
+        /* Єдиний (фіз.) */
+        if (isset($task[12])) {
+            $array = $db->table('PIKALKA.pass_edin')->where('guid = :guid')
+                ->orderBy('period_year, period')->bind(['guid' => $task[12]])->get();
+            $this->setSheet(12, $this->transform($array));
         }
 
         /* Запис в pass_log */

@@ -192,11 +192,18 @@ class PassToExcel extends DBController
             $this->setSheet(12, $this->transform($array));
         }
 
-        /* Контрагенти (розріз) */
+        /* Контрагенти - зобов’язання (розріз) */
         if (isset($task[13])) {
             $array = $db->table('PIKALKA.pass_nom_z2')->where('guid = :guid')
                 ->orderBy('kod_tovaru, cp_tin')->bind(['guid' => $task[13]])->get();
             $this->setSheet(13, $this->transform($array));
+        }
+
+        /* Контрагенти - кредит (розріз) */
+        if (isset($task[14])) {
+            $array = $db->table('PIKALKA.pass_nom_k2')->where('guid = :guid')
+                ->orderBy('kod_tovaru, tin')->bind(['guid' => $task[14]])->get();
+            $this->setSheet(14, $this->transform($array));
         }
 
         /* Запис в pass_log */

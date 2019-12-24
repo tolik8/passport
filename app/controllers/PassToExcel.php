@@ -411,6 +411,11 @@ class PassToExcel extends DBController
             $reg_params['{r21taxpay.new_dpi_name}'] = Helper::utf8($new_dpi_name);
         }
 
+        $array = $this->db->table('PIKALKA.pass_sfp')
+            ->where('tin = :tin')
+            ->bind(['tin' => $params['TIN']])->get();
+        $sfp = $this->transform($array, 'SFP.');
+
         $sql = 'SELECT * FROM AISR.pdv_act_r WHERE tin = :tin AND dat_anul IS NULL AND ROWNUM = 1';
         $pdv_act_r = $this->db->selectRaw($sql, $params)->first();
         if (!empty($pdv_act_r)) {$reg_params['{pdv_act_r.dat_reestr}'] = $pdv_act_r['DAT_REESTR'];}
@@ -435,7 +440,7 @@ class PassToExcel extends DBController
         $array = $this->db->selectRaw($sql, ['tin' => $params['TIN']])->get();
         $objects = $this->transform($array, 'OBJ.');
 
-        return array_merge($reg_params, $reg_params_ur, $stan_h, $kvedy, $founders, $rro, $objects);
+        return array_merge($reg_params, $reg_params_ur, $stan_h, $sfp, $kvedy, $founders, $rro, $objects);
     }
 
     protected function getDefaultParams($params): array

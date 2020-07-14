@@ -1,6 +1,7 @@
 <?php
 
 const DEBUG = true;
+const PASSPORT_ENABLE = true;
 
 if (DEBUG) {
     ini_set('display_errors', 1);

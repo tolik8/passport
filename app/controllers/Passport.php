@@ -13,7 +13,11 @@ class Passport extends DBController
     public function index(): void
     {
         $this->x['menu'] = $this->bc->getMenu('index');
-        $this->twig->showTemplate('passport/index.html', ['x' => $this->x, 'my' => $this->myUser]);
+        if (PASSPORT_ENABLE) {
+            $this->twig->showTemplate('passport/index.html', ['x' => $this->x, 'my' => $this->myUser]);
+        } else {
+            $this->twig->showTemplate('passport/index_disable.html', ['x' => $this->x, 'my' => $this->myUser]);
+        }
     }
 
     public function choice(): void
@@ -24,7 +28,7 @@ class Passport extends DBController
 
         $taxpay_name = $this->tax->getName($params['tin']);
         if ($taxpay_name === null) {
-            exit('Error! Taxpay not fount! - Помилка! платник не знайдений!');
+            exit('Error! Taxpay not found! - Помилка! платник не знайдений!');
         }
         $this->x['name'] = $taxpay_name;
 
@@ -42,6 +46,7 @@ class Passport extends DBController
 
     public function prepare(): void
     {
+        $this->db->enableQueryLog('query');
         $this->x['menu'] = $this->bc->getMenu('prepare');
         $params = $this->x['post'] = $this->getPost();
         $this->x['info_is_not_ready'] = true;

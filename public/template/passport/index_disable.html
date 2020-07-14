@@ -1,0 +1,12 @@
+{% extends 'main.html' %}
+
+{% set include_datepicker = true %}
+
+{% block content %}
+<h3>В зв’язку з навантаженням на базу даних паспорт платника тимчасово вимкнено.</h3>
+{% endblock %}
+
+{% block js %}
+{{ parent() }}
+<script type="text/javascript" src="{{filetime('/js/set_today.js')}}"></script>
+{% endblock %}

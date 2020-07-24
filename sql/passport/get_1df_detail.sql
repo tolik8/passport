@@ -2,21 +2,21 @@
 SELECT DISTINCT d.zy, d.zkv, ROUND(d.gr05, 0) ozn_dox, ROUND(d.gr03a, 0) narax, d.tin_drfo, p.name, d.gr09
 FROM IVASYKB.pasp_1df d, RG02.r21taxpay p
 WHERE d.tin = :tin
-    AND d.tin_drfo = p.tin(+)
+    AND LPAD(d.tin_drfo,10,'0') = LPAD(p.tin(+),10,'0')
 MINUS
 SELECT v.* FROM
     (
     SELECT DISTINCT d.zy, d.zkv, ROUND(d.gr05, 0) ozn_dox, ROUND(d.gr03a, 0) narax, d.tin_drfo, p.name, d.gr09
     FROM IVASYKB.pasp_1df d, RG02.r21taxpay p
     WHERE d.tin = :tin
-        AND d.tin_drfo = p.tin(+)
+        AND LPAD(d.tin_drfo,10,'0') = LPAD(p.tin(+),10,'0')
     ) v,
 
     (
     SELECT DISTINCT d.zy, d.zkv, ROUND(d.gr05, 0) ozn_dox, ROUND(d.gr03a, 0) narax, d.tin_drfo, p.name, d.gr09
     FROM IVASYKB.pasp_1df d, RG02.r21taxpay p
     WHERE d.tin = :tin
-        AND d.tin_drfo = p.tin(+) AND gr09 = 1
+        AND LPAD(d.tin_drfo,10,'0') = LPAD(p.tin(+),10,'0') AND gr09 = 1
     ) v1
 
     WHERE v.zy = v1.zy

@@ -206,6 +206,26 @@ class PassToExcel extends DBController
             $this->setSheet(14, $this->transform($array));
         }
 
+        /* Λ³φενη³Ώ */
+        if (isset($task[15])) {
+            $sql = getSQL('passport/get_lic.sql');
+            $array1 = $db->selectRaw($sql, ['tin' => $params['TIN']])->get();
+            $array1 = $this->addPrefix($array1, 'T1.');
+            $t_array1 = $this->transform($array1);
+
+            $array2 = $db->table('PIKALKA.lic_rtp')->where('tin = :tin')
+                ->orderBy('d_begin')->bind(['tin' => $params['TIN']])->get();
+            $array2 = $this->addPrefix($array2, 'T2.');
+            $t_array2 = $this->transform($array2);
+
+            $array3 = $db->table('PIKALKA.lic_zp')->where('tin = :tin')
+                ->orderBy('d_begin')->bind(['tin' => $params['TIN']])->get();
+            $array3 = $this->addPrefix($array3, 'T3.');
+            $t_array3 = $this->transform($array3);
+
+            $this->setSheet(15, array_merge($t_array1, $t_array2, $t_array3));
+        }
+
         /* Ηΰοθρ β pass_log */
         $params['TM'] = 0;
         unset($params['DT0']);

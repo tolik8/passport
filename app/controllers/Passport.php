@@ -46,7 +46,7 @@ class Passport extends DBController
 
     public function prepare(): void
     {
-        $this->db->enableQueryLog('query');
+        //$this->db->enableQueryLog('query');
         $this->x['menu'] = $this->bc->getMenu('prepare');
         $params = $this->x['post'] = $this->getPost();
         $this->x['info_is_not_ready'] = true;

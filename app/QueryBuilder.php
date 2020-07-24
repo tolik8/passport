@@ -204,7 +204,7 @@ class QueryBuilder
         $stmt = $this->executeSQL($sql, $this->bindData);
         if ($stmt === null) {return null;}
         $row = $stmt->fetch(\PDO::FETCH_NUM);
-        return $row[0];
+        return $row[0] ?? '';
     }
 
     public function insert(array $data): int

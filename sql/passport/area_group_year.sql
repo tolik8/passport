@@ -1,5 +1,5 @@
 -- passport/area_group_year.sql
-SELECT period_year,
+SELECT period_year, c_sti,
     SUM(ril_plo) ril_plo,
     SUM(sin_plo) sin_plo,
     SUM(pas_plo) pas_plo,
@@ -9,5 +9,5 @@ SELECT period_year,
     '' AS blank
 FROM PIKALKA.pass_area 
 WHERE GUID = :guid
-GROUP BY period_year
+GROUP BY period_year, c_sti
 ORDER BY period_year

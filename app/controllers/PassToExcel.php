@@ -374,30 +374,24 @@ class PassToExcel extends DBController
         $sql = getSQL('passport/get_address.sql');
         $address = $this->db->selectRaw($sql, ['tin' => $tin, 'c_distr' => $dpi])->getCell();
 
+        $reg_params_ur = [];
+
         if ($type_pl === 1) {
             $sql = 'SELECT c_post, pin, name, n_tel FROM RG02.r21manager WHERE tin = :tin';
             $array = $this->db->selectRaw($sql, $params)->get();
             $r21manager = Helper::array_combine2($array);
-            if (isset($r21manager[2])) {
-                $reg_params_ur = [
-                    '{r21manager.dir_pin}' => Helper::utf8($r21manager[1]['PIN']),
-                    '{r21manager.buh_pin}' => Helper::utf8($r21manager[2]['PIN']),
-                    '{r21manager.dir}' => Helper::utf8($r21manager[1]['NAME']),
-                    '{r21manager.buh}' => Helper::utf8($r21manager[2]['NAME']),
-                    '{r21manager.dir_tel}' => Helper::utf8($r21manager[1]['N_TEL']),
-                    '{r21manager.buh_tel}' => Helper::utf8($r21manager[2]['N_TEL']),
-                ];
-            } else if (isset($r21manager[1])) {
+            if (isset($r21manager[1])) {
                 $reg_params_ur = [
                     '{r21manager.dir_pin}' => Helper::utf8($r21manager[1]['PIN']),
                     '{r21manager.dir}' => Helper::utf8($r21manager[1]['NAME']),
                     '{r21manager.dir_tel}' => Helper::utf8($r21manager[1]['N_TEL']),
                 ];
-            } else {
-                $reg_params_ur = [];
             }
-        } else {
-            $reg_params_ur = [];
+            if (isset($r21manager[2])) {
+                $reg_params_ur['{r21manager.buh_pin}'] = Helper::utf8($r21manager[2]['PIN']);
+                $reg_params_ur['{r21manager.buh}'] = Helper::utf8($r21manager[2]['NAME']);
+                $reg_params_ur['{r21manager.buh_tel}'] = Helper::utf8($r21manager[2]['N_TEL']);
+            }
         }
 
         $sql = getSQL('passport/get_r21stan_h.sql');

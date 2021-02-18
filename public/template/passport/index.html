@@ -14,10 +14,10 @@
         <div class="form-group row">
             <div class="input-daterange input-group" id="datepicker">
                 <label class="col-form-label mr-2" for="dt1">Діапазон дат</label>
-                <input type="text" name="dt1" class="input-sm form-control" value="01.01.2017" id="dt1">
+                <input type="text" name="dt1" class="input-sm form-control" value="01.01.2018" id="dt1">
                 <span class="input-group-addon ml-1 mr-1">-</span>
                 <!--suppress HtmlFormInputWithoutLabel -->
-                <input type="text" name="dt2" class="input-sm form-control" value="31.12.2018" id="dt2">
+                <input type="text" name="dt2" class="input-sm form-control" value="31.12.2020" id="dt2">
                 <button id="setToday" type="button" class="ml-2 btn btn-success">Сьогодні</button>
             </div>
         </div>
@@ -28,6 +28,26 @@
             </div>
         </div>
     </form>
+    {% if x.jobs|length > 0 %}
+        <div class="alert alert-danger" role="alert">
+            Увага! В даний момент вже формується паспорт!
+        </div>
+        {% for item in x.jobs %}
+            <div class="alert alert-primary" role="alert">
+                {{item.VIDDIL_ID}} {{item.FIO}} - {{item.TOTAL_TIME}} sec
+                {% if my.admin == true %}
+                    <br>{{item.WHAT.0}} {{item.WHAT.NAME}}
+                    <br>За період: {{item.WHAT.1}} - {{item.WHAT.2}}
+                    <br>Задачі: {{item.WHAT.3}}
+                    <br>Оновити: {{item.WHAT.4}}
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% endif %}
+    {{x.jobs.viddil_id}}
+{% for item in x.info %}
+    {{item.VIDDIL_ID}}
+{% endfor %}
 </div>
 {% endblock %}
 

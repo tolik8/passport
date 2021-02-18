@@ -13,6 +13,15 @@ class Passport extends DBController
     public function index(): void
     {
         $this->x['menu'] = $this->bc->getMenu('index');
+
+        $sql = getSQL('passport\check_user_jobs.sql');
+        $this->x['jobs'] = $this->db->selectRaw($sql)->get();
+        //$this->x['jobs'] = require(ROOT . '/config/job_data.php');
+
+        foreach ($this->x['jobs'] as $key => $value) {
+            $this->x['jobs'][$key]['WHAT'] = $this->parseOracleJobString($value['WHAT']);
+        }
+
         if (PASSPORT_ENABLE) {
             $this->twig->showTemplate('passport/index.html', ['x' => $this->x, 'my' => $this->myUser]);
         } else {
@@ -123,10 +132,26 @@ class Passport extends DBController
     protected function getPost(): array
     {
         $post['tin'] = Helper::checkRegEx('tin', trim($_POST['tin']), 0);
-        $post['dt1'] = Helper::checkRegEx('date', $_POST['dt1'], '01.01.2017');
-        $post['dt2'] = Helper::checkRegEx('date', $_POST['dt2'], '31.12.2018');
+        $post['dt1'] = Helper::checkRegEx('date', $_POST['dt1'], '01.01.2018');
+        $post['dt2'] = Helper::checkRegEx('date', $_POST['dt2'], '31.12.2020');
 
         return $post;
     }
 
+    private function parseOracleJobString($input)
+    {
+        if ($input === null || empty($input)) {return null;}
+        $pattern = "#(?<=\().*(?=\))#";
+        preg_match($pattern, $input, $matches);
+        $matches_array = explode(' ', $matches[0]);
+        $count_matches_array = count($matches_array);
+        $matches_array[0] = substr($matches_array[0], 0, -1);
+        $matches_array[$count_matches_array-1] .= ',';
+        for ($i = 1; $i < $count_matches_array; $i++) {
+            $matches_array[$i] = substr($matches_array[$i], 1, -2);
+        }
+        $matches_array['NAME'] = $this->tax->getName($matches_array[0]);
+
+        return $matches_array;
+    }
 }

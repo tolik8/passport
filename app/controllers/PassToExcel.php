@@ -430,7 +430,7 @@ class PassToExcel extends DBController
             ->bind(['tin' => $params['TIN']])->get();
         $sfp = $this->transform($array, 'SFP.');
 
-        $sql = 'SELECT * FROM AISR.pdv_act_r WHERE tin = :tin AND dat_anul IS NULL AND ROWNUM = 1';
+        $sql = 'SELECT * FROM pdv_act_r WHERE tin = :tin AND dat_anul IS NULL AND ROWNUM = 1';
         $pdv_act_r = $this->db->selectRaw($sql, $params)->first();
         if (!empty($pdv_act_r)) {$reg_params['{pdv_act_r.dat_reestr}'] = $pdv_act_r['DAT_REESTR'];}
 

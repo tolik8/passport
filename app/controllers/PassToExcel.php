@@ -188,7 +188,7 @@ class PassToExcel extends DBController
         /* Єдиний (фіз.) */
         if (isset($task[12])) {
             $array = $db->table('PIKALKA.pass_edin')->where('guid = :guid')
-                ->orderBy('period_year, period')->bind(['guid' => $task[12]])->get();
+                ->orderBy('period_year, period_month')->bind(['guid' => $task[12]])->get();
             $this->setSheet(12, $this->transform($array));
         }
 

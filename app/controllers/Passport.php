@@ -100,12 +100,13 @@ class Passport extends DBController
 //            $guid = $this->x['GUID'] = 'test';
             $new_guid = $this->x['guid'] = $this->db->getNewGUID();
             if (DEBUG) {$package = 'passport_dev';} else {$package = 'passport';}
-            $sql = 'BEGIN ' . $package . '.create_job(:tin, :dt1, :dt2, :task, :refresh, :user_guid, :guid); END;';
+            $sql = 'BEGIN ' . $package . '.create_job(:tin, :dt1, :dt2, :ip, :task, :refresh, :user_guid, :guid); END;';
             $params = array_merge($params, [
                 'task'      => $task_string,
                 'refresh'   => $refresh_string,
                 'user_guid' => $this->myUser->guid,
-                'guid'      => $new_guid
+                'guid'      => $new_guid,
+                'ip'        => $_SERVER['REMOTE_ADDR']
             ]);
             $this->db->statement($sql, $params);
         }

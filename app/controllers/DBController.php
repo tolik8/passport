@@ -24,7 +24,7 @@ class DBController extends Controller
 
         // якщо сторінка вимагає доступ і цього доступа немає то перекинути на головну
         $access = Helper::in_string($this->myUser->roles, $this->role);
-        if (!$access && $this->need_access) {header('Location: 10.19.19.121'); Exit;}
+        if (!$access && $this->need_access) {header('Location: http://10.19.19.121'); Exit;}
 
         if ($this->bc->isUnderConstruct) {
             try {

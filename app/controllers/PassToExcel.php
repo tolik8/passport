@@ -228,6 +228,7 @@ class PassToExcel extends DBController
 
         /* Запис в pass_log */
         $params['TM'] = 0;
+        $params['IP'] = $_SERVER['REMOTE_ADDR'];
         unset($params['DT0']);
         $db->table('PIKALKA.pass_log')->insert($params);
 

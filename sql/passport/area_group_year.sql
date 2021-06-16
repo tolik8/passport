@@ -1,10 +1,10 @@
 -- passport/area_group_year.sql
 SELECT period_year, c_sti,
-    SUM(ril_plo) ril_plo,
-    SUM(sin_plo) sin_plo,
-    SUM(pas_plo) pas_plo,
-    SUM(bag_plo) bag_plo,
-    SUM(vod_plo) vod_plo,
+    SUM(ril_plo) AS ril_plo,
+    SUM(sin_plo) AS sin_plo,
+    SUM(pas_plo) AS pas_plo,
+    SUM(bag_plo) AS bag_plo,
+    SUM(vod_plo) AS vod_plo,
     SUM(ril_plo) + SUM(sin_plo) + SUM(pas_plo) + SUM(bag_plo) + SUM(vod_plo) AS all_plo,
     '' AS blank
 FROM PIKALKA.pass_area 

@@ -213,12 +213,12 @@ class PassToExcel extends DBController
             $array1 = $this->addPrefix($array1, 'T1.');
             $t_array1 = $this->transform($array1);
 
-            $array2 = $db->table('PIKALKA.lic_rtp')->where('tin = :tin')
+            $array2 = $db->table('TOLIK.pass_lic_rtp')->where('tin = :tin')
                 ->orderBy('d_begin')->bind(['tin' => $params['TIN']])->get();
             $array2 = $this->addPrefix($array2, 'T2.');
             $t_array2 = $this->transform($array2);
 
-            $array3 = $db->table('PIKALKA.lic_zp')->where('tin = :tin')
+            $array3 = $db->table('TOLIK.pass_lic_zp')->where('tin = :tin')
                 ->orderBy('d_begin')->bind(['tin' => $params['TIN']])->get();
             $array3 = $this->addPrefix($array3, 'T3.');
             $t_array3 = $this->transform($array3);

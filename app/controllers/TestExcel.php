@@ -43,7 +43,7 @@ class TestExcel extends DBController
         // Вставка інформації в Лист 1
         $this->setSheet(1, $data_array);
 
-        $sql = 'SELECT id as n, name, type_id FROM PIKALKA.d_enter ORDER BY ID';
+        $sql = 'SELECT id as n, name, type_id FROM TOLIK.e_11enter ORDER BY ID';
         $array = $this->db->selectRaw($sql)->get();
         $t_array = $this->transform($array, 'T1.');
         $sum = $this->getSumFromArray($t_array, 'T1.TYPE_ID');

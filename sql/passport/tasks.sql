@@ -1,5 +1,5 @@
 -- passport/tasks.sql
-SELECT t.*, to_char(r.dt0, 'dd.mm.yyyy hh24:mi:ss') dt0
+SELECT t.*, to_char(r.dt0, 'dd.mm.yyyy hh24:mi:ss') AS dt0
 FROM PIKALKA.d_pass_task t,
      (SELECT task_id, MAX(dt0) dt0
       FROM PIKALKA.pass_task

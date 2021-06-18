@@ -7,7 +7,7 @@ SELECT period_year, c_sti,
     SUM(vod_plo) AS vod_plo,
     SUM(ril_plo) + SUM(sin_plo) + SUM(pas_plo) + SUM(bag_plo) + SUM(vod_plo) AS all_plo,
     '' AS blank
-FROM PIKALKA.pass_area 
+FROM pass_area
 WHERE GUID = :guid
 GROUP BY period_year, c_sti
 ORDER BY period_year

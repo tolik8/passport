@@ -143,7 +143,7 @@ class QueryBuilderTest extends TestCase
         $assert = false;
         $need_result = file_get_contents(ROOT . '\tests\App\inc\testConstructorGetSQL.sql');
 
-        $result = $this->db->table('PIKALKA.people')
+        $result = $this->db->table('TOLIK.users')
             ->select('kadry_id, COUNT(*) cnt')
             ->where('kadry_id = :id')
             ->groupBy('kadry_id')

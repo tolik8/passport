@@ -1,10 +1,10 @@
 -- passport/get_task_ready_guid.sql
 SELECT t.task_id, t.guid
-FROM PIKALKA.pass_task t,
-    (SELECT * FROM PIKALKA.pass_access WHERE guid = :guid_user) a,
+FROM pass_tasks t,
+    (SELECT * FROM pass_access WHERE guid = :guid_user) a,
     
     (SELECT task_id, tin, dt1, dt2, MAX(dt0) dt0
-    FROM PIKALKA.pass_task
+    FROM pass_tasks
     WHERE guid_ready IS NULL AND tin = :tin AND dt1 = :dt1 AND dt2 = :dt2 AND qq.in_comma_string(task_id, :tasks) = 1
     GROUP BY task_id, tin, dt1, dt2) x
     

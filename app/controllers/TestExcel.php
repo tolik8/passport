@@ -33,7 +33,7 @@ class TestExcel extends DBController
         $t_array1 = $this->transform($array1, 'T1.');
         $sum1 = $this->getSumFromArray($t_array1, 'T1.C_STAN');
 
-        $sql = 'SELECT * FROM PIKALKA.d_pass_task WHERE ID < 5';
+        $sql = 'SELECT * FROM pass_task WHERE id < 5';
         $array2 = $this->db->selectRaw($sql)->get();
         $t_array2 = $this->transform($array2, 'T2.');
         $sum2 = $this->getSumFromArray($t_array2, 'T2.ID');

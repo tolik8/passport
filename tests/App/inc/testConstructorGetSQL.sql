@@ -1,5 +1,5 @@
 SELECT kadry_id, COUNT(*) cnt
-FROM PIKALKA.people
+FROM TOLIK.users
 WHERE kadry_id = :id
 GROUP BY kadry_id
 HAVING COUNT(*) > 1

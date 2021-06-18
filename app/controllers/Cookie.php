@@ -15,7 +15,7 @@ class Cookie
 
     public function index($cookie): void
     {
-        $row = $this->db->table('PIKALKA.people')->where('cookie = :cookie')
+        $row = $this->db->table('TOLIK.users')->where('cookie = :cookie')
             ->bind(['cookie' => $cookie])->first();
         if (count($row) > 0) {
             $my['guid'] = $row['GUID'];

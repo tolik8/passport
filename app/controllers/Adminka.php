@@ -66,13 +66,13 @@ class Adminka extends DBController
 
         $this->db->beginTransaction();
 
-        $this->db->table('PIKALKA.pass_access')->where('guid = :guid')
+        $this->db->table('pass_access')->where('guid = :guid')
             ->bind(['guid' => $guid])->delete();
 
         if (count($tasks_id) > 0) {
             $sql = 'INSERT ALL' . PHP_EOL;
             foreach ($tasks_id as $item) {
-                $sql .= 'INTO PIKALKA.pass_access (guid, task_id) VALUES (\'' . $guid . '\', ' . $item . ')' . PHP_EOL;
+                $sql .= 'INTO pass_access (guid, task_id) VALUES (\'' . $guid . '\', ' . $item . ')' . PHP_EOL;
             }
             $sql .= 'SELECT * FROM dual';
             $res = $this->db->statement($sql);

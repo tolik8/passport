@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'Directory'    => 'logs/err',
+    'Directory'    => 'errors',
     'Extension'    => 'log',
     'SaveToFile'   => true,
 ];

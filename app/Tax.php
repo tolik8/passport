@@ -13,7 +13,7 @@ class Tax
 
     public function getName($tin)
     {
-        $sql = 'SELECT name FROM RG02.r21taxpay WHERE tin = :tin AND c_distr = PIKALKA.tax.get_dpi_by_tin(:tin)';
+        $sql = 'SELECT name FROM RG02.r21taxpay WHERE tin = :tin AND c_distr = TOLIK.tax.get_dpi_by_tin(:tin)';
         return $this->db->selectRaw($sql, ['tin' => $tin])->getCell();
     }
 

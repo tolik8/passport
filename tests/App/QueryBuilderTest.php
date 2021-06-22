@@ -33,7 +33,7 @@ class QueryBuilderTest extends TestCase
     {
         $assert = false;
         $need_result = $this->testTable;
-        $data = ['owner' => 'PIKALKA', 'tbl' => $this->testTable];
+        $data = ['owner' => 'TOLIK', 'tbl' => $this->testTable];
         $table = $this->db->table('all_tables')->where('owner = :owner AND table_name = :tbl')
             ->bind($data)->getCell('TABLE_NAME');
         if ($table !== $this->testTable) {

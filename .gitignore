@@ -1,4 +1,5 @@
 /.idea/*
+/errors/*
 /logs/*
 /vendor/*
 /config/config_ora.php
